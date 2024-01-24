@@ -105,3 +105,4 @@ dist
 
 db/
 api_key/
+service-account-file.json
