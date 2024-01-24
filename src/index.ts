@@ -1,16 +1,19 @@
 import express from 'express'
 import cors from 'cors'
 import { getAuth, type DecodedIdToken } from 'firebase-admin/auth'
-import { initializeApp } from 'firebase-admin/app'
-import admin from 'firebase-admin'
+import { initializeApp, cert } from 'firebase-admin/app'
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user?: DecodedIdToken
+    token?: DecodedIdToken // expect a string from getIdToken()
+    uid?: string
+  }
+  interface Responce {
+    createTime?: string
   }
 }
 
-const firebaseApp = initializeApp({ credential: admin.credential.cert('./service-account-file.json') })
+const firebaseApp = initializeApp({ credential: cert('./service-account-file.json') })
 const auth = getAuth(firebaseApp)
 // The file is generated from
 // https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk?hl=zh-tw&_gl=1*z361db*_ga*MTUwNDEzMzY1Ni4xNzA2MDQ1MzY0*_ga_CW55HF8NVT*MTcwNjA5NTQ1My40LjEuMTcwNjA5OTM4MS4yMC4wLjA.
@@ -18,26 +21,38 @@ const auth = getAuth(firebaseApp)
 // https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments
 
 const expressApp = express()
-const port = 3000
+const port = 3010
 
 expressApp.use(cors())
 
 expressApp.use((req, res, next) => {
-  let token = req.headers.authorization
-  if (token === undefined) next()
-  // 驗證 token
-  else {
-    (async () => {
-      token = token.split(' ')[1]
-      const decodedToken = await auth.verifyIdToken(token)
-      req.user = decodedToken
-      console.log(req.user)
+  (async () => {
+    const token = req.headers.authorization
+    if (token === undefined) {
       next()
-    })().catch((err) => {
-      console.log(err)
-    })
-  }
+    } else {
+      const decodedToken = await auth.verifyIdToken(token)
+      req.token = decodedToken
+      req.uid = decodedToken.uid
+      next()
+    }
+  })().catch((err) => {
+    console.log(err)
+  })
+})
+
+expressApp.get('/create-time', (req, res) => {
+  (async () => {
+    if (req.uid === undefined) {
+      return res.sendStatus(403)
+    } else {
+      const userRecord = await auth.getUser(req.uid) // raise error if invalid
+      res.json({ createTime: userRecord.metadata.creationTime })
+    }
+  })().catch((err) => {
+    console.log(err)
+  })
 })
 
 expressApp.listen(port)
-console.log('Start listening')
+console.log(`Start listening at port ${port}`)
