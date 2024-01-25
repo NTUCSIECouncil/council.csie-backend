@@ -1,17 +1,7 @@
 import express from 'express'
 import cors from 'cors'
-import { getAuth, type DecodedIdToken } from 'firebase-admin/auth'
+import { getAuth } from 'firebase-admin/auth'
 import { initializeApp, cert } from 'firebase-admin/app'
-
-declare module 'express-serve-static-core' {
-  interface Request {
-    token?: DecodedIdToken // expect a string from getIdToken()
-    uid?: string
-  }
-  interface Responce {
-    createTime?: string
-  }
-}
 
 const firebaseApp = initializeApp({ credential: cert('./service-account-file.json') })
 const auth = getAuth(firebaseApp)
