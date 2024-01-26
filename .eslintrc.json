@@ -3,11 +3,19 @@
         "browser": true,
         "es2021": true
     },
-    "extends": "standard-with-typescript",
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
+    "extends": "standard-with-typescript",
+    "plugins": [
+        "@stylistic"
+    ],
     "rules": {
+        "semi": "off",
+        "@typescript-eslint/semi": [
+            "error",
+            "always"
+        ]
     }
 }
