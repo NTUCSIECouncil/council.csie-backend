@@ -2,6 +2,7 @@ import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
 import exampleController from './routers/ExampleController';
+import cors from 'cors';
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
@@ -11,9 +12,12 @@ const auth = getAuth(firebaseApp);
 const expressApp = express();
 const port = 3010;
 
-// Not needed currently
-// import cors from 'cors';
-// expressApp.use(cors());
+// TODO: necessity
+expressApp.use(cors({
+  origin: [
+    'http://localhost:3000'
+  ]
+}));
 
 expressApp.use((req, res, next) => {
   (async () => {
