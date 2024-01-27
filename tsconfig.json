@@ -4,13 +4,13 @@
     "lib": [
       "ES2023"
     ],
-    "target": "ES2022",
     "module": "NodeNext",
-    "esModuleInterop": true,
+    "target": "ES2022",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext",
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "NodeNext",
     "paths": {
       "@/*": [
         "./src/*"
@@ -19,6 +19,11 @@
     "typeRoots": [
       "./src/types",
       "./node_modules/@types"
+    ]
+  },
+  "ts-node": {
+    "require": [
+      "tsconfig-paths/register"
     ]
   }
 }

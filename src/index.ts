@@ -1,7 +1,7 @@
 import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
-import exampleController from './routers/ExampleController';
+import exampleController from '@/routers/ExampleController';
 import cors from 'cors';
 
 // File back/service-account-file.json is the private key to access firebase-admin
