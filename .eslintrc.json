@@ -12,8 +12,10 @@
         "@stylistic"
     ],
     "rules": {
-        "semi": "off",
         "@typescript-eslint/semi": [
+            "off"
+        ],
+        "@stylistic/semi": [
             "error",
             "always"
         ]
