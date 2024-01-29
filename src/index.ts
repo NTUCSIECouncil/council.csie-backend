@@ -1,8 +1,8 @@
 import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
-import exampleController from '@/routers/ExampleController';
 import cors from 'cors';
+import exampleController from '@/routers/ExampleController';
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md

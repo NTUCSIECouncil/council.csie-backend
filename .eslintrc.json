@@ -7,10 +7,27 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "extends": "standard-with-typescript",
   "plugins": [
-    "@stylistic"
+    "@stylistic",
+    "import"
   ],
+  "extends": [
+    "standard-with-typescript",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
+  ],
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [
+        ".ts",
+        ".tsx"
+      ]
+    },
+    "import/resolver": {
+      "typescript": true,
+      "node": true
+    }
+  },
   "rules": {
     "@typescript-eslint/semi": [
       "off"
@@ -32,6 +49,25 @@
           "requireLast": false
         }
       }
+    ],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "parent",
+          "sibling",
+          "internal",
+          "type"
+        ]
+      }
+    ],
+    "import/no-unresolved": [
+      "off"
+    ],
+    "import/newline-after-import": [
+      "error"
     ]
   }
 }

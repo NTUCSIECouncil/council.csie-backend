@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.ts"
+    "start": "nodemon src/index.ts",
+    "lint": "eslint --fix \"src/**\""
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +14,7 @@
     "@types/cors": "^2.8.17",
     "eslint": "^8.56.0",
     "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
