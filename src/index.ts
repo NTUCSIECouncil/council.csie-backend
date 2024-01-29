@@ -35,7 +35,7 @@ expressApp.use((req, res, next) => {
   });
 });
 
-expressApp.get('/create-time', (req, res) => {
+expressApp.get('/api/create-time', (req, res) => {
   (async () => {
     if (req.uid === undefined) {
       return res.sendStatus(403);
@@ -48,7 +48,7 @@ expressApp.get('/create-time', (req, res) => {
   });
 });
 
-expressApp.use('/example', exampleController);
+expressApp.use('/api/example', exampleController);
 
 expressApp.listen(port);
 console.log(`Start listening at port ${port}`);
