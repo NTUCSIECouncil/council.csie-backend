@@ -1,7 +1,6 @@
 import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
-import cors from 'cors';
 import exampleController from '@/routers/ExampleController';
 
 // File back/service-account-file.json is the private key to access firebase-admin
@@ -13,11 +12,12 @@ const expressApp = express();
 const port = 3010;
 
 // TODO: necessity
-expressApp.use(cors({
-  origin: [
-    'http://localhost:3000'
-  ]
-}));
+// import cors from 'cors';
+// expressApp.use(cors({
+//   origin: [
+//     'http://localhost:3000'
+//   ]
+// }));
 
 expressApp.use((req, res, next) => {
   (async () => {
