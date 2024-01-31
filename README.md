@@ -6,7 +6,7 @@
 
 - 使用 `npm ci` 安裝 packages。
 - 使用 `npm start` 跑起來。
-- 使用 `npm lint` 修復所有可自動修復的 ESLint 問題。這基本上可以修復所有 styling rule 的問題。
+- 使用 `npm run lint` 修復所有可自動修復的 ESLint 問題。
 
 ## Firebase service account 相關
 
