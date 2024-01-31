@@ -15,11 +15,6 @@
     "@stylistic",
     "import"
   ],
-  "extends": [
-    "standard-with-typescript",
-    "plugin:import/recommended",
-    "plugin:import/typescript"
-  ],
   "settings": {
     "import/parsers": {
       "@typescript-eslint/parser": [
@@ -32,17 +27,22 @@
       "node": true
     }
   },
+  "extends": [
+    "standard-with-typescript",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
+  ],
   "rules": {
     "@typescript-eslint/semi": [
       "off"
     ],
     "@stylistic/semi": [
-      "error",
+      "warn",
       "always"
     ],
     "@typescript-eslint/member-delimiter-style": "off",
     "@stylistic/member-delimiter-style": [
-      "error",
+      "warn",
       {
         "multiline": {
           "delimiter": "semi",
@@ -55,7 +55,7 @@
       }
     ],
     "import/order": [
-      "error",
+      "warn",
       {
         "groups": [
           "builtin",
@@ -71,7 +71,7 @@
       "off"
     ],
     "import/newline-after-import": [
-      "error"
+      "warn"
     ]
   }
 }
