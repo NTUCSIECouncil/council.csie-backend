@@ -1,8 +1,8 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
-import APIController from '@routers/APIController';
+import { getAuth } from 'firebase-admin/auth';
+import mongoose from 'mongoose';
+import APIController from '@/routers/APIController';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {

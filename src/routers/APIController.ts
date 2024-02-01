@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import ExampleController from './ExampleController';
-import UserInfoController from './UserInfoController';
+import articleController from './ArticleController';
+import exampleController from './ExampleController';
+import userInfoController from './UserInfoController';
 
 const router = Router();
 
-router.use('/example', ExampleController);
-router.use('/users', UserInfoController);
+router.use('/articles', articleController);
+router.use('/example', exampleController);
+router.use('/users', userInfoController);
 
 export default router;
