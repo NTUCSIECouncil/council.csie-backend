@@ -7,14 +7,14 @@ import mongoose from 'mongoose';
 import { registerSchemas } from './models';
 
 // Open connection to the "test" database on locally running instance of mongodb
-main().catch(err => console.log(err));
+main().catch(err => { console.log(err); });
 
-async function main() {
+async function main (): Promise<void> {
   await mongoose.connect('mongodb://127.0.0.1:27017/test');
   registerSchemas();
   const models = {
-    users: mongoose.model('User'),
-  }
+    users: mongoose.model('User')
+  };
   /* testing
   const user = new models.users({
     name: 'John'

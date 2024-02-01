@@ -1,8 +1,8 @@
-import mongoose, {Document} from "mongoose";
-import userSchema, { IUser } from "./UserSchema";
+import { model } from 'mongoose';
+import { userSchema, type IUser } from './UserSchema';
 
-function registerSchemas() {
-  mongoose.model<IUser>("User", userSchema);
+function registerSchemas (): void {
+  model<IUser>('User', userSchema);
 }
 
 export { registerSchemas };
