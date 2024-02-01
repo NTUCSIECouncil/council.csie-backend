@@ -1,7 +1,27 @@
 import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
+import mongoose from 'mongoose';
+import { registerSchemas } from './models';
 import exampleController from '@/routers/ExampleController';
+
+// Open connection to the "test" database on locally running instance of mongodb
+main().catch(err => { console.log(err); });
+
+async function main (): Promise<void> {
+  await mongoose.connect('mongodb://127.0.0.1:27017/test');
+  registerSchemas();
+  const models = {
+    users: mongoose.model('User')
+  };
+  /* testing
+  const user = new models.users({
+    name: 'John'
+  });
+  await user.save();
+  console.log(user.name);
+  */
+}
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
