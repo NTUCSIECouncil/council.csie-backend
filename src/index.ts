@@ -2,7 +2,7 @@ import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
 import mongoose from 'mongoose';
-import { registerSchemas } from './models';
+import { registerSchemas } from '@/models/';
 import exampleController from '@/routers/ExampleController';
 
 // Open connection to the "test" database on locally running instance of mongodb

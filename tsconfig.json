@@ -12,6 +12,14 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "NodeNext",
     "paths": {
+      "@routers/*": [
+        "./src/routers/*",
+        "./src/routers"
+      ],
+      "@models/*": [
+        "./src/models/*",
+        "./src/models"
+      ],
       "@/*": [
         "./src/*"
       ]
