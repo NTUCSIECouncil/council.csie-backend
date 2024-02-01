@@ -1,27 +1,25 @@
 import express from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, cert } from 'firebase-admin/app';
-import mongoose from 'mongoose';
-import { registerSchemas } from '@/models/';
-import exampleController from '@/routers/ExampleController';
+import APIController from '@routers/APIController';
 
 // Open connection to the "test" database on locally running instance of mongodb
-main().catch(err => { console.log(err); });
+// main().catch(err => { console.log(err); });
 
-async function main (): Promise<void> {
-  await mongoose.connect('mongodb://127.0.0.1:27017/test');
-  registerSchemas();
-  const models = {
-    users: mongoose.model('User')
-  };
-  /* testing
+// async function main (): Promise<void> {
+//   await mongoose.connect('mongodb://127.0.0.1:27017/test');
+// registerSchemas();
+// const models = {
+//   users: mongoose.model('User')
+// };
+/* testing
   const user = new models.users({
     name: 'John'
   });
   await user.save();
   console.log(user.name);
   */
-}
+// }
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
@@ -58,7 +56,7 @@ expressApp.use((req, res, next) => {
 expressApp.get('/api/create-time', (req, res) => {
   (async () => {
     if (req.uid === undefined) {
-      return res.sendStatus(403);
+      res.sendStatus(403);
     } else {
       const userRecord = await auth.getUser(req.uid); // raise error if invalid
       res.json({ createTime: userRecord.metadata.creationTime });
@@ -68,7 +66,9 @@ expressApp.get('/api/create-time', (req, res) => {
   });
 });
 
-expressApp.use('/api/example', exampleController);
+expressApp.use(express.json());
+expressApp.use('/api', APIController);
 
-expressApp.listen(port);
-console.log(`Start listening at port ${port}`);
+expressApp.listen(port, () => {
+  console.log(`Start listening at port ${port}`);
+});

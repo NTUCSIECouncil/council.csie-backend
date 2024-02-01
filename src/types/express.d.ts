@@ -5,7 +5,7 @@ declare module 'express-serve-static-core' {
     token?: DecodedIdToken; // expect a string from getIdToken()
     uid?: string;
   }
-  interface Responce {
+  interface Response {
     createTime?: string;
   }
 }
