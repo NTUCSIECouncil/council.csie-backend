@@ -7,8 +7,8 @@ const router = Router();
 // TODO: use such form for articles search?
 router.get('/', (req, res) => {
   (async () => {
-    const articles = await models.Article.find().exec();
-    res.json({ result: articles })
+    const articles = await models.Article.find(req.params).exec();
+    res.json({ result: articles });
   })().catch((err) => {
     console.log(err);
     res.sendStatus(500);
