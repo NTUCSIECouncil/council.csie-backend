@@ -5,6 +5,8 @@ interface Article {
   title: string;
   lecturer: string;
   tag?: string[];
+  grade?: number;
+  categories?: string[];
   content?: string;
   creator: IUser;
   createdAt: Date;
@@ -15,6 +17,8 @@ const articleSchema = new Schema<Article>({
   title: { type: String, required: true },
   lecturer: { type: String, required: true },
   tag: { type: [{ type: String, required: false }], required: false },
+  grade: { type: Number, required: false },
+  categories: { type: [{ type: String, required: false }], required: false },
   content: { type: String, required: false },
   creator: { type: SchemaTypes.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, required: true, immutable: true, default: () => Date.now() },
