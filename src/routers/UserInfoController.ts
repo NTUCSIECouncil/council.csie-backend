@@ -6,11 +6,22 @@ const router = Router();
 
 const UserModel = models.User;
 
-router.get('/:uid', (req, res) => {
+router.get('/:uid?', (req, res) => {
   (async () => {
-    if (req.uid !== undefined && req.uid === req.params.uid) {
-      const targetUser = await UserModel.findOne({ uid: req.uid }).exec();
-      if (targetUser !== null) {
+    if (req.params.uid === undefined || req.guser?.uid === req.params.uid) {
+      // access itself
+      if (req.guser?.uid === undefined) {
+        res.sendStatus(403);
+      } else {
+        let targetUser = await UserModel.findOne({ uid: req.guser.uid });
+        if (targetUser == null) {
+          targetUser = new UserModel({
+            uid: req.guser.uid,
+            name: req.guser.name,
+            email: req.guser.email
+          });
+          await targetUser.save();
+        }
         res.json(targetUser.toJSON());
       }
     } else {
@@ -23,34 +34,34 @@ router.get('/:uid', (req, res) => {
 });
 
 // TODO: did not check if req.body is an implementation of IUser
-router.put('/:uid', (req, res) => {
-  (async () => {
-    if (req.uid !== undefined && req.uid === req.params.uid) {
-      const targetUser = await UserModel.findOne({ uid: req.uid }).exec();
-      if (targetUser !== null) {
-        const newInfo: IUser = req.body;
-        let prop: keyof IUser;
-        for (prop in newInfo) {
-          targetUser[prop] = newInfo[prop];
-        }
-        res.sendStatus(204);
-      } else {
-        res.sendStatus(400);
-      }
-    } else {
-      res.sendStatus(403);
-    }
-  })().catch((err) => {
-    console.log(err);
-    res.sendStatus(500);
-  });
-});
+// router.put('/:uid', (req, res) => {
+//   (async () => {
+//     if (req.guser?.uid !== undefined && req.guser?.uid === req.params.uid) {
+//       const targetUser = await UserModel.findOne({ uid: req.guser?.uid }).exec();
+//       if (targetUser !== null) {
+//         const newInfo: IUser = req.body;
+//         let prop: keyof IUser;
+//         for (prop in newInfo) {
+//           targetUser[prop] = newInfo[prop];
+//         }
+//         res.sendStatus(204);
+//       } else {
+//         res.sendStatus(400);
+//       }
+//     } else {
+//       res.sendStatus(403);
+//     }
+//   })().catch((err) => {
+//     console.log(err);
+//     res.sendStatus(500);
+//   });
+// });
 
 // TODO: did not check if user already exist, also did not check req.body
 //       也許應該用監聽 firebase 之類的方法創建帳號
 router.post('/:uid', (req, res) => {
   (async () => {
-    if (req.uid !== undefined && req.uid === req.params.uid) {
+    if (req.guser?.uid !== undefined && req.guser?.uid === req.params.uid) {
       const info: IUser = req.body;
       const newUser = new UserModel(info);
       await newUser.save();

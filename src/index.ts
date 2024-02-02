@@ -38,25 +38,26 @@ const port = 3010;
 expressApp.use((req, res, next) => {
   (async () => {
     const token = req.headers.authorization;
-    if (token === undefined) {
+    if (token === undefined || !token.startsWith('Bearer ')) {
       next();
     } else {
-      const decodedToken = await auth.verifyIdToken(token);
-      req.token = decodedToken;
-      req.uid = decodedToken.uid;
+      const decodedToken = await auth.verifyIdToken(token.slice(7));
+      req.guser = decodedToken;
+      console.log('guser:', decodedToken);
       next();
     }
   })().catch((err) => {
     console.log(err);
+    next();
   });
 });
 
 expressApp.get('/api/create-time', (req, res) => {
   (async () => {
-    if (req.uid === undefined) {
+    if (req.guser?.uid === undefined) {
       res.sendStatus(403);
     } else {
-      const userRecord = await auth.getUser(req.uid); // raise error if invalid
+      const userRecord = await auth.getUser(req.guser?.uid); // raise error if invalid
       res.json({ createTime: userRecord.metadata.creationTime });
     }
   })().catch((err) => {
