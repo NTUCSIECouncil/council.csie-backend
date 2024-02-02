@@ -9,8 +9,8 @@ interface Article {
 
 const articleSchema = new Schema<Article>({
   title: { type: String, required: true },
-  lecturer: {type: String, required: true},
-  tag: { type: [ { type: String, required: false } ], required: false },
+  lecturer: { type: String, required: true },
+  tag: { type: [{ type: String, required: false }], required: false },
   content: { type: String, required: false }
 });
 
