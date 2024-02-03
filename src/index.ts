@@ -6,7 +6,7 @@ import APIController from '@/routers/APIController';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
-  await mongoose.connect('mongodb://127.0.0.1:27017/test');
+  await mongoose.connect('mongodb://root:iYAATG36qXYfQxNznstH7Azzz3Snvdf8@wang.works:27017/');
   console.log('Connect to MongoDB');
   /* testing
   const user = new models.users({
@@ -43,7 +43,7 @@ expressApp.use((req, res, next) => {
     } else {
       const decodedToken = await auth.verifyIdToken(token.slice(7));
       req.guser = decodedToken;
-      console.log('guser:', decodedToken);
+      // console.log('guser:', decodedToken);
       next();
     }
   })().catch((err) => {
