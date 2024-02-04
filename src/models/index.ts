@@ -1,14 +1,14 @@
 import { model } from 'mongoose';
 import { articleSchema, type Article } from './ArticleSchema';
-import { userSchema, type IUser } from './UserSchema';
+import { userSchema, type User } from './UserSchema';
 
 // function registerSchemas (): void {
-//   model<IUser>('User', userSchema);
+//   model<User>('User', userSchema);
 // }
 
 const models = {
   Article: model<Article>('Article', articleSchema),
-  User: model<IUser>('User', userSchema)
+  User: model<User>('User', userSchema)
 };
 
 export { models };

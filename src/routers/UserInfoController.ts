@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { type IUser } from '@models/UserSchema';
+import { type User } from '@models/UserSchema';
 import { models } from '@models/index';
 
 const router = Router();
@@ -62,7 +62,7 @@ router.get('/:uid?', (req, res) => {
 router.post('/:uid', (req, res) => {
   (async () => {
     if (req.guser?.uid !== undefined && req.guser?.uid === req.params.uid) {
-      const info: IUser = req.body;
+      const info: User = req.body;
       const newUser = new UserModel(info);
       await newUser.save();
       res.sendStatus(204);
