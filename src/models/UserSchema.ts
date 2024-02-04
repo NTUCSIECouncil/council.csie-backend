@@ -1,13 +1,13 @@
 import { Schema } from 'mongoose';
 
-interface IUser {
+interface User {
   name: string;
   uid: string;
 }
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<User>({
   name: { type: String, required: true },
   uid: { type: String, required: true }
 });
 
-export { type IUser, userSchema };
+export { type User, userSchema };

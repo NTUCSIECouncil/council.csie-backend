@@ -1,5 +1,5 @@
 import { Schema, SchemaTypes } from 'mongoose';
-import { type IUser } from '@models/UserSchema';
+import { type User } from '@models/UserSchema';
 
 interface Article {
   title: string;
@@ -8,7 +8,7 @@ interface Article {
   grade?: number;
   categories?: string[];
   content?: string;
-  creator: IUser;
+  creator: User;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { type IUser } from '@models/UserSchema';
+import { type User } from '@models/UserSchema';
 import { models } from '@models/index';
 
 const router = Router();
@@ -22,14 +22,14 @@ router.get('/:uid', (req, res) => {
   });
 });
 
-// TODO: did not check if req.body is an implementation of IUser
+// TODO: did not check if req.body is an implementation of User
 router.put('/:uid', (req, res) => {
   (async () => {
     if (req.uid !== undefined && req.uid === req.params.uid) {
       const targetUser = await UserModel.findOne({ uid: req.uid }).exec();
       if (targetUser !== null) {
-        const newInfo: IUser = req.body;
-        let prop: keyof IUser;
+        const newInfo: User = req.body;
+        let prop: keyof User;
         for (prop in newInfo) {
           targetUser[prop] = newInfo[prop];
         }
@@ -51,7 +51,7 @@ router.put('/:uid', (req, res) => {
 router.post('/:uid', (req, res) => {
   (async () => {
     if (req.uid !== undefined && req.uid === req.params.uid) {
-      const info: IUser = req.body;
+      const info: User = req.body;
       const newUser = new UserModel(info);
       await newUser.save();
       res.sendStatus(204);
