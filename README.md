@@ -6,7 +6,7 @@
 
 - 使用 `npm ci` 安裝 packages。
 - 使用 `npm start` 跑起來。
-- 使用 `npm run lint` 修復所有可自動修復的 ESLint 問題。
+- 使用 `npm run lint` 在整個 `/src` 上運行 ESLint，`npm run lint -- --fix` 修復所有可自動修復的問題。
 
 ## Firebase service account 相關
 
