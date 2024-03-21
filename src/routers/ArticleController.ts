@@ -30,7 +30,7 @@ interface ArticleSearchRequest extends Request<null, ArticleSearchResult, null, 
 
 // TODO: search articles by keyword
 //       (unchecked)
-router.post('/search', (req: ArticleSearchRequest, res) => {
+router.get('/search', (req: ArticleSearchRequest, res) => {
   (async () => {
     const queryParams = req.query;
     const articles: Article[] = await models.Article.find({

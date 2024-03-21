@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -6,7 +7,8 @@ import APIController from '@/routers/APIController';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
-  await mongoose.connect('mongodb://root:iYAATG36qXYfQxNznstH7Azzz3Snvdf8@wang.works:27017/');
+  if (process.env.MONGODB_URL === undefined) { throw new Error('MONGODB_URL is not defined.'); }
+  await mongoose.connect(process.env.MONGODB_URL);
   console.log('Connect to MongoDB');
   /* testing
   const user = new models.users({
@@ -21,7 +23,10 @@ import APIController from '@/routers/APIController';
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
-const firebaseApp = initializeApp({ credential: cert('./service-account-file.json') });
+if (process.env.FIREBASE_CERT_PATH === undefined) {
+  throw new Error('FIREBASE_CERT_PATH is not defined.');
+}
+const firebaseApp = initializeApp({ credential: cert(process.env.FIREBASE_CERT_PATH) });
 const auth = getAuth(firebaseApp);
 
 const expressApp = express();
