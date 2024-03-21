@@ -6,7 +6,7 @@ const router = Router();
 
 const UserModel = models.User;
 
-router.get('/:uid', (req, res) => {
+router.get('/:uid', (req, res, next) => {
   (async () => {
     if (req.guser?.uid === undefined || req.guser?.uid !== req.params.uid) {
       res.sendStatus(403);
@@ -40,12 +40,11 @@ router.get('/:uid', (req, res) => {
     //   res.sendStatus(403);
     // }
   })().catch((err) => {
-    console.log(err);
-    res.sendStatus(500);
+    next(err);
   });
 });
 
-router.put('/:uid', (req, res) => {
+router.put('/:uid', (req, res, next) => {
   (async () => {
     if (req.guser?.uid === undefined || req.guser?.uid !== req.params.uid) {
       res.sendStatus(403);
@@ -69,8 +68,7 @@ router.put('/:uid', (req, res) => {
       }
     }
   })().catch((err) => {
-    console.log(err);
-    res.sendStatus(500);
+    next(err);
   });
 });
 

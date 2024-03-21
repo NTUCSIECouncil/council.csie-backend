@@ -5,13 +5,12 @@ import { models } from '@models/index';
 const router = Router();
 
 // get all articles
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   (async () => {
     const articles = await models.Article.find().exec();
     res.json({ result: articles });
   })().catch((err) => {
-    console.log(err);
-    res.sendStatus(500);
+    next(err);
   });
 });
 
@@ -30,7 +29,7 @@ interface ArticleSearchRequest extends Request<null, ArticleSearchResult, null, 
 
 // TODO: search articles by keyword
 //       (unchecked)
-router.get('/search', (req: ArticleSearchRequest, res) => {
+router.get('/search', (req: ArticleSearchRequest, res, next) => {
   (async () => {
     const queryParams = req.query;
     const articles: Article[] = await models.Article.find({
@@ -43,8 +42,7 @@ router.get('/search', (req: ArticleSearchRequest, res) => {
     }).exec();
     res.json({ results: articles });
   })().catch((err) => {
-    console.log(err);
-    res.sendStatus(500);
+    next(err);
   });
 });
 
