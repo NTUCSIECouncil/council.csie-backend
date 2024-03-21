@@ -9,8 +9,8 @@ interface Article {
   categories?: string[];
   content?: string;
   creator: User;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const articleSchema = new Schema<Article>({
@@ -21,8 +21,8 @@ const articleSchema = new Schema<Article>({
   categories: { type: [{ type: String, required: false }], required: false },
   content: { type: String, required: false },
   creator: { type: SchemaTypes.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, required: true, immutable: true, default: () => Date.now() },
-  updatedAt: { type: Date, required: true, default: () => Date.now() }
+  createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
+  updatedAt: { type: Date, required: false, default: () => Date.now() }
 });
 
 export { type Article, articleSchema };
