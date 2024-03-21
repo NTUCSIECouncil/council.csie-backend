@@ -1,6 +1,8 @@
 import { model } from 'mongoose';
 import { articleSchema, type Article } from './ArticleSchema';
 import { userSchema, type User } from './UserSchema';
+import { courseSchema, type Course } from './CourseSchema';
+import { quizSchema, type Quiz } from './QuizSchema';
 
 // function registerSchemas (): void {
 //   model<User>('User', userSchema);
@@ -8,7 +10,9 @@ import { userSchema, type User } from './UserSchema';
 
 const models = {
   Article: model<Article>('Article', articleSchema),
-  User: model<User>('User', userSchema)
+  User: model<User>('User', userSchema),
+  Course: model<Course>('Course', courseSchema),
+  Quiz: model<Quiz>('Quiz', quizSchema)
 };
 
 export { models };
