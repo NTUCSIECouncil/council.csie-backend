@@ -4,6 +4,8 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import APIController from '@/routers/APIController';
+import { models } from '@/models/index';
+import { ArticleSearchQueryParam } from '@type/query-param';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
@@ -11,12 +13,47 @@ import APIController from '@/routers/APIController';
   await mongoose.connect(process.env.MONGODB_URL);
   console.log('Connect to MongoDB');
   /* testing
-  const user = new models.users({
-    name: 'John'
+  
+  const article1 = new models.Article({
+    title: "abc",
+    lecturer: "def",
+    tag: ['a', 'b'], 
+    grade: 2,   // what grade is the creator when posted
+    categories: ['a', 'b'], // more official tags, ex: elective, required, etc.
+    creator: new models.User({ name: 'user1' })
   });
-  await user.save();
-  console.log(user.name);
+  await article1.save();
+  console.log(article1.title);
+  const article2 = new models.Article({
+    title: "cba",
+    lecturer: "qwe",
+    tag: ['c', 'e'], 
+    grade: 2,   // what grade is the creator when posted
+    categories: ['a', 'b'], // more official tags, ex: elective, required, etc.
+    creator: new models.User({ name: 'user1' })
+  });
+  await article2.save();
+  console.log(article2.title);
+  const searchParams: ArticleSearchQueryParam = {
+    grade: 1
+  };
+  console.log(models.Article);
+  
+  async function searchArticles() {
+    try {
+      const { result } = await models.Article.findArticles(searchParams);
+      console.log('Found articles:', result);
+    } catch (error) {
+      console.error('Error searching articles:', error);
+    }
+  }
+  
+  
+  // Don't forget to call the function where appropriate
+  searchArticles();
+
   */
+  
 })().catch((err) => {
   console.log(err);
 });
