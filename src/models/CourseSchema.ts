@@ -1,4 +1,4 @@
-import { Schema, SchemaTypes } from 'mongoose';
+import { Schema } from 'mongoose';
 
 interface Course {
   title: string;
@@ -17,8 +17,8 @@ const courseSchema = new Schema<Course>({
   credit: { type: Number, required: true },
   lecturer: { type: String, required: true },
   time: { type: String, required: true },
-  classroom: { type: String, required: true }, 
-  past_quiz: { type: String, required: false },   
+  classroom: { type: String, required: true },
+  past_quiz: { type: String, required: false },
   ratings: { type: String, required: false }
 });
 

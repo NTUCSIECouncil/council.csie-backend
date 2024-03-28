@@ -1,7 +1,7 @@
 import { Router } from 'express';
+import { authChecker } from './middleware';
 import { type User } from '@models/UserSchema';
 import { models } from '@models/index';
-import { authChecker } from './middleware';
 
 const router = Router();
 
@@ -19,25 +19,6 @@ router.get('/:uid', authChecker, (req, res, next) => {
     } else {
       res.json(targetUser.toJSON());
     }
-    // if (req.params.uid === undefined || req.guser?.uid === req.params.uid) {
-    //   // access itself
-    //   if (req.guser?.uid === undefined) {
-    //     res.sendStatus(403);
-    //   } else {
-    //     let targetUser = await UserModel.findOne({ uid: req.guser.uid }).exec();
-    //     if (targetUser == null) {
-    //       targetUser = new UserModel({
-    //         uid: req.guser.uid,
-    //         name: req.guser.name,
-    //         email: req.guser.email
-    //       });
-    //       await targetUser.save();
-    //     }
-    //     res.json(targetUser.toJSON());
-    //   }
-    // } else {
-    //   res.sendStatus(403);
-    // }
   })().catch((err) => {
     next(err);
   });
@@ -68,24 +49,5 @@ router.put('/:uid', authChecker, (req, res, next) => {
     next(err);
   });
 });
-
-// TODO: did not check if user already exist, also did not check req.body
-//       也許應該用監聽 firebase 之類的方法創建帳號
-// Update: 使用 PUT 建立帳號，應該不需要了
-// router.post('/:uid', (req, res) => {
-//   (async () => {
-//     if (req.guser?.uid !== undefined && req.guser?.uid === req.params.uid) {
-//       const info: User = req.body;
-//       const newUser = new UserModel(info);
-//       await newUser.save();
-//       res.sendStatus(204);
-//     } else {
-//       res.sendStatus(403);
-//     }
-//   })().catch((err) => {
-//     console.log(err);
-//     res.sendStatus(500);
-//   });
-// });
 
 export default router;

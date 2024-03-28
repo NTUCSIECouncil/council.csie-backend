@@ -1,4 +1,4 @@
-import { Schema, SchemaTypes } from 'mongoose';
+import { Schema } from 'mongoose';
 
 interface Quiz {
   title: string;
