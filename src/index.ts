@@ -3,7 +3,7 @@ import express from 'express';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
-import APIController from '@/routers/APIController';
+import APIController from '@/routers/API-controller';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
