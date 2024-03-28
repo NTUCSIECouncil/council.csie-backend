@@ -1,4 +1,5 @@
 import { Router, type Request } from 'express';
+import { type ArticleSearchQueryParam } from '@type/query-param';
 import { type Article } from '@models/ArticleSchema';
 import { models } from '@models/index';
 
@@ -17,21 +18,17 @@ router.get('/', (req, res, next) => {
 // Some interfaces for articles searching
 // TODO: maybe should be moved to a separated file
 
-interface ArticleSearchParams {
-  keyword: string;
-}
-
 interface ArticleSearchResult {
   results: Article[];
 }
 
-interface ArticleSearchRequest extends Request<null, ArticleSearchResult, null, ArticleSearchParams> {};
+interface ArticleSearchRequest extends Request<null, ArticleSearchResult, null, ArticleSearchQueryParam> {};
 
 // TODO: search articles by keyword
 //       (unchecked)
 router.get('/search', (req: ArticleSearchRequest, res, next) => {
   (async () => {
-    const queryParams = req.query;
+    const queryParams: ArticleSearchQueryParam = req.query;
     const articles: Article[] = await models.Article.find({
       $or: [
         { title: { $regex: queryParams.keyword, $options: 'i' } },
