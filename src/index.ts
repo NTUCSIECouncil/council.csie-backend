@@ -4,8 +4,6 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import APIController from '@/routers/APIController';
-import { models } from '@/models/index';
-import { ArticleSearchQueryParam } from '@type/query-param';
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {

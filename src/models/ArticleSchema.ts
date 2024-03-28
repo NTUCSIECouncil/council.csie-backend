@@ -1,12 +1,12 @@
-import { model, Schema, SchemaTypes, Model } from 'mongoose';
+import { Schema, SchemaTypes, type Model, type FilterQuery } from 'mongoose';
+import { type ArticleSearchQueryParam } from '@type/query-param';
 import { type User } from '@models/UserSchema';
-import { ArticleSearchQueryParam } from '@type/query-param';
 
 interface Article {
   title: string;
   lecturer: string;
-  tag?: string[];  // any tags the creator wants to add
-  grade?: number;   // what grade is the creator when posted
+  tag?: string[]; // any tags the creator wants to add
+  grade?: number; // what grade is the creator when posted
   categories?: string[]; // more official tags, ex: elective, required, etc.
   content?: string;
   creator: User;
@@ -15,7 +15,7 @@ interface Article {
 }
 
 interface ArticleModel extends Model<Article> {
-    findArticles(params: ArticleSearchQueryParam): Promise<{ result: Article[] }>;
+  findArticles: (params: ArticleSearchQueryParam) => Promise<{ result: Article[] }>;
 }
 
 const articleSchema = new Schema<Article, ArticleModel>({
@@ -30,26 +30,26 @@ const articleSchema = new Schema<Article, ArticleModel>({
   updatedAt: { type: Date, required: false, default: () => Date.now() }
 });
 
-articleSchema.statics.findArticles = async function(params: ArticleSearchQueryParam) {
-  let query: any = {};
+articleSchema.statics.findArticles = async function (params: ArticleSearchQueryParam) {
+  const query: FilterQuery<Article> = {};
 
-  if (params.tag && params.tag.length) {
+  if ((params.tag?.length) != null) {
     query.tag = { $all: params.tag };
   }
 
-  if (params.categories && params.categories.length) {
+  if ((params.categories?.length) != null) {
     query.categories = { $in: params.categories };
   }
 
-  if (params.lecturer) {
+  if (params.lecturer != null) {
     query.lecturer = params.lecturer;
   }
 
-  if (params.grade) {
+  if (params.grade != null) {
     query.grade = params.grade;
   }
 
-  if (params.keyword) {
+  if (params.keyword != null) {
     query.$or = [
       { title: { $regex: params.keyword, $options: 'i' } },
       { content: { $regex: params.keyword, $options: 'i' } }
@@ -60,4 +60,4 @@ articleSchema.statics.findArticles = async function(params: ArticleSearchQueryPa
   return { result };
 };
 
-export { type Article, ArticleModel, articleSchema };
+export { type Article, type ArticleModel, articleSchema };

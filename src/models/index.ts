@@ -9,7 +9,7 @@ import { quizSchema, type Quiz } from './QuizSchema';
 // }
 
 const models = {
-  Article: model<Article, ArticleModel>("Article", articleSchema),
+  Article: model<Article, ArticleModel>('Article', articleSchema),
   User: model<User>('User', userSchema),
   Course: model<Course>('Course', courseSchema),
   Quiz: model<Quiz>('Quiz', quizSchema)
