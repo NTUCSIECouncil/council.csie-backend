@@ -1,6 +1,5 @@
-import { Router, type Request } from 'express';
+import { Router } from 'express';
 import { type ArticleSearchQueryParam } from '@type/query-param';
-import { type Article } from '@models/ArticleSchema';
 import { models } from '@models/index';
 
 const router = Router();
@@ -15,29 +14,40 @@ router.get('/', (req, res, next) => {
   });
 });
 
-// Some interfaces for articles searching
-// TODO: maybe should be moved to a separated file
-
-interface ArticleSearchResult {
-  results: Article[];
-}
-
-interface ArticleSearchRequest extends Request<null, ArticleSearchResult, null, ArticleSearchQueryParam> {};
-
-// TODO: search articles by keyword
-//       (unchecked)
-router.get('/search', (req: ArticleSearchRequest, res, next) => {
+router.get('/search', (req, res, next) => {
   (async () => {
-    const queryParams: ArticleSearchQueryParam = req.query;
-    const articles: Article[] = await models.Article.find({
-      $or: [
-        { title: { $regex: queryParams.keyword, $options: 'i' } },
-        { lecturer: { $regex: queryParams.keyword, $options: 'i' } },
-        { tag: { $regex: queryParams.keyword, $options: 'i' } },
-        { content: { $regex: queryParams.keyword, $options: 'i' } }
-      ]
-    }).exec();
-    res.json({ results: articles });
+    const queryParams = req.query;
+    let key: string;
+    const searchParams: ArticleSearchQueryParam = {};
+    try {
+      for (key in queryParams) {
+        if (key === 'tag') {
+          searchParams.tag = [];
+          let value: string;
+          for (value of queryParams.tag as string[]) searchParams.tag.push(value);
+        } else if (key === 'keyword') {
+          searchParams.keyword = queryParams.keyword as string;
+        } else if (key === 'categories') {
+          searchParams.categories = [];
+          let value: string;
+          for (value of queryParams.categories as string[]) searchParams.categories.push(value);
+        } else if (key === 'lecturer') {
+          searchParams.lecturer = queryParams.lecture as string;
+        } else if (key === 'grade') {
+          searchParams.grade = Number(queryParams.grade);
+          if (!(searchParams.grade >= 1 && searchParams.grade <= 4)) throw Error();
+        } else {
+          throw Error();
+        }
+      }
+      const resault = await models.Article.findArticles(searchParams);
+      res.send(resault);
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(400);
+      return;
+    }
+    console.log(searchParams);
   })().catch((err) => {
     next(err);
   });
