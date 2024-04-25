@@ -1,6 +1,7 @@
-import { Schema } from 'mongoose';
+import { Schema, type Types } from 'mongoose';
 
 interface Quiz {
+  _id: Types.UUID | string;
   title: string;
   course: string;
   semester: string;
@@ -8,6 +9,7 @@ interface Quiz {
 }
 
 const quizSchema = new Schema<Quiz>({
+  _id: { type: Schema.Types.UUID, required: true },
   title: { type: String, required: true },
   course: { type: String, required: true },
   semester: { type: String, required: true },

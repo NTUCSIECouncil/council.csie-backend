@@ -1,15 +1,15 @@
-import { Schema, SchemaTypes, type Model, type FilterQuery } from 'mongoose';
+import { Schema, type Types, type Model, type FilterQuery } from 'mongoose';
 import { type ArticleSearchQueryParam } from '@type/query-param';
-import { type User } from '@models/UserSchema';
 
 interface Article {
+  _id: Types.UUID | string;
   title: string;
   lecturer: string;
   tag?: string[]; // any tags the creator wants to add
   grade?: number; // what grade is the creator when posted
   categories?: string[]; // more official tags, ex: elective, required, etc.
   content?: string;
-  creator: User;
+  creator: Types.UUID;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,13 +19,14 @@ interface ArticleModel extends Model<Article> {
 }
 
 const articleSchema = new Schema<Article, ArticleModel>({
+  _id: { type: 'UUID', required: true },
   title: { type: String, required: true },
   lecturer: { type: String, required: true },
   tag: { type: [{ type: String, required: false }], required: false },
   grade: { type: Number, required: false },
   categories: { type: [{ type: String, required: false }], required: false },
   content: { type: String, required: false },
-  creator: { type: SchemaTypes.ObjectId, ref: 'User', required: true },
+  creator: { type: Schema.Types.UUID, ref: 'User', required: true },
   createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
   updatedAt: { type: Date, required: false, default: () => Date.now() }
 });

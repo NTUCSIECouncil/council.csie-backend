@@ -1,8 +1,27 @@
+import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
 import { type ArticleSearchQueryParam } from '@type/query-param';
 import { models } from '@models/index';
+import { type Article } from '@models/ArticleSchema';
 
 const router = Router();
+
+const ArticleModel = models.Article;
+
+const verifyArticle = (articleInfo: Partial<Article>, uuid: UUID, complete: boolean): boolean => {
+  if (articleInfo._id !== undefined && articleInfo._id !== uuid) {
+    return false;
+  }
+
+  if (complete && !(articleInfo._id !== undefined &&
+                    articleInfo.title !== undefined &&
+                    articleInfo.lecturer !== undefined &&
+                    articleInfo.creator !== undefined)) {
+    return false;
+  }
+
+  return true;
+};
 
 // get all articles
 router.get('/', (req, res, next) => {
@@ -10,6 +29,62 @@ router.get('/', (req, res, next) => {
     const articles = await models.Article.find().exec();
     res.json({ result: articles });
   })().catch((err) => {
+    next(err);
+  });
+});
+
+router.post('/', (req, res, next) => {
+  (async () => {
+    const uuid = randomUUID();
+    const newInfo: Article = { _id: uuid, ...req.body };
+
+    if (!verifyArticle(newInfo, uuid, true)) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const targetArticle = new ArticleModel(newInfo);
+    await targetArticle.save();
+    res.status(201).json({ uuid });
+  })().catch(err => {
+    next(err);
+  });
+});
+
+router.get('/:uuid', (req, res, next) => {
+  (async () => {
+    const uuid = req.params.uuid as UUID;
+
+    const targetArticle = await ArticleModel.findById(uuid).exec();
+    if (targetArticle === null) {
+      res.sendStatus(404);
+    } else {
+      res.status(200).json({ results: targetArticle });
+    }
+  })().catch(err => {
+    next(err);
+  });
+});
+
+router.put('/:uuid', (req, res, next) => {
+  (async () => {
+    const uuid = req.params.uuid as UUID;
+    const newInfo: Partial<Article> = req.body;
+
+    if (!verifyArticle(newInfo, uuid, false)) {
+      res.sendStatus(400);
+      return;
+    }
+
+    const targetArticle = await ArticleModel.findById(uuid).exec();
+    if (targetArticle === null) {
+      res.sendStatus(400);
+    } else {
+      targetArticle.set(newInfo);
+      await targetArticle.save();
+      res.sendStatus(204);
+    }
+  })().catch(err => {
     next(err);
   });
 });
