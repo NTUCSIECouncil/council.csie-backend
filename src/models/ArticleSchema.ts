@@ -15,7 +15,7 @@ interface Article {
 }
 
 interface ArticleModel extends Model<Article> {
-  findArticles: (params: ArticleSearchQueryParam) => Promise<{ result: Article[] }>;
+  searchArticles: (params: ArticleSearchQueryParam) => Promise<{ result: Article[] }>;
 }
 
 const articleSchema = new Schema<Article, ArticleModel>({
@@ -31,7 +31,7 @@ const articleSchema = new Schema<Article, ArticleModel>({
   updatedAt: { type: Date, required: false, default: () => Date.now() }
 });
 
-articleSchema.statics.findArticles = async function (params: ArticleSearchQueryParam) {
+articleSchema.statics.searchArticles = async function (params: ArticleSearchQueryParam) {
   const query: FilterQuery<Article> = {};
 
   if (params.tag != null) {

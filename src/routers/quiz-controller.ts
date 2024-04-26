@@ -104,7 +104,7 @@ router.get('/search', (req, res, next) => {
     }
 
     console.log(queryParams);
-    const result = await QuizModel.findQuizzes(queryParams);
+    const result = await QuizModel.searchQuizzes(queryParams);
     console.log(result);
     res.send({ result });
   })().catch((err) => {

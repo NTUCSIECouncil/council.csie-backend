@@ -10,7 +10,7 @@ interface Quiz {
 }
 
 interface QuizModel extends Model<Quiz> {
-  findQuizzes: (params: QuizSearchParam) => Promise<{ result: Quiz[] }>;
+  searchQuizzes: (params: QuizSearchParam) => Promise<{ result: Quiz[] }>;
 }
 
 const quizSchema = new Schema<Quiz>({
@@ -21,7 +21,7 @@ const quizSchema = new Schema<Quiz>({
   download_link: { type: String, required: true }
 });
 
-quizSchema.statics.findQuizzes = async function (params: QuizSearchParam) {
+quizSchema.statics.searchQuizzes = async function (params: QuizSearchParam) {
   const query: FilterQuery<Quiz> = {};
 
   if (params.course != null) {

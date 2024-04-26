@@ -115,7 +115,7 @@ router.get('/search', (req, res, next) => {
           throw Error();
         }
       }
-      const result = await models.Article.findArticles(searchParams);
+      const result = await models.Article.searchArticles(searchParams);
       res.send({ resault: result });
     } catch (e) {
       console.log(e);
