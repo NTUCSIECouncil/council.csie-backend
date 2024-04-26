@@ -34,11 +34,11 @@ const articleSchema = new Schema<Article, ArticleModel>({
 articleSchema.statics.findArticles = async function (params: ArticleSearchQueryParam) {
   const query: FilterQuery<Article> = {};
 
-  if ((params.tag?.length) != null) {
+  if (params.tag != null) {
     query.tag = { $all: params.tag };
   }
 
-  if ((params.categories?.length) != null) {
+  if (params.categories != null) {
     query.categories = { $in: params.categories };
   }
 
@@ -58,7 +58,7 @@ articleSchema.statics.findArticles = async function (params: ArticleSearchQueryP
   }
 
   const result = await this.find(query);
-  return { result };
+  return result;
 };
 
 export { type Article, type ArticleModel, articleSchema };

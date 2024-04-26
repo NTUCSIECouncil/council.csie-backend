@@ -1,3 +1,5 @@
+import { type UUID } from 'crypto';
+
 interface ArticleSearchQueryParam {
   tag?: string[];
   keyword?: string;
@@ -6,4 +8,9 @@ interface ArticleSearchQueryParam {
   grade?: number;
 }
 
-export { type ArticleSearchQueryParam };
+interface QuizSearchParam {
+  course: UUID;
+  keyword?: string;
+}
+
+export { type ArticleSearchQueryParam, type QuizSearchParam };

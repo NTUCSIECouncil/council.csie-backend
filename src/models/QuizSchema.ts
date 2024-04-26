@@ -1,4 +1,5 @@
-import { Schema, type Types } from 'mongoose';
+import { Schema, type Types, type FilterQuery, type Model } from 'mongoose';
+import { type QuizSearchParam } from '@type/query-param';
 
 interface Quiz {
   _id: Types.UUID | string;
@@ -6,6 +7,10 @@ interface Quiz {
   course: string;
   semester: string;
   download_link: string;
+}
+
+interface QuizModel extends Model<Quiz> {
+  findQuizzes: (params: QuizSearchParam) => Promise<{ result: Quiz[] }>;
 }
 
 const quizSchema = new Schema<Quiz>({
@@ -16,4 +21,21 @@ const quizSchema = new Schema<Quiz>({
   download_link: { type: String, required: true }
 });
 
-export { type Quiz, quizSchema };
+quizSchema.statics.findQuizzes = async function (params: QuizSearchParam) {
+  const query: FilterQuery<Quiz> = {};
+
+  if (params.course != null) {
+    query.course = params.course;
+  }
+  if (params.keyword != null) {
+    query.$or = [
+      { title: { $regex: params.keyword, $options: 'i' } },
+      { semester: { $regex: params.keyword, $options: 'i' } }
+    ];
+  }
+
+  const result = await this.find(query);
+  return result;
+};
+
+export { type Quiz, type QuizModel, quizSchema };

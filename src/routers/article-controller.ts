@@ -59,7 +59,7 @@ router.get('/:uuid', (req, res, next) => {
     if (targetArticle === null) {
       res.sendStatus(404);
     } else {
-      res.status(200).json({ results: targetArticle });
+      res.status(200).json({ result: targetArticle });
     }
   })().catch(err => {
     next(err);
@@ -115,8 +115,8 @@ router.get('/search', (req, res, next) => {
           throw Error();
         }
       }
-      const resault = await models.Article.findArticles(searchParams);
-      res.send(resault);
+      const result = await models.Article.findArticles(searchParams);
+      res.send({ resault: result });
     } catch (e) {
       console.log(e);
       res.sendStatus(400);
