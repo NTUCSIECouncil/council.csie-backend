@@ -20,6 +20,10 @@
         "./src/models/*",
         "./src/models"
       ],
+      "@type/*": [
+        "./src/types/*",
+        "./src/types"
+      ],
       "@/*": [
         "./src/*"
       ]

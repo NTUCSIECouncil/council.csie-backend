@@ -3,23 +3,7 @@ import express from 'express';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
-import APIController from '@/routers/APIController';
-
-// Open connection to the "test" database on locally running instance of mongodb
-(async () => {
-  if (process.env.MONGODB_URL === undefined) { throw new Error('MONGODB_URL is not defined.'); }
-  await mongoose.connect(process.env.MONGODB_URL);
-  console.log('Connect to MongoDB');
-  /* testing
-  const user = new models.users({
-    name: 'John'
-  });
-  await user.save();
-  console.log(user.name);
-  */
-})().catch((err) => {
-  console.log(err);
-});
+import APIController from '@/routers/API-controller';
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
@@ -73,6 +57,15 @@ expressApp.get('/api/create-time', (req, res) => {
 expressApp.use(express.json());
 expressApp.use('/api', APIController);
 
-expressApp.listen(port, () => {
-  console.log(`Start listening at port ${port}`);
+// Open connection to the "test" database on locally running instance of mongodb
+(async () => {
+  if (process.env.MONGODB_URL === undefined) { throw new Error('MONGODB_URL is not defined.'); }
+  await mongoose.connect(process.env.MONGODB_URL);
+  console.log('Connected to MongoDB');
+
+  expressApp.listen(port, () => {
+    console.log(`Start listening at port ${port}`);
+  });
+})().catch((err) => {
+  console.log(err);
 });

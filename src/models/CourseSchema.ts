@@ -1,6 +1,7 @@
-import { Schema, SchemaTypes } from 'mongoose';
+import { Schema, type Types } from 'mongoose';
 
 interface Course {
+  _id: Types.UUID | string;
   title: string;
   semester: string;
   credit: number;
@@ -12,13 +13,14 @@ interface Course {
 }
 
 const courseSchema = new Schema<Course>({
+  _id: { type: Schema.Types.UUID, required: true },
   title: { type: String, required: true },
   semester: { type: String, required: true },
   credit: { type: Number, required: true },
   lecturer: { type: String, required: true },
   time: { type: String, required: true },
-  classroom: { type: String, required: true }, 
-  past_quiz: { type: String, required: false },   
+  classroom: { type: String, required: true },
+  past_quiz: { type: String, required: false },
   ratings: { type: String, required: false }
 });
 
