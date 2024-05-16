@@ -1,13 +1,13 @@
 import { Schema } from 'mongoose';
 
 interface User {
-  uid: string;
+  _id: string;
   email: string;
   name: string;
 }
 
 const userSchema = new Schema<User>({
-  uid: { type: String, required: true, unique: true },
+  _id: { type: String, required: true },
   email: { type: String, required: true },
   name: { type: String, required: true }
 });
