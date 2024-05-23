@@ -29,7 +29,7 @@ describe("Article", function () {
       expect(res.body.result).toHaveLength(3);
     });
 
-    test('/api/articles/search', async () => {
+    it('/api/articles/search', async () => {
       const query = [
         {
           'tag': ['德邦讚']
