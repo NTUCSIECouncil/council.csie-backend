@@ -70,6 +70,44 @@ router.post('/', (req, res, next) => {
   });
 });
 
+router.get('/search', (req, res, next) => {
+  (async () => {
+    const queryParams = req.query;
+    console.log(queryParams);
+    let key: string;
+    const searchParams: ArticleSearchQueryParam = {};
+    try {
+      for (key in queryParams) {
+        if (key === 'tag') {
+          searchParams.tag = [];
+          let value: string;
+          for (value of queryParams.tag as string[]) searchParams.tag.push(value);
+        } else if (key === 'keyword') {
+          searchParams.keyword = queryParams.keyword as string;
+        } else if (key === 'categories') {
+          searchParams.categories = [];
+          let value: string;
+          for (value of queryParams.categories as string[]) searchParams.categories.push(value);
+        } else if (key === 'lecturer') {
+          searchParams.lecturer = queryParams.lecture as string;
+        } else if (key === 'grade') {
+          searchParams.grade = Number(queryParams.grade);
+          if (!(searchParams.grade >= 1 && searchParams.grade <= 4)) throw Error();
+        } else {
+          throw Error();
+        }
+      }
+      const result = await models.Article.searchArticles(searchParams);
+      res.send({ result });
+    } catch (e) {
+      console.log(e);
+      res.sendStatus(400);
+    }
+  })().catch((err) => {
+    next(err);
+  });
+});
+
 router.get('/:uuid', (req, res, next) => {
   (async () => {
     const uuid = req.params.uuid as UUID;
@@ -104,45 +142,6 @@ router.put('/:uuid', (req, res, next) => {
       res.sendStatus(204);
     }
   })().catch(err => {
-    next(err);
-  });
-});
-
-router.get('/search', (req, res, next) => {
-  (async () => {
-    const queryParams = req.query;
-    let key: string;
-    const searchParams: ArticleSearchQueryParam = {};
-    try {
-      for (key in queryParams) {
-        if (key === 'tag') {
-          searchParams.tag = [];
-          let value: string;
-          for (value of queryParams.tag as string[]) searchParams.tag.push(value);
-        } else if (key === 'keyword') {
-          searchParams.keyword = queryParams.keyword as string;
-        } else if (key === 'categories') {
-          searchParams.categories = [];
-          let value: string;
-          for (value of queryParams.categories as string[]) searchParams.categories.push(value);
-        } else if (key === 'lecturer') {
-          searchParams.lecturer = queryParams.lecture as string;
-        } else if (key === 'grade') {
-          searchParams.grade = Number(queryParams.grade);
-          if (!(searchParams.grade >= 1 && searchParams.grade <= 4)) throw Error();
-        } else {
-          throw Error();
-        }
-      }
-      const result = await models.Article.searchArticles(searchParams);
-      res.send({ resault: result });
-    } catch (e) {
-      console.log(e);
-      res.sendStatus(400);
-      return;
-    }
-    console.log(searchParams);
-  })().catch((err) => {
     next(err);
   });
 });

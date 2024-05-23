@@ -58,7 +58,7 @@ articleSchema.statics.searchArticles = async function (params: ArticleSearchQuer
     ];
   }
 
-  const result = await this.find(query);
+  const result = await this.find(query).exec();
   return result;
 };
 
