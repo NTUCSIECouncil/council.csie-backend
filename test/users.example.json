@@ -1,6 +1,6 @@
 [
   {
-    "uid": "12345678",
+    "_id": "12345678",
     "email": "admin@gmail.com",
     "name": "admin"
   }
