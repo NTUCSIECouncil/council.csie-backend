@@ -31,20 +31,20 @@ class DB {
     }
   }
 
-  static async createFromJSON(model: Model<Article> | Model<User>, path: string, ids: User[] = []) {
+  static async createFromJSON(model: Model<Article> | Model<User>, path: string, ids: any[] = []) {
     const rawData = await readFileSync(path, 'utf-8');
     const data = await JSON.parse(rawData);
   
-    await data.forEach(async (datum: any, i: number) => {
-      // console.log(ids);
+    for (let i = 0; i < data.length; i++) {
+      const datum = data[i];
       if (ids.length) {
-        if (i >= ids.length) datum['creator'] = await ids[ids.length-1];
-        else datum['creator'] = await ids[i];
+        if (i >= ids.length) datum['creator'] = ids[ids.length - 1]._id; // Assuming creator field is _id of User
+        else datum['creator'] = ids[i]._id;
       }
-      // console.log(datum);
-      const doc = await new model(datum);
+      console.log(datum);
+      const doc = new model(datum);
       await doc.save();
-    });
+    }
   }
 }
 
