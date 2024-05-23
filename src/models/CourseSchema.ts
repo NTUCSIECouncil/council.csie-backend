@@ -1,8 +1,8 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, type UUID } from 'crypto';
 import { Schema } from 'mongoose';
 
 interface Course {
-  _id: string;
+  _id?: UUID;
   title: string;
   semester: string;
   credit: number;

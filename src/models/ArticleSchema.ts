@@ -1,16 +1,16 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, type UUID } from 'crypto';
 import { Schema, type Model, type FilterQuery } from 'mongoose';
 import { type ArticleSearchQueryParam } from '@type/query-param';
 
 interface Article {
-  _id: string;
+  _id?: UUID;
   title: string;
   lecturer: string;
   tag?: string[]; // any tags the creator wants to add
   grade?: number; // what grade is the creator when posted
   categories?: string[]; // more official tags, ex: elective, required, etc.
   content?: string;
-  creator: string;
+  creator: UUID;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -1,9 +1,9 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, type UUID } from 'crypto';
 import { Schema, type FilterQuery, type Model } from 'mongoose';
 import { type QuizSearchParam } from '@type/query-param';
 
 interface Quiz {
-  _id: string;
+  _id?: UUID;
   title: string;
   course: string;
   semester: string;
