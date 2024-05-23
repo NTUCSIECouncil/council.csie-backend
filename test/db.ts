@@ -3,6 +3,8 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'fs';
 import { type Article } from '../src/models/ArticleSchema';
 import { type User } from '../src/models/UserSchema';
+import { Course } from '@models/CourseSchema';
+import { Quiz } from '@models/QuizSchema';
 
 class DB {
   static mongoServer: MongoMemoryServer;
@@ -31,7 +33,7 @@ class DB {
     }
   }
 
-  static async createFromJSON(model: Model<Article> | Model<User>, path: string, ids: any[] = []) {
+  static async createFromJSON(model: Model<Article> | Model<User> | Model<Course> | Model<Quiz>, path: string, ids: any[] = []) {
     const rawData = await readFileSync(path, 'utf-8');
     const data = await JSON.parse(rawData);
   
@@ -41,7 +43,6 @@ class DB {
         if (i >= ids.length) datum['creator'] = ids[ids.length - 1]._id; // Assuming creator field is _id of User
         else datum['creator'] = ids[i]._id;
       }
-      console.log(datum);
       const doc = new model(datum);
       await doc.save();
     }
