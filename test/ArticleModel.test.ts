@@ -1,10 +1,13 @@
-import { models } from '../src/models/index'
+import { models } from '../src/models/index';
 import DB from './db';
+import request from 'supertest';
+import app from './app';
 
 async function createMockData() {
   await DB.createFromJSON(models.User, 'test/users.example.json');
+  // console.log(await models.User.find().exec());
   await DB.createFromJSON(models.Article, 'test/articles.example.json', await models.User.find().exec());
-  console.log(await models.Article.find().exec());
+  // console.log(await models.Article.find().exec());
 }
 
 describe("Article", function () {
@@ -13,36 +16,31 @@ describe("Article", function () {
     await createMockData();
   });
 
-  // beforeEach(async () => {
-  //   await createMockData();
-  // })
-
-  // afterEach(async () => {
-  //   await DB.dropCollection();
-  // });
-
   afterAll(async () => {
     await DB.dropCollection();
     await DB.dropDB();
   });
 
   describe('findByKeyword', () => {
-    test('Should return all articles', async () => {
-      expect(await models.Article.find().exec()).toHaveLength(3);
+    it('/api/articles', async () => {
+      const res = await request(app)
+        .get('/api/articles/')
+        .expect(200);
+      expect(res.body.result).toHaveLength(3);
     });
 
-    test('Should return 2 articles', async () => {
-      
-      const records = await models.Article.find({
-        $or: [
-          { title: { $regex: '耶', $options: 'i' } },
-          { lecturer: { $regex: '耶', $options: 'i' } },
-          { tag: { $regex: '耶', $options: 'i' } },
-          { content: { $regex: '耶', $options: 'i' } }
-        ]
-      }).exec();
+    test('/api/articles/search', async () => {
+      const query = [
+        {
+          'tag': ['德邦讚']
+        }
+      ];
+      const res = await request(app)
+        .get('/api/articles/')
+        .send([{ 'query':  query }])
+        .expect(200);
 
-      expect(records).toHaveLength(2);
+      expect(res.body.result).toHaveLength(2);
     });
   });
 });
