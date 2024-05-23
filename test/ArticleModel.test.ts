@@ -1,4 +1,5 @@
 import { models } from '@models/index';
+import qs from 'qs';
 import DB from './db';
 import request from 'supertest';
 import app from './app';
@@ -30,14 +31,11 @@ describe("Article", function () {
     });
 
     it('/api/articles/search', async () => {
-      const query = [
-        {
-          'tag': ['德邦讚']
-        }
-      ];
+      const query = { 
+        tag: ['德邦讚']
+      };
       const res = await request(app)
-        .get('/api/articles/')
-        .send([{ 'query':  query }])
+        .get('/api/articles/search?' + qs.stringify(query))
         .expect(200);
 
       expect(res.body.result).toHaveLength(2);
