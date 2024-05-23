@@ -26,7 +26,26 @@ const verifyArticle = (articleInfo: Partial<Article>, uuid: UUID, complete: bool
 // get all articles
 router.get('/', (req, res, next) => {
   (async () => {
-    const articles = await models.Article.find().exec();
+    const queryParams = req.query;
+
+    let portionSize = 10;
+    if (queryParams.portionSize != null) {
+      portionSize = Number(queryParams.portionSize);
+      if (!(portionSize in [10, 20, 50, 100])) {
+        res.sendStatus(400);
+      }
+    }
+
+    const articleNum = await ArticleModel.countDocuments().exec();
+    let portionNum = 0;
+    if (queryParams.portion != null) {
+      portionNum = Number(queryParams.portion);
+      if (portionNum > Math.ceil(articleNum / portionSize)) {
+        res.sendStatus(400);
+      }
+    }
+
+    const articles = await models.Article.find().skip(portionNum).limit(portionSize).exec();
     res.json({ result: articles });
   })().catch((err) => {
     next(err);
