@@ -1,4 +1,4 @@
-import { models } from '../src/models/index';
+import { models } from '@models/index';
 import DB from './db';
 import request from 'supertest';
 import app from './app';
@@ -21,7 +21,7 @@ describe("Article", function () {
     await DB.dropDB();
   });
 
-  describe('findByKeyword', () => {
+  describe('GET requests', () => {
     it('/api/articles', async () => {
       const res = await request(app)
         .get('/api/articles/')
