@@ -7,7 +7,12 @@ const router = Router();
 
 const UserModel = models.User;
 
-router.get(['/:uid', '/myself'], authChecker, (req, res, next) => {
+router.get(('/myself'), (req, res, next) => {
+  req.url = `/${req.guser?.uid}`;
+  next();
+});
+
+router.get('/:uid', authChecker, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
