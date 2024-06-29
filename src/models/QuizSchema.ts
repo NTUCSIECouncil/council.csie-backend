@@ -11,10 +11,10 @@ interface Quiz {
 }
 
 interface QuizModel extends Model<Quiz> {
-  searchQuizzes: (params: QuizSearchParam) => Promise<{ result: Quiz[] }>;
+  searchQuizzes: (this: QuizModel, params: QuizSearchParam, portionNum: number, portionSize: number) => Promise<Quiz[]>;
 }
 
-const quizSchema = new Schema<Quiz>({
+const quizSchema = new Schema<Quiz, QuizModel>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   course: { type: String, ref: 'Course', required: true },
@@ -22,7 +22,7 @@ const quizSchema = new Schema<Quiz>({
   download_link: { type: String, required: true }
 });
 
-quizSchema.statics.searchQuizzes = async function (params: QuizSearchParam) {
+const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, portionNum, portionSize) {
   const query: FilterQuery<Quiz> = {};
 
   if (params.course != null) {
@@ -35,8 +35,10 @@ quizSchema.statics.searchQuizzes = async function (params: QuizSearchParam) {
     ];
   }
 
-  const result = await this.find(query);
+  const result = await this.find(query).skip(portionNum * portionSize).limit(portionSize).exec();
   return result;
 };
+
+quizSchema.static('searchQuizzes', staticSearchQuizzes);
 
 export { type Quiz, type QuizModel, quizSchema };

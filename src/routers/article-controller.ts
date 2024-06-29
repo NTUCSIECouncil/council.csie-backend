@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { type ArticleSearchQueryParam } from '@type/query-param';
 import { models } from '@models/index';
 import { type Article } from '@models/ArticleSchema';
+import { portionParser } from './middleware';
 
 const router = Router();
 
@@ -24,28 +25,12 @@ const verifyArticle = (articleInfo: Partial<Article>, uuid: UUID, complete: bool
 };
 
 // get all articles
-router.get('/', (req, res, next) => {
+router.get('/', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
-    const queryParams = req.query;
-
-    let portionSize = 10;
-    if (queryParams.portionSize != null) {
-      portionSize = Number(queryParams.portionSize);
-      if (![10, 20, 50, 100].includes(portionSize)) {
-        res.sendStatus(400);
-      }
-    }
-
-    const articleNum = await ArticleModel.countDocuments().exec();
-    let portionNum = 0;
-    if (queryParams.portion != null) {
-      portionNum = Number(queryParams.portion);
-      if (portionNum > Math.ceil(articleNum / portionSize)) {
-        res.sendStatus(400);
-      }
-    }
-
-    const articles = await models.Article.find().skip(portionNum).limit(portionSize).exec();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+    console.log(`num = ${req.portionNum}, size = ${req.portionSize}`);
+    const articles = await models.Article.find().skip(portionNum * portionSize).limit(portionSize).exec();
     res.json({ result: articles });
   })().catch((err) => {
     next(err);
@@ -65,15 +50,17 @@ router.post('/', (req, res, next) => {
     const targetArticle = new ArticleModel(newInfo);
     await targetArticle.save();
     res.status(201).json({ uuid });
-  })().catch(err => {
+  })().catch((err) => {
     next(err);
   });
 });
 
-router.get('/search', (req, res, next) => {
+router.get('/search', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+
     const queryParams = req.query;
-    console.log(queryParams);
     let key: string;
     const searchParams: ArticleSearchQueryParam = {};
     try {
@@ -97,7 +84,8 @@ router.get('/search', (req, res, next) => {
           throw Error();
         }
       }
-      const result = await models.Article.searchArticles(searchParams);
+      console.log(searchParams)
+      const result = await models.Article.searchArticles(searchParams, portionNum, portionSize);
       res.send({ result });
     } catch (e) {
       console.log(e);

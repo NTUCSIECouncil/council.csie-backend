@@ -17,7 +17,7 @@ interface Article {
 }
 
 interface ArticleModel extends Model<Article> {
-  searchArticles: (params: ArticleSearchQueryParam) => Promise<{ result: Article[] }>;
+  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, portionNum: number, portionSize: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<Article, ArticleModel>({
@@ -34,7 +34,7 @@ const articleSchema = new Schema<Article, ArticleModel>({
   updatedAt: { type: Date, required: false, default: () => Date.now() }
 });
 
-articleSchema.statics.searchArticles = async function (params: ArticleSearchQueryParam) {
+const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, portionNum, portionSize) {
   const query: FilterQuery<Article> = {};
 
   if (params.tag != null) {
@@ -60,8 +60,10 @@ articleSchema.statics.searchArticles = async function (params: ArticleSearchQuer
     ];
   }
 
-  const result = await this.find(query).exec();
+  const result = await this.find(query).skip(portionNum * portionSize).limit(portionSize).exec();
   return result;
 };
+
+articleSchema.static('searchArticles', staticSearchArticles);
 
 export { type Article, type ArticleModel, articleSchema };

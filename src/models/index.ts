@@ -4,10 +4,6 @@ import { userSchema, type User } from './UserSchema';
 import { courseSchema, type Course } from './CourseSchema';
 import { quizSchema, type Quiz, type QuizModel } from './QuizSchema';
 
-// function registerSchemas (): void {
-//   model<User>('User', userSchema);
-// }
-
 const models = {
   Article: model<Article, ArticleModel>('Article', articleSchema),
   User: model<User>('User', userSchema),

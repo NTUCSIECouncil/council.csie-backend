@@ -1,5 +1,5 @@
 import { randomUUID, type UUID } from 'crypto';
-import { Schema } from 'mongoose';
+import { type Model, Schema } from 'mongoose';
 
 interface Course {
   _id?: UUID;
@@ -11,6 +11,8 @@ interface Course {
   ratings?: string; // link to course's rating page
 }
 
+interface CourseModel extends Model<Course> {};
+
 const courseSchema = new Schema<Course>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
@@ -21,4 +23,4 @@ const courseSchema = new Schema<Course>({
   ratings: { type: String, required: false }
 });
 
-export { type Course, courseSchema };
+export { type Course, type CourseModel, courseSchema };

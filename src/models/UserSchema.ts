@@ -1,5 +1,5 @@
 import { randomUUID, type UUID } from 'crypto';
-import { Schema } from 'mongoose';
+import { type Model, Schema } from 'mongoose';
 
 interface User {
   _id: UUID;
@@ -7,10 +7,12 @@ interface User {
   name: string;
 }
 
-const userSchema = new Schema<User>({
+interface UserModel extends Model<User> { };
+
+const userSchema = new Schema<User, UserModel>({
   _id: { type: String, default: () => randomUUID() },
   email: { type: String, required: true },
   name: { type: String, required: true }
 });
 
-export { type User, userSchema };
+export { type User, type UserModel, userSchema };

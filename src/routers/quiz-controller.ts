@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { type QuizSearchParam } from '@type/query-param';
 import { models } from '@models/index';
 import { type Quiz } from '@models/QuizSchema';
+import { portionParser } from './middleware';
 
 const router = Router();
 
@@ -14,10 +15,10 @@ const verifyQuiz = (quizInfo: Partial<Quiz>, uuid: UUID, complete: boolean): boo
   }
 
   if (complete && !(quizInfo._id !== undefined &&
-                    quizInfo.title !== undefined &&
-                    quizInfo.course !== undefined &&
-                    quizInfo.download_link !== undefined &&
-                    quizInfo.semester !== undefined)) {
+    quizInfo.title !== undefined &&
+    quizInfo.course !== undefined &&
+    quizInfo.download_link !== undefined &&
+    quizInfo.semester !== undefined)) {
     return false;
   }
 
@@ -25,9 +26,11 @@ const verifyQuiz = (quizInfo: Partial<Quiz>, uuid: UUID, complete: boolean): boo
 };
 
 // get all quizzes
-router.get('/', (req, res, next) => {
+router.get('/', portionParser(QuizModel), (req, res, next) => {
   (async () => {
-    const quizzes = await QuizModel.find().exec();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+    const quizzes = await QuizModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
     res.json({ result: quizzes });
   })().catch((err) => {
     next(err);
@@ -54,6 +57,9 @@ router.post('/', (req, res, next) => {
 
 router.get('/search', (req, res, next) => {
   (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+
     const searchParams = req.query;
 
     if (searchParams.course === undefined) {
@@ -65,7 +71,7 @@ router.get('/search', (req, res, next) => {
       queryParams.keyword = searchParams.keyword as string;
     }
 
-    const result = await QuizModel.searchQuizzes(queryParams);
+    const result = await QuizModel.searchQuizzes(queryParams, portionNum, portionSize);
     res.send({ result });
   })().catch((err) => {
     next(err);
