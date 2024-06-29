@@ -54,8 +54,6 @@ const defaultData = {
             semester: "大三",
             credit: 3,
             lecturer: "陳和鄰",
-            time: "2-4",
-            classroom: "明達館",
             past_quiz: "蛤",
             ratings: "蛤",
         },
@@ -65,8 +63,6 @@ const defaultData = {
             semester: "大三",
             credit: 3,
             lecturer: "薇薇安",
-            time: "2-4",
-            classroom: "德田 103",
             past_quiz: "蛤",
             ratings: "蛤",
         }
