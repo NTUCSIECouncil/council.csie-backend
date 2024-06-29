@@ -39,10 +39,6 @@ class DB {
   
     for (let i = 0; i < data.length; i++) {
       const datum = data[i];
-      if (ids.length) {
-        if (i >= ids.length) datum['creator'] = ids[ids.length - 1]._id; // Assuming creator field is _id of User
-        else datum['creator'] = ids[i]._id;
-      }
       const doc = new model(datum);
       await doc.save();
     }

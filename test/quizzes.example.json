@@ -1,36 +1,36 @@
 [
   {
-    "_id": "a4afde00-48e5-4bf4-9fef-a1f16b9f66b6",
+    "_id": "00000004-0001-0000-0000-000000000000",
     "title": "普通物理學",
-    "course": "4d35a6d6-2c12-43d9-81f1-8da069d329ec",
+    "course": "00000003-0001-0000-0000-000000000000",
     "semester": "111-1",
     "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
-    "_id": "4bc8421e-760e-47da-9914-d904455a5233",
+    "_id": "00000004-0002-0000-0000-000000000000",
     "title": "普通物理學",
-    "course": "4d35a6d6-2c12-43d9-81f1-8da069d329ec",
+    "course": "00000003-0001-0000-0000-000000000000",
     "semester": "111-2",
     "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
-    "_id": "3468edb3-ea4f-4327-a42f-041201732513",
+    "_id": "00000004-0003-0000-0000-000000000000",
     "title": "普通物理學",
-    "course": "4d35a6d6-2c12-43d9-81f1-8da069d329ec",
+    "course": "00000003-0001-0000-0000-000000000000",
     "semester": "112-1",
     "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
-    "_id": "97938fca-c279-4b35-b6d1-c305b0fbb791",
+    "_id": "00000004-0004-0000-0000-000000000000",
     "title": "普通化學",
-    "course": "8d0fd022-c67b-4c07-886b-f8e904d853dd",
+    "course": "00000003-0002-0000-0000-000000000000",
     "semester": "111-2",
     "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
-    "_id": "2d274bee-149e-44ca-b1d6-e6a70cc37101",
+    "_id": "00000004-0005-0000-0000-000000000000",
     "title": "普通生物學",
-    "course": "5c446275-002b-431b-b7cb-1cc0212e0358",
+    "course": "00000003-0003-0000-0000-000000000000",
     "semester": "112-1",
     "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   }

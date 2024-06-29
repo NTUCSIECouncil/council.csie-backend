@@ -32,14 +32,14 @@ describe("Quiz", function () {
 
     it('/api/quizzes/:uuid', async () => {
       const res = await request(app)
-        .get('/api/quizzes/a4afde00-48e5-4bf4-9fef-a1f16b9f66b6')
+        .get('/api/quizzes/00000004-0002-0000-0000-000000000000')
         .expect(200);
       expect(res.body.result.title).toBe('普通物理學');
     });
 
     it('/api/quizzes/search', async () => {
       const query = { 
-        course: '4d35a6d6-2c12-43d9-81f1-8da069d329ec'
+        course: '00000003-0001-0000-0000-000000000000'
       };
       const res = await request(app)
         .get('/api/quizzes/search?' + qs.stringify(query))
@@ -50,7 +50,7 @@ describe("Quiz", function () {
 
     it('/api/quizzes/search', async () => {
       const query = { 
-        course: '4d35a6d6-2c12-43d9-81f1-8da069d329ec',
+        course: '00000003-0001-0000-0000-000000000000',
         keyword: '111-2'
       };
       const res = await request(app)

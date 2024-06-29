@@ -7,7 +7,7 @@ import app from './app';
 async function createMockData() {
   await DB.createFromJSON(models.User, 'test/users.example.json');
   // console.log(await models.User.find().exec());
-  await DB.createFromJSON(models.Article, 'test/articles.example.json', await models.User.find().exec());
+  await DB.createFromJSON(models.Article, 'test/articles.example.json');
   // console.log(await models.Article.find().exec());
 }
 
