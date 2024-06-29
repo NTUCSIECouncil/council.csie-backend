@@ -70,7 +70,7 @@ describe("Article", function () {
         .get('/api/articles/search?' + qs.stringify(query))
         .expect(200);
 
-      expect(res.body.result).toHaveLength(2);
+      expect(res.body.result).toHaveLength(14);
     });
   });
 });
