@@ -60,7 +60,7 @@ expressApp.use('/api', APIController);
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
   if (process.env.MONGODB_URL === undefined) { throw new Error('MONGODB_URL is not defined.'); }
-  await mongoose.connect(process.env.MONGODB_URL, { dbName: 'csie-council-test' });
+  await mongoose.connect(process.env.MONGODB_URL, { dbName: "csie-council-test" });
   console.log('Connected to MongoDB');
 
   expressApp.listen(port, () => {
