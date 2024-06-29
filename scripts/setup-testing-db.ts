@@ -28,6 +28,7 @@ const defaultData = {
             grade: 1,
             categories: ["選修", "電機"],
             content: "# Header 1\n\n## Header 2\n\njizz",
+            course: "00000003-0001-0000-0000-000000000000" as UUID,
             creator: "00000001-0001-0000-0000-000000000000" as UUID,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -40,6 +41,7 @@ const defaultData = {
             grade: 1,
             categories: ["必修", "水課"],
             content: "# Header 1\n\n## Header 2\n\njizz",
+            course: "00000003-0002-0000-0000-000000000000" as UUID,
             creator: "00000001-0002-0000-0000-000000000000" as UUID,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -73,7 +75,7 @@ const defaultData = {
         {
             _id: "00000004-0001-0000-0000-000000000000" as UUID,
             title: "期中考",
-            course: "人工智慧導論",
+            course: "00000003-0002-0000-0000-000000000000" as UUID,
             semester: "112-1",
             download_link: "https://www.berkeley.edu/",
         }

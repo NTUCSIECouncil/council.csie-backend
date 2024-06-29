@@ -5,7 +5,7 @@ import { type QuizSearchParam } from '@type/query-param';
 interface Quiz {
   _id?: UUID;
   title: string;
-  course: string;
+  course: UUID;
   semester: string;
   download_link: string;
 }
@@ -17,7 +17,7 @@ interface QuizModel extends Model<Quiz> {
 const quizSchema = new Schema<Quiz>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
-  course: { type: String, required: true },
+  course: { type: String, ref: 'Course', required: true },
   semester: { type: String, required: true },
   download_link: { type: String, required: true }
 });
