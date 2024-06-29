@@ -4,17 +4,17 @@ const dbName = "csie-council-test";
 const defaultData = {
     User: [
         {
-            _id: "00000001-0001-0000-0000-000000000000" as UUID,
+            _id: "u1",
             email: "thomaswang2003@gmail.com",
             name: "王勻",
         },
         {
-            _id: "00000001-0002-0000-0000-000000000000" as UUID,
+            _id: "u2",
             email: "b10902028@csie.ntu.edu.tw",
             name: "B10902028",
         },
         {
-            _id: "00000001-0003-0000-0000-000000000000" as UUID,
+            _id: "u3",
             email: "thomaswang@csie.ntu.edu.tw",
             name: "Thomas Wang",
         }
@@ -29,7 +29,7 @@ const defaultData = {
             categories: ["選修", "電機"],
             content: "# Header 1\n\n## Header 2\n\njizz",
             course: "00000003-0001-0000-0000-000000000000" as UUID,
-            creator: "00000001-0001-0000-0000-000000000000" as UUID,
+            creator: "u1",
             createdAt: new Date(),
             updatedAt: new Date(),
         },
@@ -42,7 +42,7 @@ const defaultData = {
             categories: ["必修", "水課"],
             content: "# Header 1\n\n## Header 2\n\njizz",
             course: "00000003-0002-0000-0000-000000000000" as UUID,
-            creator: "00000001-0002-0000-0000-000000000000" as UUID,
+            creator: "u2",
             createdAt: new Date(),
             updatedAt: new Date(),
         }

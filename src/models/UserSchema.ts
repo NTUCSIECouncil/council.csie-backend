@@ -1,5 +1,5 @@
-import { Schema } from 'mongoose';
 import { randomUUID, type UUID } from 'crypto';
+import { Schema } from 'mongoose';
 
 interface User {
   _id: UUID;

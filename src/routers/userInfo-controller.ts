@@ -1,7 +1,7 @@
 import { Router } from 'express';
+import { authChecker } from './middleware';
 import { type User } from '@models/UserSchema';
 import { models } from '@models/index';
-import { authChecker } from './middleware';
 
 const router = Router();
 
