@@ -27,7 +27,39 @@ describe("Article", function () {
       const res = await request(app)
         .get('/api/articles/')
         .expect(200);
-      expect(res.body.result).toHaveLength(3);
+      expect(res.body.result).toHaveLength(10);
+    });
+
+    it('/api/articles - portionNum', async () => {
+      let res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionNum: 1 }))
+        .expect(200);
+      expect(res.body.result).toHaveLength(10);
+      res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionNum: 2 }))
+        .expect(200);
+      expect(res.body.result).toHaveLength(1);
+      res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionNum: 3 }))
+        .expect(400);
+    });
+
+    it('/api/articles - portionSize', async () => {
+      let res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionSize: 20 }))
+        .expect(200);
+      expect(res.body.result).toHaveLength(20);
+      res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionSize: 50 }))
+        .expect(200);
+      expect(res.body.result).toHaveLength(21);
+      res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionSize: 100 }))
+        .expect(200);
+      expect(res.body.result).toHaveLength(21);
+      res = await request(app)
+        .get('/api/articles?' + qs.stringify({ portionSize: 21 }))
+        .expect(400);
     });
 
     it('/api/articles/search', async () => {
