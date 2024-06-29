@@ -52,6 +52,26 @@ router.post('/', (req, res, next) => {
   });
 });
 
+router.get('/search', (req, res, next) => {
+  (async () => {
+    const searchParams = req.query;
+
+    if (searchParams.course === undefined) {
+      res.sendStatus(400);
+    }
+    const queryParams: QuizSearchParam = { course: searchParams.course as UUID };
+
+    if (searchParams.keyword != null) {
+      queryParams.keyword = searchParams.keyword as string;
+    }
+
+    const result = await QuizModel.searchQuizzes(queryParams);
+    res.send({ result });
+  })().catch((err) => {
+    next(err);
+  });
+});
+
 router.get('/:uuid', (req, res, next) => {
   (async () => {
     const uuid = req.params.uuid as UUID;
@@ -86,28 +106,6 @@ router.put('/:uuid', (req, res, next) => {
       res.sendStatus(204);
     }
   })().catch(err => {
-    next(err);
-  });
-});
-
-router.get('/search', (req, res, next) => {
-  (async () => {
-    const searchParams = req.query;
-
-    if (searchParams.course === undefined) {
-      res.sendStatus(400);
-    }
-    const queryParams: QuizSearchParam = { course: searchParams.course as UUID };
-
-    if (searchParams.keyword != null) {
-      queryParams.keyword = searchParams.keyword as string;
-    }
-
-    console.log(queryParams);
-    const result = await QuizModel.searchQuizzes(queryParams);
-    console.log(result);
-    res.send({ result });
-  })().catch((err) => {
     next(err);
   });
 });

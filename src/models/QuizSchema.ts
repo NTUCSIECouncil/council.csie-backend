@@ -1,8 +1,9 @@
-import { Schema, type Types, type FilterQuery, type Model } from 'mongoose';
+import { randomUUID, type UUID } from 'crypto';
+import { Schema, type FilterQuery, type Model } from 'mongoose';
 import { type QuizSearchParam } from '@type/query-param';
 
 interface Quiz {
-  _id: Types.UUID | string;
+  _id?: UUID;
   title: string;
   course: string;
   semester: string;
@@ -14,7 +15,7 @@ interface QuizModel extends Model<Quiz> {
 }
 
 const quizSchema = new Schema<Quiz>({
-  _id: { type: Schema.Types.UUID, required: true },
+  _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   course: { type: String, required: true },
   semester: { type: String, required: true },

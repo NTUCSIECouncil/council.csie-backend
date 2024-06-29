@@ -1,7 +1,8 @@
-import { Schema, type Types } from 'mongoose';
+import { randomUUID, type UUID } from 'crypto';
+import { Schema } from 'mongoose';
 
 interface Course {
-  _id: Types.UUID | string;
+  _id?: UUID;
   title: string;
   semester: string;
   credit: number;
@@ -13,7 +14,7 @@ interface Course {
 }
 
 const courseSchema = new Schema<Course>({
-  _id: { type: Schema.Types.UUID, required: true },
+  _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   semester: { type: String, required: true },
   credit: { type: Number, required: true },
