@@ -31,7 +31,7 @@ router.get('/', (req, res, next) => {
     let portionSize = 10;
     if (queryParams.portionSize != null) {
       portionSize = Number(queryParams.portionSize);
-      if (!(portionSize in [10, 20, 50, 100])) {
+      if (![10, 20, 50, 100].includes(portionSize)) {
         res.sendStatus(400);
       }
     }
