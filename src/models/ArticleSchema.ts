@@ -10,6 +10,7 @@ interface Article {
   grade?: number; // what grade is the creator when posted
   categories?: string[]; // more official tags, ex: elective, required, etc.
   content?: string;
+  course: UUID;
   creator: UUID;
   createdAt?: Date;
   updatedAt?: Date;
@@ -27,6 +28,7 @@ const articleSchema = new Schema<Article, ArticleModel>({
   grade: { type: Number, required: false },
   categories: { type: [{ type: String, required: false }], required: false },
   content: { type: String, required: false },
+  course: { type: String, ref: 'Course', required: true },
   creator: { type: String, ref: 'User', required: true },
   createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
   updatedAt: { type: Date, required: false, default: () => Date.now() }

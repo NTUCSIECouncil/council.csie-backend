@@ -14,7 +14,10 @@ const firebaseApp = initializeApp({ credential: cert(process.env.FIREBASE_CERT_P
 const auth = getAuth(firebaseApp);
 
 const expressApp = express();
-const port = 3010;
+const port = process.env.PORT;
+if (port === undefined) {
+  throw new Error('PORT is not defined.');
+}
 
 // TODO: necessity
 // import cors from 'cors';
@@ -41,26 +44,14 @@ expressApp.use((req, res, next) => {
   });
 });
 
-expressApp.get('/api/create-time', (req, res) => {
-  (async () => {
-    if (req.guser?.uid === undefined) {
-      res.sendStatus(403);
-    } else {
-      const userRecord = await auth.getUser(req.guser?.uid); // raise error if invalid
-      res.json({ createTime: userRecord.metadata.creationTime });
-    }
-  })().catch((err) => {
-    console.log(err);
-  });
-});
-
 expressApp.use(express.json());
 expressApp.use('/api', APIController);
 
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
   if (process.env.MONGODB_URL === undefined) { throw new Error('MONGODB_URL is not defined.'); }
-  await mongoose.connect(process.env.MONGODB_URL);
+  if (process.env.MONGODB_DBNAME === undefined) { throw new Error('MONGODB_DBNAME is not defined.'); }
+  await mongoose.connect(process.env.MONGODB_URL, { dbName: process.env.MONGODB_DBNAME });
   console.log('Connected to MongoDB');
 
   expressApp.listen(port, () => {
