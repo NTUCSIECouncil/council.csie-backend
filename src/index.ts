@@ -41,19 +41,6 @@ expressApp.use((req, res, next) => {
   });
 });
 
-expressApp.get('/api/create-time', (req, res) => {
-  (async () => {
-    if (req.guser?.uid === undefined) {
-      res.sendStatus(403);
-    } else {
-      const userRecord = await auth.getUser(req.guser?.uid); // raise error if invalid
-      res.json({ createTime: userRecord.metadata.creationTime });
-    }
-  })().catch((err) => {
-    console.log(err);
-  });
-});
-
 expressApp.use(express.json());
 expressApp.use('/api', APIController);
 
