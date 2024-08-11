@@ -30,7 +30,7 @@ if (port === undefined) {
 expressApp.use((req, res, next) => {
   (async () => {
     const token = req.headers.authorization;
-    if (token === undefined || !token.startsWith('Bearer ')) {
+    if (!token?.startsWith('Bearer ')) {
       next();
     } else {
       const decodedToken = await auth.verifyIdToken(token.slice(7));

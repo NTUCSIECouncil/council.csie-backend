@@ -19,7 +19,7 @@ const quizSchema = new Schema<Quiz, QuizModel>({
   title: { type: String, required: true },
   course: { type: String, ref: 'Course', required: true },
   semester: { type: String, required: true },
-  download_link: { type: String, required: true }
+  download_link: { type: String, required: true },
 });
 
 const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, portionNum, portionSize) {
@@ -31,7 +31,7 @@ const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, 
   if (params.keyword != null) {
     query.$or = [
       { title: { $regex: params.keyword, $options: 'i' } },
-      { semester: { $regex: params.keyword, $options: 'i' } }
+      { semester: { $regex: params.keyword, $options: 'i' } },
     ];
   }
 

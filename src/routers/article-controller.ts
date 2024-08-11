@@ -14,10 +14,10 @@ const verifyArticle = (articleInfo: Partial<Article>, uuid: UUID, complete: bool
     return false;
   }
 
-  if (complete && !(articleInfo._id !== undefined &&
-                    articleInfo.title !== undefined &&
-                    articleInfo.lecturer !== undefined &&
-                    articleInfo.creator !== undefined)) {
+  if (complete && !(articleInfo._id !== undefined
+    && articleInfo.title !== undefined
+    && articleInfo.lecturer !== undefined
+    && articleInfo.creator !== undefined)) {
     return false;
   }
 
@@ -27,7 +27,6 @@ const verifyArticle = (articleInfo: Partial<Article>, uuid: UUID, complete: bool
 // get all articles
 router.get('/', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
     console.log(`num = ${req.portionNum}, size = ${req.portionSize}`);
     const articles = await models.Article.find().skip(portionNum * portionSize).limit(portionSize).exec();
@@ -57,7 +56,6 @@ router.post('/', (req, res, next) => {
 
 router.get('/search', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
 
     const queryParams = req.query;
@@ -84,7 +82,6 @@ router.get('/search', portionParser(ArticleModel), (req, res, next) => {
           throw Error();
         }
       }
-      console.log(searchParams)
       const result = await models.Article.searchArticles(searchParams, portionNum, portionSize);
       res.send({ result });
     } catch (e) {
@@ -106,7 +103,7 @@ router.get('/:uuid', (req, res, next) => {
     } else {
       res.status(200).json({ result: targetArticle });
     }
-  })().catch(err => {
+  })().catch((err) => {
     next(err);
   });
 });
@@ -129,7 +126,7 @@ router.put('/:uuid', (req, res, next) => {
       await targetArticle.save();
       res.sendStatus(204);
     }
-  })().catch(err => {
+  })().catch((err) => {
     next(err);
   });
 });

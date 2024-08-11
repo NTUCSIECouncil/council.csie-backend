@@ -31,7 +31,7 @@ const articleSchema = new Schema<Article, ArticleModel>({
   course: { type: String, ref: 'Course', required: true },
   creator: { type: String, ref: 'User', required: true },
   createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
-  updatedAt: { type: Date, required: false, default: () => Date.now() }
+  updatedAt: { type: Date, required: false, default: () => Date.now() },
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, portionNum, portionSize) {
@@ -56,7 +56,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
   if (params.keyword != null) {
     query.$or = [
       { title: { $regex: params.keyword, $options: 'i' } },
-      { content: { $regex: params.keyword, $options: 'i' } }
+      { content: { $regex: params.keyword, $options: 'i' } },
     ];
   }
 

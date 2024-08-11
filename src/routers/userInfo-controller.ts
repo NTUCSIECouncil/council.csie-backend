@@ -14,7 +14,6 @@ router.get(('/myself'), (req, res, next) => {
 
 router.get('/:uid', authChecker, (req, res, next) => {
   (async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
     const targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
     if (targetUser === null) {
@@ -31,7 +30,6 @@ router.get('/:uid', authChecker, (req, res, next) => {
 
 router.put('/:uid', authChecker, (req, res, next) => {
   (async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
     const newInfo: Partial<User> = req.body;
     let targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
@@ -44,7 +42,7 @@ router.put('/:uid', authChecker, (req, res, next) => {
       targetUser = new UserModel({
         _id: guser.uid,
         name: guser.name,
-        email: guser.email
+        email: guser.email,
       });
       targetUser.set(newInfo);
       await targetUser.save();

@@ -8,7 +8,7 @@ const models = {
   Article: model<Article, ArticleModel>('Article', articleSchema),
   User: model<User>('User', userSchema),
   Course: model<Course>('Course', courseSchema),
-  Quiz: model<Quiz, QuizModel>('Quiz', quizSchema)
+  Quiz: model<Quiz, QuizModel>('Quiz', quizSchema),
 };
 
 export { models };

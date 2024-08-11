@@ -20,7 +20,7 @@ const courseSchema = new Schema<Course>({
   credit: { type: Number, required: true },
   lecturer: { type: String, required: true },
   past_quiz: { type: String, required: false },
-  ratings: { type: String, required: false }
+  ratings: { type: String, required: false },
 });
 
 export { type Course, type CourseModel, courseSchema };
