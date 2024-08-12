@@ -1,11 +1,21 @@
-import { randomUUID, type UUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { type Model, Schema } from 'mongoose';
+import { z } from 'zod';
+import { ZUuidSchema } from './util-schema';
 
-interface User {
-  _id: UUID;
-  email: string;
-  name: string;
-}
+const ZUserSchema = z.object({
+  _id: ZUuidSchema,
+  email: z.string().email(),
+  name: z.string(),
+});
+
+interface User extends z.infer<typeof ZUserSchema > {};
+
+// interface User {
+//   _id: UUID;
+//   email: string;
+//   name: string;
+// }
 
 interface UserModel extends Model<User> { };
 
@@ -15,4 +25,4 @@ const userSchema = new Schema<User, UserModel>({
   name: { type: String, required: true },
 });
 
-export { type User, type UserModel, userSchema };
+export { type User, type UserModel, userSchema, ZUserSchema };

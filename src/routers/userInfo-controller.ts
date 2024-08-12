@@ -1,18 +1,11 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { authChecker } from './middleware';
-import { type User } from '@models/user-schema';
+import { type User, ZUserSchema } from '@models/user-schema';
 import { models } from '@models/index';
 
 const router = Router();
 
 const UserModel = models.User;
-
-const ZUserSchema = z.object({
-  _id: z.string().uuid(),
-  email: z.string().email(),
-  name: z.string(),
-});
 
 router.get(('/myself'), (req, res, next) => {
   if (req.guser === undefined) {
