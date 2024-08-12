@@ -73,7 +73,7 @@ const defaultData = {
             title: "期中考",
             course: "00000003-0002-0000-0000-000000000000" as UUID,
             semester: "112-1",
-            download_link: "https://www.berkeley.edu/",
+            downloadLink: "https://www.berkeley.edu/",
         }
     ],
 };

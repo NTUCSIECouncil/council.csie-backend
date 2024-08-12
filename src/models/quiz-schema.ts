@@ -1,14 +1,25 @@
-import { randomUUID, type UUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { Schema, type FilterQuery, type Model } from 'mongoose';
-import { type QuizSearchParam } from './util-schema';
+import { z } from 'zod';
+import { type QuizSearchParam, ZUuidSchema } from './util-schema';
 
-interface Quiz {
-  _id?: UUID;
-  title: string;
-  course: UUID;
-  semester: string;
-  download_link: string;
-}
+const ZQuizSchema = z.object({
+  _id: ZUuidSchema.optional(),
+  title: z.string(),
+  course: ZUuidSchema,
+  semester: z.string(),
+  downloadLink: z.string(),
+});
+
+interface Quiz extends z.infer<typeof ZQuizSchema> {};
+
+// interface Quiz {
+//   _id?: UUID;
+//   title: string;
+//   course: UUID;
+//   semester: string;
+//   downloadLink: string;
+// }
 
 interface QuizModel extends Model<Quiz> {
   searchQuizzes: (this: QuizModel, params: QuizSearchParam, portionNum: number, portionSize: number) => Promise<Quiz[]>;
@@ -19,7 +30,7 @@ const quizSchema = new Schema<Quiz, QuizModel>({
   title: { type: String, required: true },
   course: { type: String, ref: 'Course', required: true },
   semester: { type: String, required: true },
-  download_link: { type: String, required: true },
+  downloadLink: { type: String, required: true },
 });
 
 const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, portionNum, portionSize) {
@@ -39,4 +50,4 @@ const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, 
 
 quizSchema.static('searchQuizzes', staticSearchQuizzes);
 
-export { type Quiz, type QuizModel, quizSchema };
+export { type Quiz, type QuizModel, quizSchema, ZQuizSchema };

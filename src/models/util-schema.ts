@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const ZUuidSchema = z.custom<UUID>((val) => {
   if (typeof val !== 'string') return false;
-  return /^user\/[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}(?:\/.*)?$/i.test(val);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val);
 });
 
 const ZArticleSearchQueryParam = z.object({

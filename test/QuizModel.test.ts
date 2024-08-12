@@ -8,7 +8,7 @@ async function createMockData() {
   await DB.createFromJSON(models.Course, 'test/courses.example.json');
   // console.log(await models.Course.find().exec());
   await DB.createFromJSON(models.Quiz, 'test/quizzes.example.json');
-  // console.log(await models.Quiz.find().exec());
+  console.log(await models.Quiz.find().exec());
 }
 
 describe("Quiz", function () {

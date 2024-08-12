@@ -4,34 +4,34 @@
     "title": "普通物理學",
     "course": "00000003-0001-0000-0000-000000000000",
     "semester": "111-1",
-    "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "downloadLink": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
     "_id": "00000004-0002-0000-0000-000000000000",
     "title": "普通物理學",
     "course": "00000003-0001-0000-0000-000000000000",
     "semester": "111-2",
-    "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "downloadLink": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
     "_id": "00000004-0003-0000-0000-000000000000",
     "title": "普通物理學",
     "course": "00000003-0001-0000-0000-000000000000",
     "semester": "112-1",
-    "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "downloadLink": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
     "_id": "00000004-0004-0000-0000-000000000000",
     "title": "普通化學",
     "course": "00000003-0002-0000-0000-000000000000",
     "semester": "111-2",
-    "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "downloadLink": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   },
   {
     "_id": "00000004-0005-0000-0000-000000000000",
     "title": "普通生物學",
     "course": "00000003-0003-0000-0000-000000000000",
     "semester": "112-1",
-    "download_link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    "downloadLink": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   }
 ]
