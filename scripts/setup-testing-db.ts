@@ -81,9 +81,9 @@ const defaultData = {
 import 'dotenv/config';
 import { models } from "@models/index";
 import { type Article } from "@models/ArticleSchema";
-import { type Course } from "@models/CourseSchema";
-import { type Quiz } from "@models/QuizSchema";
-import { type User } from "@models/UserSchema";
+import { type Course } from "@models/course-schema";
+import { type Quiz } from "@models/quiz-schema";
+import { type User } from "@models/userschema";
 import mongoose from 'mongoose';
 import { type Model } from 'mongoose';
 

@@ -1,20 +1,37 @@
-import { randomUUID, type UUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { Schema, type Model, type FilterQuery } from 'mongoose';
-import { type ArticleSearchQueryParam } from '@type/query-param';
+import { z } from 'zod';
+import { ZUuidSchema, type ArticleSearchQueryParam } from './util-schema';
 
-interface Article {
-  _id?: UUID;
-  title: string;
-  lecturer: string;
-  tag?: string[]; // any tags the creator wants to add
-  grade?: number; // what grade is the creator when posted
-  categories?: string[]; // more official tags, ex: elective, required, etc.
-  content?: string;
-  course: UUID;
-  creator: UUID;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+const ZArticleSchema = z.object({
+  _id: ZUuidSchema.optional(),
+  title: z.string(),
+  lecturer: z.string(),
+  tag: z.string().array().optional(), // any tags the creator wants to add
+  grade: z.number().optional(), // what grade is the creator when posted
+  categories: z.string().array().optional(), // more official tags, ex: elective, required, etc.
+  content: z.string().optional(),
+  course: ZUuidSchema,
+  creator: ZUuidSchema,
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+interface Article extends z.infer<typeof ZArticleSchema> {};
+
+// interface Article {
+//   _id?: UUID;
+//   title: string;
+//   lecturer: string;
+//   tag?: string[]; // any tags the creator wants to add
+//   grade?: number; // what grade is the creator when posted
+//   categories?: string[]; // more official tags, ex: elective, required, etc.
+//   content?: string;
+//   course: UUID;
+//   creator: UUID;
+//   createdAt?: Date;
+//   updatedAt?: Date;
+// }
 
 interface ArticleModel extends Model<Article> {
   searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, portionNum: number, portionSize: number) => Promise<Article[]>;
@@ -66,4 +83,4 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 
 articleSchema.static('searchArticles', staticSearchArticles);
 
-export { type Article, type ArticleModel, articleSchema };
+export { type Article, type ArticleModel, articleSchema, ZArticleSchema };

@@ -63,14 +63,23 @@ describe("Article", function () {
     });
 
     it('/api/articles/search', async () => {
-      const query = { 
+      const queryOne = { 
         tag: ['德邦讚']
       };
-      const res = await request(app)
-        .get('/api/articles/search?' + qs.stringify(query))
+      const resOne = await request(app)
+        .get('/api/articles/search?' + qs.stringify(queryOne))
         .expect(200);
 
-      expect(res.body.result).toHaveLength(14);
+      expect(resOne.body.result).toHaveLength(10);
+      const queryTwo = { 
+        tag: ['德邦讚'],
+        portionNum: 1,
+      };
+      const resTwo = await request(app)
+        .get('/api/articles/search?' + qs.stringify(queryTwo))
+        .expect(200);
+
+      expect(resTwo.body.result).toHaveLength(4);
     });
   });
 });

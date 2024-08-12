@@ -1,8 +1,8 @@
 import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
-import { type QuizSearchParam } from '@type/query-param';
 import { models } from '@models/index';
-import { type Quiz } from '@models/QuizSchema';
+import { type Quiz } from '@models/quiz-schema';
+import { type QuizSearchParam } from '@models/util-schema';
 import { portionParser } from './middleware';
 
 const router = Router();

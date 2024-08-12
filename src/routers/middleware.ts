@@ -1,7 +1,7 @@
 import { type RequestHandler } from 'express';
-import { type ArticleModel } from '@models/ArticleSchema';
-import { type QuizModel } from '@models/QuizSchema';
-import { type CourseModel } from '@models/CourseSchema';
+import { type ArticleModel } from '@models/article-schema';
+import { type QuizModel } from '@models/quiz-schema';
+import { type CourseModel } from '@models/course-schema';
 
 const authChecker: RequestHandler = (req, res, next) => {
   if (req.guser?.uid === undefined || req.guser?.uid !== req.params.uid) {

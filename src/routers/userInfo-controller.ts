@@ -1,11 +1,18 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { authChecker } from './middleware';
-import { type User } from '@models/UserSchema';
+import { type User } from '@models/user-schema';
 import { models } from '@models/index';
 
 const router = Router();
 
 const UserModel = models.User;
+
+const ZUserSchema = z.object({
+  _id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string(),
+});
 
 router.get(('/myself'), (req, res, next) => {
   req.url = `/${req.guser?.uid}`;
@@ -31,7 +38,13 @@ router.get('/:uid', authChecker, (req, res, next) => {
 router.put('/:uid', authChecker, (req, res, next) => {
   (async () => {
     const guser = req.guser!;
-    const newInfo: Partial<User> = req.body;
+    const result = ZUserSchema.partial().safeParse(req.body);
+    if (!result.success) {
+      console.log(result.error);
+      res.sendStatus(400);
+      return;
+    }
+    const newInfo = result.data as Partial<User>;
     let targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
     if (targetUser !== null) {
       targetUser.set(newInfo); // properties not in User will not be store into document
@@ -41,7 +54,7 @@ router.put('/:uid', authChecker, (req, res, next) => {
       // If the target user does currently not exist, create it
       targetUser = new UserModel({
         _id: guser.uid,
-        name: guser.name,
+        name: guser.name as string,
         email: guser.email,
       });
       targetUser.set(newInfo);

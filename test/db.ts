@@ -1,10 +1,10 @@
 import { connect, connection, Model } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'fs';
-import { type Article } from '../src/models/ArticleSchema';
-import { type User } from '../src/models/UserSchema';
-import { Course } from '@models/CourseSchema';
-import { Quiz } from '@models/QuizSchema';
+import { type Article } from '../src/models/article-schema';
+import { type User } from '../src/models/user-schema';
+import { Course } from '@models/course-schema';
+import { Quiz } from '@models/quiz-schema';
 
 class DB {
   static mongoServer: MongoMemoryServer;
