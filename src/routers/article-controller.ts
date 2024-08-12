@@ -12,10 +12,11 @@ const ArticleModel = models.Article;
 // get all articles
 router.get('/', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
     const articles = await ArticleModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
     res.json({ result: articles });
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
@@ -34,13 +35,14 @@ router.post('/', (req, res, next) => {
     const targetArticle = new ArticleModel(result.data);
     await targetArticle.save();
     res.status(201).json({ uuid });
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
 
 router.get('/search', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
 
     const result = ZArticleSearchQueryParam.safeParse(req.query);
@@ -51,7 +53,7 @@ router.get('/search', portionParser(ArticleModel), (req, res, next) => {
     }
     const searchResult = await ArticleModel.searchArticles(result.data, portionNum, portionSize);
     res.send({ result: searchResult });
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
@@ -71,7 +73,7 @@ router.get('/:uuid', (req, res, next) => {
     } else {
       res.send({ result: targetArticle });
     }
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
@@ -97,7 +99,7 @@ router.put('/:uuid', (req, res, next) => {
       await targetArticle.save();
       res.sendStatus(204);
     }
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });

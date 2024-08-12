@@ -38,7 +38,7 @@ expressApp.use((req, res, next) => {
       // console.log('guser:', decodedToken);
       next();
     }
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     console.log(err);
     next();
   });
@@ -57,6 +57,6 @@ expressApp.use('/api', APIController);
   expressApp.listen(port, () => {
     console.log(`Start listening at port ${port}`);
   });
-})().catch((err) => {
+})().catch((err: unknown) => {
   console.log(err);
 });

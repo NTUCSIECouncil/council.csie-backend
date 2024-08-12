@@ -4,7 +4,7 @@ import { type QuizModel } from '@models/quiz-schema';
 import { type CourseModel } from '@models/course-schema';
 
 const authChecker: RequestHandler = (req, res, next) => {
-  if (req.guser?.uid === undefined || req.guser?.uid !== req.params.uid) {
+  if (req.guser?.uid === undefined || req.guser.uid !== req.params.uid) {
     res.sendStatus(403);
   } else {
     next();
@@ -36,7 +36,7 @@ const portionParser = (Model: ArticleModel | QuizModel | CourseModel): RequestHa
       req.portionSize = portionSize;
       req.portionNum = portionNum;
       next();
-    })().catch((err) => {
+    })().catch((err: unknown) => {
       next(err);
     });
   };

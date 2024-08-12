@@ -19,8 +19,8 @@ export default tseslint.config(
     },
     extends: [
       eslint.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-      // ...tseslint.configs.strictTypeChecked,
+      // ...tseslint.configs.recommendedTypeChecked,
+      ...tseslint.configs.strictTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
       stylistic.configs.customize({
         semi: true,

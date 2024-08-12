@@ -25,9 +25,7 @@ const quizSchema = new Schema<Quiz, QuizModel>({
 const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, portionNum, portionSize) {
   const query: FilterQuery<Quiz> = {};
 
-  if (params.course != null) {
-    query.course = params.course;
-  }
+  query.course = params.course;
   if (params.keyword != null) {
     query.$or = [
       { title: { $regex: params.keyword, $options: 'i' } },
