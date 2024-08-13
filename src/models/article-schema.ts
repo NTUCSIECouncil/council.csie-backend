@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Schema, type Model, type FilterQuery } from 'mongoose';
+import { model, Schema, type Model, type FilterQuery } from 'mongoose';
 import { z } from 'zod';
 import { ZUuidSchema, type ArticleSearchQueryParam } from './util-schema';
 
@@ -71,4 +71,6 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 
 articleSchema.static('searchArticles', staticSearchArticles);
 
-export { type Article, type ArticleModel, type ArticleWithOptionalId, articleSchema, ZArticleSchema };
+const ArticleModel = model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema);
+
+export { type Article, ArticleModel, ZArticleSchema };

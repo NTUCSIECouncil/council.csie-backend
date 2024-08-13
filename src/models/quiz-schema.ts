@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { Schema, type FilterQuery, type Model } from 'mongoose';
+import { model, Schema, type FilterQuery, type Model } from 'mongoose';
 import { z } from 'zod';
 import { type QuizSearchParam, ZUuidSchema } from './util-schema';
 
@@ -44,4 +44,6 @@ const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, 
 
 quizSchema.static('searchQuizzes', staticSearchQuizzes);
 
-export { type Quiz, type QuizModel, type QuizWithOptionalId, quizSchema, ZQuizSchema };
+const QuizModel = model<QuizWithOptionalId, QuizModel>('Quiz', quizSchema);
+
+export { type Quiz, QuizModel, ZQuizSchema };

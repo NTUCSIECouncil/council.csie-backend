@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { type Model, Schema } from 'mongoose';
+import { model, type Model, Schema } from 'mongoose';
 import { z } from 'zod';
 import { ZUuidSchema } from './util-schema';
 
@@ -19,4 +19,6 @@ const userSchema = new Schema<User, UserModel>({
   name: { type: String, required: true },
 });
 
-export { type User, type UserModel, userSchema, ZUserSchema };
+const UserModel = model<User>('User', userSchema);
+
+export { type User, UserModel, ZUserSchema };

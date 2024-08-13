@@ -1,14 +1,13 @@
-import { model } from 'mongoose';
-import { articleSchema, type ArticleModel, type ArticleWithOptionalId } from './article-schema';
-import { userSchema, type User } from './user-schema';
-import { courseSchema, type CourseWithOptionalId } from './course-schema';
-import { quizSchema, type QuizWithOptionalId, type QuizModel } from './quiz-schema';
+import { ArticleModel } from './article-schema';
+import { UserModel } from './user-schema';
+import { CourseModel } from './course-schema';
+import { QuizModel } from './quiz-schema';
 
 const models = {
-  Article: model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema),
-  User: model<User>('User', userSchema),
-  Course: model<CourseWithOptionalId>('Course', courseSchema),
-  Quiz: model<QuizWithOptionalId, QuizModel>('Quiz', quizSchema),
+  Article: ArticleModel,
+  User: UserModel,
+  Course: CourseModel,
+  Quiz: QuizModel,
 };
 
 export { models };
