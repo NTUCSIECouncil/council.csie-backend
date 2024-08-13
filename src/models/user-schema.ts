@@ -11,12 +11,6 @@ const ZUserSchema = z.object({
 
 interface User extends z.infer<typeof ZUserSchema > {};
 
-// interface User {
-//   _id: UUID;
-//   email: string;
-//   name: string;
-// }
-
 interface UserModel extends Model<User> { };
 
 const userSchema = new Schema<User, UserModel>({

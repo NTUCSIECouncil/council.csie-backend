@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { type QuizSearchParam, ZUuidSchema } from './util-schema';
 
 const ZQuizSchema = z.object({
-  _id: ZUuidSchema.optional(),
+  _id: ZUuidSchema,
   title: z.string(),
   course: ZUuidSchema,
   semester: z.string(),
@@ -13,19 +13,13 @@ const ZQuizSchema = z.object({
 
 interface Quiz extends z.infer<typeof ZQuizSchema> {};
 
-// interface Quiz {
-//   _id?: UUID;
-//   title: string;
-//   course: UUID;
-//   semester: string;
-//   downloadLink: string;
-// }
+interface QuizWithOptionalId extends Omit<Quiz, '_id'>, Partial<Pick<Quiz, '_id'>> {};
 
-interface QuizModel extends Model<Quiz> {
+interface QuizModel extends Model<QuizWithOptionalId> {
   searchQuizzes: (this: QuizModel, params: QuizSearchParam, portionNum: number, portionSize: number) => Promise<Quiz[]>;
 }
 
-const quizSchema = new Schema<Quiz, QuizModel>({
+const quizSchema = new Schema<QuizWithOptionalId, QuizModel>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   course: { type: String, ref: 'Course', required: true },
@@ -50,4 +44,4 @@ const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, 
 
 quizSchema.static('searchQuizzes', staticSearchQuizzes);
 
-export { type Quiz, type QuizModel, quizSchema, ZQuizSchema };
+export { type Quiz, type QuizModel, type QuizWithOptionalId, quizSchema, ZQuizSchema };

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { ZUuidSchema, type ArticleSearchQueryParam } from './util-schema';
 
 const ZArticleSchema = z.object({
-  _id: ZUuidSchema.optional(),
+  _id: ZUuidSchema,
   title: z.string(),
   lecturer: z.string(),
   tag: z.string().array().optional(), // any tags the creator wants to add
@@ -19,25 +19,13 @@ const ZArticleSchema = z.object({
 
 interface Article extends z.infer<typeof ZArticleSchema> {};
 
-// interface Article {
-//   _id?: UUID;
-//   title: string;
-//   lecturer: string;
-//   tag?: string[]; // any tags the creator wants to add
-//   grade?: number; // what grade is the creator when posted
-//   categories?: string[]; // more official tags, ex: elective, required, etc.
-//   content?: string;
-//   course: UUID;
-//   creator: UUID;
-//   createdAt?: Date;
-//   updatedAt?: Date;
-// }
+interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Article, '_id'>> {};
 
-interface ArticleModel extends Model<Article> {
+interface ArticleModel extends Model<ArticleWithOptionalId> {
   searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, portionNum: number, portionSize: number) => Promise<Article[]>;
 }
 
-const articleSchema = new Schema<Article, ArticleModel>({
+const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   lecturer: { type: String, required: true },
@@ -83,4 +71,4 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 
 articleSchema.static('searchArticles', staticSearchArticles);
 
-export { type Article, type ArticleModel, articleSchema, ZArticleSchema };
+export { type Article, type ArticleModel, type ArticleWithOptionalId, articleSchema, ZArticleSchema };

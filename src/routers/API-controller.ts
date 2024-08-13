@@ -1,7 +1,7 @@
 import { Router, type ErrorRequestHandler } from 'express';
 import articleController from './article-controller';
 import quizController from './quiz-controller';
-import userInfoController from './userInfo-controller';
+import userInfoController from './user-controller';
 
 const router = Router();
 

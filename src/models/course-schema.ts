@@ -2,25 +2,27 @@ import { randomUUID, type UUID } from 'crypto';
 import { type Model, Schema } from 'mongoose';
 
 interface Course {
-  _id?: UUID;
+  _id: UUID;
   title: string;
   semester?: string;
   credit: number;
   lecturer: string;
-  past_quiz?: string; // link to course's past quiz page
+  pastQuiz?: string; // link to course's past quiz page
   ratings?: string; // link to course's rating page
 }
 
-interface CourseModel extends Model<Course> {};
+interface CourseWithOptionalId extends Omit<Course, '_id'>, Partial<Pick<Course, '_id'>> {};
 
-const courseSchema = new Schema<Course>({
+interface CourseModel extends Model<CourseWithOptionalId> {};
+
+const courseSchema = new Schema<CourseWithOptionalId>({
   _id: { type: String, default: () => randomUUID() },
   title: { type: String, required: true },
   semester: { type: String, required: false },
   credit: { type: Number, required: true },
   lecturer: { type: String, required: true },
-  past_quiz: { type: String, required: false },
+  pastQuiz: { type: String, required: false },
   ratings: { type: String, required: false },
 });
 
-export { type Course, type CourseModel, courseSchema };
+export { type Course, type CourseModel, type CourseWithOptionalId, courseSchema };

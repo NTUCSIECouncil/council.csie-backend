@@ -1,10 +1,10 @@
-import { connect, connection, Model } from 'mongoose';
+import { connect, connection } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'fs';
-import { type Article } from '../src/models/article-schema';
-import { type User } from '../src/models/user-schema';
-import { Course } from '@models/course-schema';
-import { Quiz } from '@models/quiz-schema';
+import { type UserModel } from '@models/user-schema';
+import { type CourseModel } from '@models/course-schema';
+import { type QuizModel } from '@models/quiz-schema';
+import { type ArticleModel } from '@models/article-schema';
 
 class DB {
   static mongoServer: MongoMemoryServer;
@@ -33,7 +33,7 @@ class DB {
     }
   }
 
-  static async createFromJSON(model: Model<Article> | Model<User> | Model<Course> | Model<Quiz>, path: string, ids: any[] = []) {
+  static async createFromJSON(model: ArticleModel | UserModel | CourseModel | QuizModel, path: string) {
     const rawData = await readFileSync(path, 'utf-8');
     const data = await JSON.parse(rawData);
   
