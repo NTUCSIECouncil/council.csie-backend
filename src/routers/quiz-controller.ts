@@ -81,15 +81,12 @@ router.get('/:uuid/file', (req, res, next) => {
     } else {
       // Some how getting filename
       const fileName = 'not implemented';
+      if (process.env.QUIZ_FILE_DIR === undefined) throw new Error('QUIZ_FILE_DIR is not defined.');
       const options = {
-        root: path.join(import.meta.dirname, 'the directory for quiz file'),
-        dotfiles: 'deny',
-        headers: {
-          'x-timestamp': Date.now(),
-          'x-sent': true,
-        },
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
+        root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
       };
-      res.status(200).json({ result: targetQuiz });
+      res.sendFile(fileName, options);
     }
   })().catch((err: unknown) => {
     next(err);
@@ -111,7 +108,7 @@ router.get('/:uuid', (req, res, next) => {
     if (targetQuiz === null) {
       res.sendStatus(404);
     } else {
-      res.status(200).json({ result: targetQuiz });
+      res.send({ result: targetQuiz });
     }
   })().catch((err: unknown) => {
     next(err);

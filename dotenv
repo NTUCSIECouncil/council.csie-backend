@@ -4,3 +4,5 @@ MONGODB_DBNAME="test"
 PORT=3010
 
 FIREBASE_CERT_PATH="./service-account-file.json"
+
+QUIZ_FILE_DIR="not implemented"
