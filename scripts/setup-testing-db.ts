@@ -1,55 +1,62 @@
-import { type UUID } from 'crypto';
+import 'dotenv/config';
+import { models } from "@models/index";
+import { type Article } from "@models/article-schema";
+import { type Course } from "@models/course-schema";
+import { type Quiz } from "@models/quiz-schema";
+import { type User } from "@models/user-schema";
+import mongoose from 'mongoose';
+import { type Model } from 'mongoose';
 
 const dbName = "csie-council-test";
-const defaultData = {
+const defaultData: {User: User[], Article: Article[], Course: Course[], Quiz: Quiz[]} = {
     User: [
         {
-            _id: "u1",
+            _id: "00000001-0001-0000-0000-000000000000",
             email: "thomaswang2003@gmail.com",
             name: "王勻",
         },
         {
-            _id: "u2",
+            _id: "00000001-0002-0000-0000-000000000000",
             email: "b10902028@csie.ntu.edu.tw",
             name: "B10902028",
         },
         {
-            _id: "u3",
+            _id: "00000001-0003-0000-0000-000000000000",
             email: "thomaswang@csie.ntu.edu.tw",
             name: "Thomas Wang",
         }
     ],
     Article: [
         {
-            _id: "00000002-0001-0000-0000-000000000000" as UUID,
+            _id: "00000002-0001-0000-0000-000000000000",
             title: "高等演算法",
             lecturer: "陳和鄰",
             tag: ["腦筋急轉彎", "好兇"],
             grade: 1,
             categories: ["選修", "電機"],
             content: "# Header 1\n\n## Header 2\n\njizz",
-            course: "00000003-0001-0000-0000-000000000000" as UUID,
-            creator: "u1",
+            course: "00000003-0001-0000-0000-000000000000",
+            creator: "00000001-0001-0000-0000-000000000000",
             createdAt: new Date(),
             updatedAt: new Date(),
         },
         {
-            _id: "00000002-0002-0000-0000-000000000000" as UUID,
+            _id: "00000002-0002-0000-0000-000000000000",
             title: "人工智慧導論",
             lecturer: "薇薇安",
             tag: ["林軒田的遺產", "阿偉說的"],
             grade: 1,
             categories: ["必修", "水課"],
             content: "# Header 1\n\n## Header 2\n\njizz",
-            course: "00000003-0002-0000-0000-000000000000" as UUID,
-            creator: "u2",
+            course: "00000003-0002-0000-0000-000000000000" ,
+            creator: "00000001-0002-0000-0000-000000000000",
             createdAt: new Date(),
             updatedAt: new Date(),
         }
     ],
     Course: [
         {
-            _id: "00000003-0001-0000-0000-000000000000" as UUID,
+            _id: "00000003-0001-0000-0000-000000000000" ,
             title: "高等演算法",
             semester: "大三",
             credit: 3,
@@ -58,7 +65,7 @@ const defaultData = {
             ratings: "蛤",
         },
         {
-            _id: "00000003-0002-0000-0000-000000000000" as UUID,
+            _id: "00000003-0002-0000-0000-000000000000" ,
             title: "人工智慧導論",
             semester: "大三",
             credit: 3,
@@ -69,23 +76,14 @@ const defaultData = {
     ],
     Quiz: [
         {
-            _id: "00000004-0001-0000-0000-000000000000" as UUID,
+            _id: "00000004-0001-0000-0000-000000000000",
             title: "期中考",
-            course: "00000003-0002-0000-0000-000000000000" as UUID,
+            course: "00000003-0002-0000-0000-000000000000" ,
             semester: "112-1",
             downloadLink: "https://www.berkeley.edu/",
         }
     ],
 };
-
-import 'dotenv/config';
-import { models } from "@models/index";
-import { type Article } from "@models/ArticleSchema";
-import { type Course } from "@models/course-schema";
-import { type Quiz } from "@models/quiz-schema";
-import { type User } from "@models/userschema";
-import mongoose from 'mongoose';
-import { type Model } from 'mongoose';
 
 async function insertAll<T>(model: Model<T>, data: Partial<T>[]) {
     console.log(`Inserting ${data.length} data into`, model);
@@ -108,9 +106,11 @@ async function insertAll<T>(model: Model<T>, data: Partial<T>[]) {
     await mongoose.connection.db.dropDatabase();
     console.log(`Dropped database "${dbName}"`);
 
-    await insertAll<Article>(models.Article, defaultData.Article);
-    await insertAll<Course>(models.Course, defaultData.Course);
-    await insertAll<Quiz>(models.Quiz, defaultData.Quiz);
+    type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+    await insertAll<PartialBy<Article, '_id'>>(models.Article, defaultData.Article);
+    await insertAll<PartialBy<Course, '_id'>>(models.Course, defaultData.Course);
+    await insertAll<PartialBy<Quiz, '_id'>>(models.Quiz, defaultData.Quiz);
     await insertAll<User>(models.User, defaultData.User);
 
     process.exit();
