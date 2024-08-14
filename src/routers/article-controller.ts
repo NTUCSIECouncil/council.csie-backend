@@ -1,9 +1,9 @@
 import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
-import { models } from '@models/index';
-import { type Article, ZArticleSchema } from '@models/article-schema';
-import { ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema';
-import { portionParser } from './middleware';
+import { models } from '@models/index.ts';
+import { type Article, ZArticleSchema } from '@models/article-schema.ts';
+import { ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import { portionParser } from './middleware.ts';
 
 const router = Router();
 

@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import { models } from "@models/index";
-import { type Article } from "@models/article-schema";
-import { type Course } from "@models/course-schema";
-import { type Quiz } from "@models/quiz-schema";
-import { type User } from "@models/user-schema";
+import { models } from "@models/index.ts";
+import { type Article } from "@models/article-schema.ts";
+import { type Course } from "@models/course-schema.ts";
+import { type Quiz } from "@models/quiz-schema.ts";
+import { type User } from "@models/user-schema.ts";
 import mongoose from 'mongoose';
 import { type Model } from 'mongoose';
 
@@ -103,7 +103,7 @@ async function insertAll<T>(model: Model<T>, data: Partial<T>[]) {
     });
     console.log('Connected to MongoDB');
     console.log(`Dropping database "${dbName}"`);
-    await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.db!.dropDatabase();
     console.log(`Dropped database "${dbName}"`);
 
     type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

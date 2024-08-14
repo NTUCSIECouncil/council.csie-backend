@@ -1,10 +1,13 @@
-import { connect, connection } from 'mongoose';
+import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'fs';
-import { type UserModel } from '@models/user-schema';
-import { type CourseModel } from '@models/course-schema';
-import { type QuizModel } from '@models/quiz-schema';
-import { type ArticleModel } from '@models/article-schema';
+import { type UserModel } from '@models/user-schema.ts';
+import { type CourseModel } from '@models/course-schema.ts';
+import { type QuizModel } from '@models/quiz-schema.ts';
+import { type ArticleModel } from '@models/article-schema.ts';
+
+const connect = mongoose.connect;
+const connection = mongoose.connection;
 
 class DB {
   static mongoServer: MongoMemoryServer;
@@ -18,7 +21,7 @@ class DB {
 
   static async dropCollection() {
     if (this.mongoServer) {
-      const collections = await connection.db.collections();
+      const collections = await connection.db!.collections();
       for (let collection of collections) {
         await collection.drop();
       }

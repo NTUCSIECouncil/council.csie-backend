@@ -1,8 +1,8 @@
-import { models } from '@models/index';
-import qs from 'qs';
-import DB from './db';
 import request from 'supertest';
-import app from './app';
+import qs from 'qs';
+import { models } from '@models/index.ts';
+import DB from './db.ts';
+import app from './app.ts';
 
 async function createMockData() {
   await DB.createFromJSON(models.Course, 'test/courses.example.json');

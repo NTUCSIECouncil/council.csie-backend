@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { model, Schema, type FilterQuery, type Model } from 'mongoose';
 import { z } from 'zod';
-import { type QuizSearchParam, ZUuidSchema } from './util-schema';
+import { type QuizSearchParam, ZUuidSchema } from './util-schema.ts';
 
 const ZQuizSchema = z.object({
   _id: ZUuidSchema,

@@ -1,10 +1,11 @@
 import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
-import { models } from '@models/index';
-import { type Quiz, ZQuizSchema } from '@models/quiz-schema';
-import { ZUuidSchema, type QuizSearchParam, ZQuizSearchParam } from '@models/util-schema';
-import { portionParser } from './middleware';
+import { models } from '@models/index.ts';
+import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
+import { ZUuidSchema, type QuizSearchParam, ZQuizSearchParam } from '@models/util-schema.ts';
+import { portionParser } from './middleware.ts';
 import { ZodError } from 'zod';
+import path from 'path';
 
 const router = Router();
 
@@ -58,6 +59,38 @@ router.get('/search', (req, res, next) => {
 
     const result = await QuizModel.searchQuizzes(searchParams, portionNum, portionSize);
     res.send({ result });
+  })().catch((err: unknown) => {
+    next(err);
+  });
+});
+
+router.get('/:uuid/file', (req, res, next) => {
+  (async () => {
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err: unknown) {
+      if (err instanceof ZodError) console.log(err.format());
+      res.sendStatus(400);
+      return;
+    }
+
+    const targetQuiz = await QuizModel.findById(uuid).exec();
+    if (targetQuiz === null) {
+      res.sendStatus(404);
+    } else {
+      // Some how getting filename
+      const fileName = 'not implemented';
+      const options = {
+        root: path.join(import.meta.dirname, 'the directory for quiz file'),
+        dotfiles: 'deny',
+        headers: {
+          'x-timestamp': Date.now(),
+          'x-sent': true,
+        },
+      };
+      res.status(200).json({ result: targetQuiz });
+    }
   })().catch((err: unknown) => {
     next(err);
   });
