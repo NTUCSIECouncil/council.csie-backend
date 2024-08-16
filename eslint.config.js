@@ -7,7 +7,7 @@ import stylistic from '@stylistic/eslint-plugin'
 
 export default tseslint.config(
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'test/**/*.ts', 'scripts/**/*.ts'],
     languageOptions: {
       parserOptions: {
         projectService: true,

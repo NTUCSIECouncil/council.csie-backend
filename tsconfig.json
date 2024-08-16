@@ -1,6 +1,5 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
-
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
@@ -27,6 +26,11 @@
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "scripts/**/*"
+  ],
   "ts-node": {
     "require": [
       "tsconfig-paths/register"

@@ -103,6 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-db/
-api_key/
+# Absolute secret
 service-account-file.json

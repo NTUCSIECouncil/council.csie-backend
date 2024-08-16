@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from 'express';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -50,9 +49,9 @@ expressApp.use('/api', APIController);
 // Open connection to the "test" database on locally running instance of mongodb
 (async () => {
   if (process.env.MONGODB_URL === undefined) throw new Error('MONGODB_URL is not defined.');
-  if (process.env.MONGODB_DBNAME === undefined) throw new Error('MONGODB_DBNAME is not defined.');
-  await mongoose.connect(process.env.MONGODB_URL, { dbName: process.env.MONGODB_DBNAME });
-  console.log('Connected to MongoDB');
+  if (process.env.MONGODB_DB_NAME === undefined) throw new Error('MONGODB_DB_NAME is not defined.');
+  await mongoose.connect(process.env.MONGODB_URL, { dbName: process.env.MONGODB_DB_NAME });
+  console.log(`Connected to ${process.env.MONGODB_DB_NAME} at ${process.env.MONGODB_URL}.`);
 
   expressApp.listen(port, () => {
     console.log(`Start listening at port ${port}`);
