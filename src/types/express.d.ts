@@ -1,10 +1,11 @@
 import { type DecodedIdToken } from 'firebase-admin/auth';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    guser?: DecodedIdToken;
-  }
-  interface Response {
-    createTime?: string;
+declare global {
+  declare namespace Express {
+    export interface Request {
+      guser?: DecodedIdToken;
+      portionSize?: number;
+      portionNum?: number;
+    }
   }
 }

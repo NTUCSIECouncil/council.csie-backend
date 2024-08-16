@@ -1,8 +1,7 @@
 import { Router, type ErrorRequestHandler } from 'express';
-import articleController from './article-controller';
-import exampleController from './example-controller';
-import quizController from './quiz-controller';
-import userInfoController from './userInfo-controller';
+import articleController from './article-controller.ts';
+import quizController from './quiz-controller.ts';
+import userInfoController from './user-controller.ts';
 
 const router = Router();
 
@@ -16,7 +15,6 @@ const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
 };
 
 router.use('/articles', articleController);
-router.use('/example', exampleController);
 router.use('/quizzes', quizController);
 router.use('/users', userInfoController);
 

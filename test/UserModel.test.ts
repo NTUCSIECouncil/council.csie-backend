@@ -1,7 +1,7 @@
-import { models } from '@models/index';
-import DB from './db';
 import request from 'supertest';
-import app from './app';
+import { models } from '@models/index.ts';
+import DB from './db.ts';
+import app from './app.ts';
 
 async function createMockData() {
   await DB.createFromJSON(models.User, 'test/users.example.json');
@@ -22,18 +22,18 @@ describe("User", () => {
   describe('GET requests', () => {
     it('/api/users/:uid', async () => {
       const res = await request(app)
-        .get('/api/users/00000000')
-        .set({ uid: '00000000' })
+        .get('/api/users/00000001-0001-0000-0000-000000000000')
+        .set({ uid: '00000001-0001-0000-0000-000000000000' })
         .expect(200);
-      expect(res.body._id).toBe('00000000');
+      expect(res.body._id).toBe('00000001-0001-0000-0000-000000000000');
     });
 
     it('/api/users/myself', async () => {
       const res = await request(app)
         .get('/api/users/myself')
-        .set({ uid: '00000000' })
+        .set({ uid: '00000001-0001-0000-0000-000000000000' })
         .expect(200);
-      expect(res.body._id).toBe('00000000');
+      expect(res.body._id).toBe('00000001-0001-0000-0000-000000000000');
     });
   });
 });

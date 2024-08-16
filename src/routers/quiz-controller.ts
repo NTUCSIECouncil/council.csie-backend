@@ -1,35 +1,24 @@
 import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
-import { type QuizSearchParam } from '@type/query-param';
-import { models } from '@models/index';
-import { type Quiz } from '@models/QuizSchema';
+import { models } from '@models/index.ts';
+import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
+import { ZUuidSchema, type QuizSearchParam, ZQuizSearchParam } from '@models/util-schema.ts';
+import { portionParser } from './middleware.ts';
+import { ZodError } from 'zod';
+import path from 'path';
 
 const router = Router();
 
 const QuizModel = models.Quiz;
 
-const verifyQuiz = (quizInfo: Partial<Quiz>, uuid: UUID, complete: boolean): boolean => {
-  if (quizInfo._id !== undefined && quizInfo._id !== uuid) {
-    return false;
-  }
-
-  if (complete && !(quizInfo._id !== undefined &&
-                    quizInfo.title !== undefined &&
-                    quizInfo.course !== undefined &&
-                    quizInfo.download_link !== undefined &&
-                    quizInfo.semester !== undefined)) {
-    return false;
-  }
-
-  return true;
-};
-
 // get all quizzes
-router.get('/', (req, res, next) => {
+router.get('/', portionParser(QuizModel), (req, res, next) => {
   (async () => {
-    const quizzes = await QuizModel.find().exec();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+    const quizzes = await QuizModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
     res.json({ result: quizzes });
-  })().catch((err) => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
@@ -37,62 +26,104 @@ router.get('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
   (async () => {
     const uuid = randomUUID();
-    const newInfo: Quiz = { _id: uuid, ...req.body };
-
-    if (!verifyQuiz(newInfo, uuid, true)) {
+    let newInfo: Quiz;
+    try {
+      newInfo = ZQuizSchema.parse({ _id: uuid, ...req.body });
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
 
     const targetQuiz = new QuizModel(newInfo);
     await targetQuiz.save();
-    res.status(201).json({ uuid });
-  })().catch(err => {
+    res.status(201).send({ uuid });
+  })().catch((err: unknown) => {
     next(err);
   });
 });
 
 router.get('/search', (req, res, next) => {
   (async () => {
-    const searchParams = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
 
-    if (searchParams.course === undefined) {
+    let searchParams: QuizSearchParam;
+    try {
+      searchParams = ZQuizSearchParam.parse(req.query);
+    } catch (err: unknown) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
-    }
-    const queryParams: QuizSearchParam = { course: searchParams.course as UUID };
-
-    if (searchParams.keyword != null) {
-      queryParams.keyword = searchParams.keyword as string;
+      return;
     }
 
-    const result = await QuizModel.searchQuizzes(queryParams);
+    const result = await QuizModel.searchQuizzes(searchParams, portionNum, portionSize);
     res.send({ result });
-  })().catch((err) => {
+  })().catch((err: unknown) => {
+    next(err);
+  });
+});
+
+router.get('/:uuid/file', (req, res, next) => {
+  (async () => {
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err: unknown) {
+      if (err instanceof ZodError) console.log(err.format());
+      res.sendStatus(400);
+      return;
+    }
+
+    const targetQuiz = await QuizModel.findById(uuid).exec();
+    if (targetQuiz === null) {
+      res.sendStatus(404);
+    } else {
+      // Some how getting filename
+      const fileName = 'not implemented';
+      if (process.env.QUIZ_FILE_DIR === undefined) throw new Error('QUIZ_FILE_DIR is not defined.');
+      const options = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
+        root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
+      };
+      res.sendFile(fileName, options);
+    }
+  })().catch((err: unknown) => {
     next(err);
   });
 });
 
 router.get('/:uuid', (req, res, next) => {
   (async () => {
-    const uuid = req.params.uuid as UUID;
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err: unknown) {
+      if (err instanceof ZodError) console.log(err.format());
+      res.sendStatus(400);
+      return;
+    }
 
     const targetQuiz = await QuizModel.findById(uuid).exec();
     if (targetQuiz === null) {
       res.sendStatus(404);
     } else {
-      res.status(200).json({ result: targetQuiz });
+      res.send({ result: targetQuiz });
     }
-  })().catch(err => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });
 
 router.put('/:uuid', (req, res, next) => {
   (async () => {
-    const uuid = req.params.uuid as UUID;
-    const newInfo: Partial<Quiz> = req.body;
-
-    if (!verifyQuiz(newInfo, uuid, false)) {
+    let uuid: UUID;
+    let newInfo: Partial<Quiz>;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+      newInfo = ZQuizSchema.partial().parse(req.body);
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
@@ -105,7 +136,7 @@ router.put('/:uuid', (req, res, next) => {
       await targetQuiz.save();
       res.sendStatus(204);
     }
-  })().catch(err => {
+  })().catch((err: unknown) => {
     next(err);
   });
 });

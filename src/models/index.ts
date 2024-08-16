@@ -1,18 +1,13 @@
-import { model } from 'mongoose';
-import { articleSchema, type Article, type ArticleModel } from './ArticleSchema';
-import { userSchema, type User } from './UserSchema';
-import { courseSchema, type Course } from './CourseSchema';
-import { quizSchema, type Quiz, type QuizModel } from './QuizSchema';
-
-// function registerSchemas (): void {
-//   model<User>('User', userSchema);
-// }
+import { ArticleModel } from './article-schema.ts';
+import { UserModel } from './user-schema.ts';
+import { CourseModel } from './course-schema.ts';
+import { QuizModel } from './quiz-schema.ts';
 
 const models = {
-  Article: model<Article, ArticleModel>('Article', articleSchema),
-  User: model<User>('User', userSchema),
-  Course: model<Course>('Course', courseSchema),
-  Quiz: model<Quiz, QuizModel>('Quiz', quizSchema)
+  Article: ArticleModel,
+  User: UserModel,
+  Course: CourseModel,
+  Quiz: QuizModel,
 };
 
 export { models };

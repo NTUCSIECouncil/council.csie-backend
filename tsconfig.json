@@ -1,16 +1,9 @@
 {
+  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
-    "lib": [
-      "ES2023"
-    ],
-    "module": "NodeNext",
-    "target": "ES2022",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "paths": {
       "@routers/*": [
         "./src/routers/*",
@@ -33,6 +26,11 @@
       "./node_modules/@types"
     ]
   },
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "scripts/**/*"
+  ],
   "ts-node": {
     "require": [
       "tsconfig-paths/register"

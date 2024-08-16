@@ -1,10 +1,13 @@
-import { connect, connection, Model } from 'mongoose';
+import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'fs';
-import { type Article } from '../src/models/ArticleSchema';
-import { type User } from '../src/models/UserSchema';
-import { Course } from '@models/CourseSchema';
-import { Quiz } from '@models/QuizSchema';
+import { type UserModel } from '@models/user-schema.ts';
+import { type CourseModel } from '@models/course-schema.ts';
+import { type QuizModel } from '@models/quiz-schema.ts';
+import { type ArticleModel } from '@models/article-schema.ts';
+
+const connect = mongoose.connect;
+const connection = mongoose.connection;
 
 class DB {
   static mongoServer: MongoMemoryServer;
@@ -18,7 +21,7 @@ class DB {
 
   static async dropCollection() {
     if (this.mongoServer) {
-      const collections = await connection.db.collections();
+      const collections = await connection.db!.collections();
       for (let collection of collections) {
         await collection.drop();
       }
@@ -33,16 +36,12 @@ class DB {
     }
   }
 
-  static async createFromJSON(model: Model<Article> | Model<User> | Model<Course> | Model<Quiz>, path: string, ids: any[] = []) {
+  static async createFromJSON(model: ArticleModel | UserModel | CourseModel | QuizModel, path: string) {
     const rawData = await readFileSync(path, 'utf-8');
     const data = await JSON.parse(rawData);
   
     for (let i = 0; i < data.length; i++) {
       const datum = data[i];
-      if (ids.length) {
-        if (i >= ids.length) datum['creator'] = ids[ids.length - 1]._id; // Assuming creator field is _id of User
-        else datum['creator'] = ids[i]._id;
-      }
       const doc = new model(datum);
       await doc.save();
     }
