@@ -17,7 +17,6 @@
     "@eslint/js": "^9.9.0",
     "@stylistic/eslint-plugin": "^2.6.2",
     "@tsconfig/node22": "^22.0.0",
-    "@types/cors": "^2.8.17",
     "@types/eslint__js": "^8.42.3",
     "@types/jest": "^29.5.12",
     "@types/supertest": "^6.0.2",
@@ -28,10 +27,9 @@
     "mongodb-memory-server": "^10.0.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.2",
-    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.17.0",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.0.1"
+    "typescript-eslint": "^8.2.0"
   },
   "overrides": {
     "glob": "^11.0.0"
