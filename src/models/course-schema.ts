@@ -1,15 +1,19 @@
-import { randomUUID, type UUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { model, type Model, Schema } from 'mongoose';
+import { z } from 'zod';
+import { ZUuidSchema } from './util-schema.ts';
 
-interface Course {
-  _id: UUID;
-  title: string;
-  semester?: string;
-  credit: number;
-  lecturer: string;
-  pastQuiz?: string; // link to course's past quiz page
-  ratings?: string; // link to course's rating page
-}
+const ZCourseSchema = z.object({
+  _id: ZUuidSchema,
+  title: z.string(),
+  semester: z.string().optional(),
+  credit: z.number().nonnegative(),
+  lecturer: z.string(),
+  pastQuiz: z.string().optional(), // link to course's past quiz page
+  ratings: z.string().optional(), // link to course's rating page
+});
+
+interface Course extends z.infer<typeof ZCourseSchema> {};
 
 interface CourseWithOptionalId extends Omit<Course, '_id'>, Partial<Pick<Course, '_id'>> {};
 
@@ -27,4 +31,4 @@ const courseSchema = new Schema<CourseWithOptionalId>({
 
 const CourseModel = model<CourseWithOptionalId>('Course', courseSchema);
 
-export { type Course, CourseModel };
+export { type Course, CourseModel, ZCourseSchema };
