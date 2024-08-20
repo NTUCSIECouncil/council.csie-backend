@@ -1,9 +1,19 @@
 /** @type {import('jest').Config} */
 const config = {
-  preset: 'ts-jest/presets/default-esm',
-  testEnvironment: 'node',
+  preset: '@shelf/jest-mongodb',
+  extensionsToTreatAsEsm: ['.ts'],
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
   verbose: true,
   moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+
     "@routers/(.*)": [
       "../../src/routers/$1",
       "../../src/routers",

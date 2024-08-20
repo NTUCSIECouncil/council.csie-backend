@@ -1,23 +1,17 @@
 import { describe, beforeAll, afterAll, it, expect } from '@jest/globals';
 import request from 'supertest';
 import { models } from '@models/index.ts';
-import DB from './db.ts';
 import app from './app.ts';
-
-async function createMockData() {
-  await DB.createFromJSON(models.User, 'test/users.example.json');
-  // console.log(await models.User.find().exec());
-}
+import { connectDb, disconnectDb, insertFromFile } from './db.ts';
 
 describe('User', () => {
   beforeAll(async () => {
-    await DB.connectDB();
-    await createMockData();
+    await connectDb();
+    await insertFromFile('test/users.example.json', models.User);
   });
 
   afterAll(async () => {
-    await DB.dropCollection();
-    await DB.dropDB();
+    await disconnectDb();
   });
 
   describe('GET requests', () => {

@@ -1,25 +1,19 @@
-import { models } from '@models/index.ts';
 import { describe, expect, beforeAll, afterAll, it } from '@jest/globals';
 import qs from 'qs';
 import request from 'supertest';
-import DB from './db.ts';
+import { models } from '@models/index.ts';
 import app from './app.ts';
-async function createMockData() {
-  await DB.createFromJSON(models.User, 'test/users.example.json');
-  // console.log(await models.User.find().exec());
-  await DB.createFromJSON(models.Article, 'test/articles.example.json');
-  // console.log(await models.Article.find().exec());
-}
+import { connectDb, disconnectDb, insertFromFile } from './db.ts';
 
 describe('Article', function () {
   beforeAll(async () => {
-    await DB.connectDB();
-    await createMockData();
+    await connectDb();
+    await insertFromFile('test/users.example.json', models.User);
+    await insertFromFile('test/articles.example.json', models.Article);
   });
 
   afterAll(async () => {
-    await DB.dropCollection();
-    await DB.dropDB();
+    await disconnectDb();
   });
 
   describe('GET requests', () => {

@@ -2,25 +2,18 @@ import { describe, beforeAll, afterAll, it, expect } from '@jest/globals';
 import qs from 'qs';
 import request from 'supertest';
 import { models } from '@models/index.ts';
-import DB from './db.ts';
 import app from './app.ts';
-
-async function createMockData() {
-  await DB.createFromJSON(models.Course, 'test/courses.example.json');
-  // console.log(await models.Course.find().exec());
-  await DB.createFromJSON(models.Quiz, 'test/quizzes.example.json');
-  // console.log(await models.Quiz.find().exec());
-}
+import { connectDb, disconnectDb, insertFromFile } from './db.ts';
 
 describe('Quiz', function () {
   beforeAll(async () => {
-    await DB.connectDB();
-    await createMockData();
+    await connectDb();
+    await insertFromFile('test/courses.example.json', models.Course);
+    await insertFromFile('test/quizzes.example.json', models.Quiz);
   });
 
   afterAll(async () => {
-    await DB.dropCollection();
-    await DB.dropDB();
+    await disconnectDb();
   });
 
   describe('GET requests', () => {
