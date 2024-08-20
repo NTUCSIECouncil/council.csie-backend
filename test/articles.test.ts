@@ -1,19 +1,18 @@
-import { describe, expect, beforeAll, afterAll, it } from '@jest/globals';
+import mongoose from 'mongoose';
+import { describe, beforeEach, afterEach, expect, it } from '@jest/globals';
 import qs from 'qs';
 import request from 'supertest';
-import { models } from '@models/index.ts';
 import app from './app.ts';
-import { connectDb, disconnectDb, insertFromFile } from './db.ts';
+import { insertFromFile } from './utils.ts';
 
 describe('Article', function () {
-  beforeAll(async () => {
-    await connectDb();
-    await insertFromFile('test/users.example.json', models.User);
-    await insertFromFile('test/articles.example.json', models.Article);
+  beforeEach(async () => {
+    await insertFromFile('Article');
+    await insertFromFile('User');
   });
 
-  afterAll(async () => {
-    await disconnectDb();
+  afterEach(async () => {
+    await mongoose.connection.db?.dropDatabase();
   });
 
   describe('GET requests', () => {

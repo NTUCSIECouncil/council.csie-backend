@@ -1,7 +1,10 @@
 /** @type {import('jest').Config} */
 const config = {
-  preset: '@shelf/jest-mongodb',
-  extensionsToTreatAsEsm: ['.ts'],
+  preset: 'ts-jest/presets/default-esm',
+
+  setupFilesAfterEnv: [
+    "<rootDir>/test/setupFile.ts"
+  ],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
