@@ -1,5 +1,6 @@
-import request from 'supertest';
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals';
 import qs from 'qs';
+import request from 'supertest';
 import { models } from '@models/index.ts';
 import DB from './db.ts';
 import app from './app.ts';
@@ -11,7 +12,7 @@ async function createMockData() {
   // console.log(await models.Quiz.find().exec());
 }
 
-describe("Quiz", function () {
+describe('Quiz', function () {
   beforeAll(async () => {
     await DB.connectDB();
     await createMockData();
@@ -38,8 +39,8 @@ describe("Quiz", function () {
     });
 
     it('/api/quizzes/search', async () => {
-      const query = { 
-        course: '00000003-0001-0000-0000-000000000000'
+      const query = {
+        course: '00000003-0001-0000-0000-000000000000',
       };
       const res = await request(app)
         .get('/api/quizzes/search?' + qs.stringify(query))
@@ -49,9 +50,9 @@ describe("Quiz", function () {
     });
 
     it('/api/quizzes/search', async () => {
-      const query = { 
+      const query = {
         course: '00000003-0001-0000-0000-000000000000',
-        keyword: '111-2'
+        keyword: '111-2',
       };
       const res = await request(app)
         .get('/api/quizzes/search?' + qs.stringify(query))

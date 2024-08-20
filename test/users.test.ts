@@ -1,3 +1,4 @@
+import { describe, beforeAll, afterAll, it, expect } from '@jest/globals';
 import request from 'supertest';
 import { models } from '@models/index.ts';
 import DB from './db.ts';
@@ -8,7 +9,7 @@ async function createMockData() {
   // console.log(await models.User.find().exec());
 }
 
-describe("User", () => {
+describe('User', () => {
   beforeAll(async () => {
     await DB.connectDB();
     await createMockData();

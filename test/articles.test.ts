@@ -1,9 +1,9 @@
-import request from 'supertest';
-import qs from 'qs';
 import { models } from '@models/index.ts';
+import { describe, expect, beforeAll, afterAll, it } from '@jest/globals';
+import qs from 'qs';
+import request from 'supertest';
 import DB from './db.ts';
 import app from './app.ts';
-
 async function createMockData() {
   await DB.createFromJSON(models.User, 'test/users.example.json');
   // console.log(await models.User.find().exec());
@@ -11,7 +11,7 @@ async function createMockData() {
   // console.log(await models.Article.find().exec());
 }
 
-describe("Article", function () {
+describe('Article', function () {
   beforeAll(async () => {
     await DB.connectDB();
     await createMockData();
@@ -63,15 +63,15 @@ describe("Article", function () {
     });
 
     it('/api/articles/search', async () => {
-      const queryOne = { 
-        tag: ['德邦讚']
+      const queryOne = {
+        tag: ['德邦讚'],
       };
       const resOne = await request(app)
         .get('/api/articles/search?' + qs.stringify(queryOne))
         .expect(200);
 
       expect(resOne.body.result).toHaveLength(10);
-      const queryTwo = { 
+      const queryTwo = {
         tag: ['德邦讚'],
         portionNum: 1,
       };

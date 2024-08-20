@@ -3,32 +3,34 @@ import APIController from '@routers/API-controller.ts';
 import { DecodedIdToken } from 'firebase-admin/auth';
 
 const expressApp = express();
-const port = 3010;
 
 expressApp.use((req, res, next) => {
   const uidHeader = req.headers.uid;
-  let uid: string = 'uid';
+  let uid = 'uid';
   if (typeof uidHeader == 'string') { uid = uidHeader; }
+
   const guser: DecodedIdToken = {
-    iss: 'https://securetoken.google.com/YOUR_PROJECT_ID',
-    aud: 'YOUR_PROJECT_ID',
-    auth_time: 1592566566,
+    name: 'Mock Person',
+    iss: 'https://securetoken.google.com/csie-council',
+    aud: 'csie-council',
+    auth_time: 1724052294,
+    user_id: uid,
     sub: uid,
-    iat: 1592566566,
-    exp: 1592570166,
+    iat: 1724144419,
+    exp: 1724148019,
+    email: 'mock-email@gail.com',
+    email_verified: true,
     firebase: {
-      identities: {},
-      sign_in_provider: 'google.com'
+      identities: { 'google.com': [Array], 'email': [Array] },
+      sign_in_provider: 'google.com',
     },
-    uid: uid
-  }  
-  if (guser) {
-    req.guser = guser;
-  }
-  next(); 
+    uid: uid,
+  };
+  req.guser = guser;
+  next();
 });
 
 expressApp.use(express.json());
 expressApp.use('/api', APIController);
 
-export default expressApp
+export default expressApp;
