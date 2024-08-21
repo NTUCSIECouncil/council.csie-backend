@@ -13,7 +13,7 @@ const ZSchema = {
 };
 
 const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
-  const filePath = `test/${model.charAt(0).toLowerCase() + model.slice(1)}_samples.json`;
+  const filePath = `test/samples/${model.charAt(0).toLowerCase() + model.slice(1)}_samples.json`;
   const objs = ZSchema[model].array().parse(JSON.parse(readFileSync(filePath, 'utf-8')));
 
   for (const obj of objs) {
