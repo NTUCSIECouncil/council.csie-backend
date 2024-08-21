@@ -6,6 +6,13 @@ const ZUuidSchema = z.custom<UUID>((val) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(val);
 });
 
+const ZPaginationQueryParam = z.object({
+  offset: z.coerce.number().positive().optional(),
+  limit: z.coerce.number().nonnegative().optional(),
+});
+
+interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
+
 const ZArticleSearchQueryParam = z.object({
   tag: z.string().array().optional(),
   keyword: z.string().optional(),
@@ -36,4 +43,4 @@ interface QuizSearchParam extends z.infer<typeof ZQuizSearchParam> {};
 //   keyword?: string;
 // }
 
-export { ZUuidSchema, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam };
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam };
