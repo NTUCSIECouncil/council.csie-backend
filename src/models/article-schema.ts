@@ -22,7 +22,7 @@ interface Article extends z.infer<typeof ZArticleSchema> {};
 interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Article, '_id'>> {};
 
 interface ArticleModel extends Model<ArticleWithOptionalId> {
-  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, portionNum: number, portionSize: number) => Promise<Article[]>;
+  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
@@ -39,7 +39,7 @@ const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   updatedAt: { type: Date, required: false, default: () => Date.now() },
 });
 
-const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, portionNum, portionSize) {
+const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
   const query: FilterQuery<Article> = {};
 
   if (params.tag != null) {
@@ -65,7 +65,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
     ];
   }
 
-  const result = await this.find(query).skip(portionNum * portionSize).limit(portionSize).exec();
+  const result = await this.find(query).skip(offset).limit(limit).exec();
   return result;
 };
 

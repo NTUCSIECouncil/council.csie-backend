@@ -2,19 +2,19 @@ import { randomUUID, type UUID } from 'crypto';
 import { Router } from 'express';
 import { models } from '@models/index.ts';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
-import { ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
-import { portionParser } from './middleware.ts';
+import { ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import { paginationParser } from './middleware.ts';
 
 const router = Router();
 
 const ArticleModel = models.Article;
 
 // get all articles
-router.get('/', portionParser(ArticleModel), (req, res, next) => {
+router.get('/', paginationParser(ArticleModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
-    const data = await ArticleModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
+    const [offset, limit] = [req.offset!, req.limit!];
+    const data = await ArticleModel.find().skip(offset).limit(limit).exec();
     res.json({ data });
   })().catch((err: unknown) => {
     next(err);
@@ -40,18 +40,19 @@ router.post('/', (req, res, next) => {
   });
 });
 
-router.get('/search', portionParser(ArticleModel), (req, res, next) => {
+router.get('/search', paginationParser(ArticleModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
-
-    const result = ZArticleSearchQueryParam.safeParse(req.query);
-    if (!result.success) {
-      console.log(result.error);
+    const [offset, limit] = [req.offset!, req.limit!];
+    let queryParam: ArticleSearchQueryParam;
+    try {
+      queryParam = ZArticleSearchQueryParam.parse(req.query);
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
-    const data = await ArticleModel.searchArticles(result.data, portionNum, portionSize);
+    const data = await ArticleModel.searchArticles(queryParam, offset, limit);
     res.send({ data });
   })().catch((err: unknown) => {
     next(err);

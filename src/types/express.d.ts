@@ -4,8 +4,8 @@ declare global {
   declare namespace Express {
     export interface Request {
       guser?: DecodedIdToken;
-      portionSize?: number;
-      portionNum?: number;
+      limit?: number;
+      offset?: number;
     }
   }
 }

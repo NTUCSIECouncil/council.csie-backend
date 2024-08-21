@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUuidSchema, type QuizSearchParam, ZQuizSearchParam } from '@models/util-schema.ts';
-import { portionParser } from './middleware.ts';
+import { paginationParser } from './middleware.ts';
 import { ZodError } from 'zod';
 import path from 'path';
 
@@ -12,11 +12,11 @@ const router = Router();
 const QuizModel = models.Quiz;
 
 // get all quizzes
-router.get('/', portionParser(QuizModel), (req, res, next) => {
+router.get('/', paginationParser(QuizModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
-    const data = await QuizModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
+    const [offset, limit] = [req.offset!, req.limit!];
+    const data = await QuizModel.find().skip(offset).limit(limit).exec();
     res.json({ data });
   })().catch((err: unknown) => {
     next(err);
@@ -43,10 +43,10 @@ router.post('/', (req, res, next) => {
   });
 });
 
-router.get('/search', (req, res, next) => {
+router.get('/search', paginationParser(QuizModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-    const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
+    const [offset, limit] = [req.offset!, req.limit!];
 
     let searchParams: QuizSearchParam;
     try {
@@ -57,7 +57,7 @@ router.get('/search', (req, res, next) => {
       return;
     }
 
-    const data = await QuizModel.searchQuizzes(searchParams, portionNum, portionSize);
+    const data = await QuizModel.searchQuizzes(searchParams, offset, limit);
     res.send({ data });
   })().catch((err: unknown) => {
     next(err);
@@ -70,7 +70,7 @@ router.get('/:uuid/file', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err: unknown) {
-      if (err instanceof ZodError) console.log(err.format());
+      console.log(err);
       res.sendStatus(400);
       return;
     }

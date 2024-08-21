@@ -16,7 +16,7 @@ interface Quiz extends z.infer<typeof ZQuizSchema> {};
 interface QuizWithOptionalId extends Omit<Quiz, '_id'>, Partial<Pick<Quiz, '_id'>> {};
 
 interface QuizModel extends Model<QuizWithOptionalId> {
-  searchQuizzes: (this: QuizModel, params: QuizSearchParam, portionNum: number, portionSize: number) => Promise<Quiz[]>;
+  searchQuizzes: (this: QuizModel, params: QuizSearchParam, offset: number, limit: number) => Promise<Quiz[]>;
 }
 
 const quizSchema = new Schema<QuizWithOptionalId, QuizModel>({
@@ -27,7 +27,7 @@ const quizSchema = new Schema<QuizWithOptionalId, QuizModel>({
   downloadLink: { type: String, required: true },
 });
 
-const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, portionNum, portionSize) {
+const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, offset, limit) {
   const query: FilterQuery<Quiz> = {};
 
   query.course = params.course;
@@ -38,7 +38,7 @@ const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, 
     ];
   }
 
-  const result = await this.find(query).skip(portionNum * portionSize).limit(portionSize).exec();
+  const result = await this.find(query).skip(offset).limit(limit).exec();
   return result;
 };
 
