@@ -20,14 +20,14 @@ describe('Quiz', function () {
       const res = await request(app)
         .get('/api/quizzes/')
         .expect(200);
-      expect(res.body.result).toHaveLength(5);
+      expect(res.body.data).toHaveLength(5);
     });
 
     it('/api/quizzes/:uuid', async () => {
       const res = await request(app)
         .get('/api/quizzes/00000004-0002-0000-0000-000000000000')
         .expect(200);
-      expect(res.body.result.title).toBe('普通物理學');
+      expect(res.body.data.title).toBe('普通物理學');
     });
 
     it('/api/quizzes/search', async () => {
@@ -38,7 +38,7 @@ describe('Quiz', function () {
         .get('/api/quizzes/search?' + qs.stringify(query))
         .expect(200);
 
-      expect(res.body.result).toHaveLength(3);
+      expect(res.body.data).toHaveLength(3);
     });
 
     it('/api/quizzes/search', async () => {
@@ -50,7 +50,7 @@ describe('Quiz', function () {
         .get('/api/quizzes/search?' + qs.stringify(query))
         .expect(200);
 
-      expect(res.body.result).toHaveLength(1);
+      expect(res.body.data).toHaveLength(1);
     });
   });
 });

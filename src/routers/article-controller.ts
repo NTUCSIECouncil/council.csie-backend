@@ -14,8 +14,8 @@ router.get('/', portionParser(ArticleModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
-    const articles = await ArticleModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
-    res.json({ result: articles });
+    const data = await ArticleModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
+    res.json({ data });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -51,8 +51,8 @@ router.get('/search', portionParser(ArticleModel), (req, res, next) => {
       res.sendStatus(400);
       return;
     }
-    const searchResult = await ArticleModel.searchArticles(result.data, portionNum, portionSize);
-    res.send({ result: searchResult });
+    const data = await ArticleModel.searchArticles(result.data, portionNum, portionSize);
+    res.send({ data });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -60,18 +60,20 @@ router.get('/search', portionParser(ArticleModel), (req, res, next) => {
 
 router.get('/:uuid', (req, res, next) => {
   (async () => {
-    const result = ZUuidSchema.safeParse(req.params.uuid);
-    if (!result.success) {
-      console.log(result.error);
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
 
-    const targetArticle = await ArticleModel.findById(result.data).exec();
+    const targetArticle = await ArticleModel.findById(uuid).exec();
     if (targetArticle === null) {
       res.sendStatus(404);
     } else {
-      res.send({ result: targetArticle });
+      res.send({ data: targetArticle });
     }
   })().catch((err: unknown) => {
     next(err);

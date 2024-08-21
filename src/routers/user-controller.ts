@@ -16,7 +16,7 @@ router.get(('/myself'), (req, res, next) => {
   next();
 });
 
-router.get('/:uid', authChecker, (req, res, next) => {
+router.get('/:uuid', authChecker, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
@@ -26,24 +26,26 @@ router.get('/:uid', authChecker, (req, res, next) => {
       // In this case, expect recourse be created by PUT soon after
       res.sendStatus(404);
     } else {
-      res.json(targetUser.toJSON());
+      res.send(targetUser);
     }
   })().catch((err: unknown) => {
     next(err);
   });
 });
 
-router.put('/:uid', authChecker, (req, res, next) => {
+router.put('/:uuid', authChecker, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
-    const result = ZUserSchema.partial().safeParse(req.body);
-    if (!result.success) {
-      console.log(result.error);
+    let newInfo: Partial<User>;
+    try {
+      newInfo = ZUserSchema.partial().parse(req.body);
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
-    const newInfo = result.data as Partial<User>;
+
     let targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
     if (targetUser !== null) {
       targetUser.set(newInfo); // properties not in User will not be store into document

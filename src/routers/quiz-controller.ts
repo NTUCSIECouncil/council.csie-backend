@@ -16,8 +16,8 @@ router.get('/', portionParser(QuizModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [portionNum, portionSize] = [req.portionNum!, req.portionSize!];
-    const quizzes = await QuizModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
-    res.json({ result: quizzes });
+    const data = await QuizModel.find().skip(portionNum * portionSize).limit(portionSize).exec();
+    res.json({ data });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -57,8 +57,8 @@ router.get('/search', (req, res, next) => {
       return;
     }
 
-    const result = await QuizModel.searchQuizzes(searchParams, portionNum, portionSize);
-    res.send({ result });
+    const data = await QuizModel.searchQuizzes(searchParams, portionNum, portionSize);
+    res.send({ data });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -108,7 +108,7 @@ router.get('/:uuid', (req, res, next) => {
     if (targetQuiz === null) {
       res.sendStatus(404);
     } else {
-      res.send({ result: targetQuiz });
+      res.send({ data: targetQuiz });
     }
   })().catch((err: unknown) => {
     next(err);

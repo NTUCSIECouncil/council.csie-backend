@@ -20,18 +20,18 @@ describe('Article', function () {
       const res = await request(app)
         .get('/api/articles/')
         .expect(200);
-      expect(res.body.result).toHaveLength(10);
+      expect(res.body.data).toHaveLength(10);
     });
 
     it('/api/articles - portionNum', async () => {
       let res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionNum: 1 }))
         .expect(200);
-      expect(res.body.result).toHaveLength(10);
+      expect(res.body.data).toHaveLength(10);
       res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionNum: 2 }))
         .expect(200);
-      expect(res.body.result).toHaveLength(1);
+      expect(res.body.data).toHaveLength(1);
       res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionNum: 3 }))
         .expect(400);
@@ -41,15 +41,15 @@ describe('Article', function () {
       let res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionSize: 20 }))
         .expect(200);
-      expect(res.body.result).toHaveLength(20);
+      expect(res.body.data).toHaveLength(20);
       res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionSize: 50 }))
         .expect(200);
-      expect(res.body.result).toHaveLength(21);
+      expect(res.body.data).toHaveLength(21);
       res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionSize: 100 }))
         .expect(200);
-      expect(res.body.result).toHaveLength(21);
+      expect(res.body.data).toHaveLength(21);
       res = await request(app)
         .get('/api/articles?' + qs.stringify({ portionSize: 21 }))
         .expect(400);
@@ -63,7 +63,7 @@ describe('Article', function () {
         .get('/api/articles/search?' + qs.stringify(queryOne))
         .expect(200);
 
-      expect(resOne.body.result).toHaveLength(10);
+      expect(resOne.body.data).toHaveLength(10);
       const queryTwo = {
         tag: ['德邦讚'],
         portionNum: 1,
@@ -72,7 +72,7 @@ describe('Article', function () {
         .get('/api/articles/search?' + qs.stringify(queryTwo))
         .expect(200);
 
-      expect(resTwo.body.result).toHaveLength(4);
+      expect(resTwo.body.data).toHaveLength(4);
     });
   });
 });
