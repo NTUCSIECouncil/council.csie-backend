@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authChecker } from './middleware.ts';
-import { type User, ZUserSchema } from '@models/user-schema.ts';
 import { models } from '@models/index.ts';
+import { type User, ZUserSchema } from '@models/user-schema.ts';
+import { authChecker } from './middleware.ts';
 
 const router = Router();
 

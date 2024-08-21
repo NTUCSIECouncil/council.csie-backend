@@ -1,11 +1,9 @@
-// import 'dotenv/config';
-import { models } from '@models/index.ts';
+import mongoose, { type Model } from 'mongoose';
 import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
+import { models } from '@models/index.ts';
 import { type Quiz } from '@models/quiz-schema.ts';
 import { type User } from '@models/user-schema.ts';
-import mongoose from 'mongoose';
-import { type Model } from 'mongoose';
 
 const dbName = 'csie-council-test';
 const defaultData: { User: User[]; Article: Article[]; Course: Course[]; Quiz: Quiz[] } = {

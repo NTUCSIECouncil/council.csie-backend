@@ -1,4 +1,4 @@
-import { Router, type ErrorRequestHandler } from 'express';
+import { type ErrorRequestHandler, Router } from 'express';
 import articleController from './article-controller.ts';
 import quizController from './quiz-controller.ts';
 import userInfoController from './user-controller.ts';

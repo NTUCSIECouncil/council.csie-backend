@@ -1,7 +1,7 @@
-import { randomUUID, type UUID } from 'crypto';
+import { type UUID, randomUUID } from 'crypto';
 import { Router } from 'express';
-import { models } from '@models/index.ts';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
+import { models } from '@models/index.ts';
 import { ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import { paginationParser } from './middleware.ts';
 

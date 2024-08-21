@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
-import { models } from '@models/index.ts';
 import { ZArticleSchema } from '@models/article-schema.ts';
 import { ZCourseSchema } from '@models/course-schema.ts';
+import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
 

@@ -1,6 +1,6 @@
 import express from 'express';
-import APIController from '@routers/API-controller.ts';
 import { DecodedIdToken } from 'firebase-admin/auth';
+import APIController from '@routers/API-controller.ts';
 
 const expressApp = express();
 

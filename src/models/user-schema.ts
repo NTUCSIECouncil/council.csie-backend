@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { model, type Model, Schema } from 'mongoose';
+import { type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
 import { ZUuidSchema } from './util-schema.ts';
 

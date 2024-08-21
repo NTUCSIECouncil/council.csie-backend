@@ -1,8 +1,8 @@
 import { type RequestHandler } from 'express';
-import { ZPaginationQueryParam } from '@models/util-schema.ts';
 import { type ArticleModel } from '@models/article-schema.ts';
-import { type QuizModel } from '@models/quiz-schema.ts';
 import { type CourseModel } from '@models/course-schema.ts';
+import { type QuizModel } from '@models/quiz-schema.ts';
+import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
   if (req.guser?.uid === undefined || req.guser.uid !== req.params.uuid) {
