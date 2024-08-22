@@ -1,7 +1,7 @@
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
-import stylistic from '@stylistic/eslint-plugin'
 import importx from 'eslint-plugin-import-x'
+import stylistic from '@stylistic/eslint-plugin'
 import { FlatCompat } from '@eslint/eslintrc';
 
 // The eslint-import-plugin has been replaced with eslint-import-plugin-x
@@ -50,12 +50,18 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
 
-      '@stylistic/max-statements-per-line': 'off',
-
       'import-x/order': ['warn', {
         groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
         alphabetize: { order: 'asc' },
       }],
+
+      '@stylistic/max-statements-per-line': 'off',
+    },
+  },
+  {
+    files: ['test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': ['off'],
     },
   },
 )

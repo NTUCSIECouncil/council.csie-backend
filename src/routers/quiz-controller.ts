@@ -16,8 +16,8 @@ router.get('/', paginationParser(QuizModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
-    const data = await QuizModel.find().skip(offset).limit(limit).exec();
-    res.json({ data });
+    const items = await QuizModel.find().skip(offset).limit(limit).exec();
+    res.json({ items });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -57,8 +57,8 @@ router.get('/search', paginationParser(QuizModel), (req, res, next) => {
       return;
     }
 
-    const data = await QuizModel.searchQuizzes(searchParams, offset, limit);
-    res.send({ data });
+    const items = await QuizModel.searchQuizzes(searchParams, offset, limit);
+    res.send({ items });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -104,11 +104,11 @@ router.get('/:uuid', (req, res, next) => {
       return;
     }
 
-    const targetQuiz = await QuizModel.findById(uuid).exec();
-    if (targetQuiz === null) {
+    const target = await QuizModel.findById(uuid).exec();
+    if (target === null) {
       res.sendStatus(404);
     } else {
-      res.send({ data: targetQuiz });
+      res.send({ item: target });
     }
   })().catch((err: unknown) => {
     next(err);

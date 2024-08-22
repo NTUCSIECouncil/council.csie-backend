@@ -15,28 +15,25 @@ const authChecker: RequestHandler = (req, res, next) => {
 const paginationParser = (model: ArticleModel | QuizModel | CourseModel): RequestHandler => {
   return (req, res, next) => {
     (async () => {
-      let limit = 10, offset = 0;
+      req.limit = 10;
+      req.offset = 0;
 
-      const queryParams = req.query;
-      console.log(req.query);
-      let paginationQueryParam;
+      let param;
       try {
-        paginationQueryParam = ZPaginationQueryParam.parse(queryParams);
+        param = ZPaginationQueryParam.parse(req.query);
       } catch (err: unknown) {
         console.log(err);
         res.sendStatus(400);
         return;
       }
-      if (paginationQueryParam.limit !== undefined) limit = paginationQueryParam.limit;
-      if (paginationQueryParam.offset !== undefined) offset = paginationQueryParam.offset;
+      if (param.limit !== undefined) req.limit = param.limit;
+      if (param.offset !== undefined) req.offset = param.offset;
 
-      if (offset >= await model.countDocuments().exec()) {
+      if (req.offset >= await model.countDocuments().exec()) {
         res.sendStatus(400);
         return;
       }
 
-      req.limit = limit;
-      req.offset = offset;
       next();
     })().catch((err: unknown) => {
       console.log(err);

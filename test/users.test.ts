@@ -19,7 +19,7 @@ describe('User', () => {
         .get('/api/users/00000001-0001-0000-0000-000000000000')
         .set({ uid: '00000001-0001-0000-0000-000000000000' })
         .expect(200);
-      expect(res.body._id).toBe('00000001-0001-0000-0000-000000000000');
+      expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
     });
 
     it('/api/users/myself', async () => {
@@ -27,7 +27,7 @@ describe('User', () => {
         .get('/api/users/myself')
         .set({ uid: '00000001-0001-0000-0000-000000000000' })
         .expect(200);
-      expect(res.body._id).toBe('00000001-0001-0000-0000-000000000000');
+      expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
     });
   });
 });

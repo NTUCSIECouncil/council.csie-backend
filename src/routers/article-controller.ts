@@ -14,8 +14,8 @@ router.get('/', paginationParser(ArticleModel), (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
-    const data = await ArticleModel.find().skip(offset).limit(limit).exec();
-    res.json({ data });
+    const items = await ArticleModel.find().skip(offset).limit(limit).exec();
+    res.json({ items });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -52,8 +52,8 @@ router.get('/search', paginationParser(ArticleModel), (req, res, next) => {
       res.sendStatus(400);
       return;
     }
-    const data = await ArticleModel.searchArticles(queryParam, offset, limit);
-    res.send({ data });
+    const items = await ArticleModel.searchArticles(queryParam, offset, limit);
+    res.send({ items });
   })().catch((err: unknown) => {
     next(err);
   });
@@ -70,18 +70,18 @@ router.get('/:uuid', (req, res, next) => {
       return;
     }
 
-    const targetArticle = await ArticleModel.findById(uuid).exec();
-    if (targetArticle === null) {
+    const target = await ArticleModel.findById(uuid).exec();
+    if (target === null) {
       res.sendStatus(404);
     } else {
-      res.send({ data: targetArticle });
+      res.send({ item: target });
     }
   })().catch((err: unknown) => {
     next(err);
   });
 });
 
-router.put('/:uuid', (req, res, next) => {
+router.patch('/:uuid', (req, res, next) => {
   (async () => {
     let uuid: UUID;
     let newInfo: Partial<Article>;
@@ -95,7 +95,7 @@ router.put('/:uuid', (req, res, next) => {
     }
 
     const targetArticle = await ArticleModel.findById(uuid).exec();
-    if (targetArticle === null) {
+    if ((newInfo._id !== undefined && newInfo._id !== uuid) || targetArticle === null) {
       res.sendStatus(400);
     } else {
       targetArticle.set(newInfo);

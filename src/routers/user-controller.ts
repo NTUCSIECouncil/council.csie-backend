@@ -20,20 +20,20 @@ router.get('/:uuid', authChecker, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
-    const targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
-    if (targetUser === null) {
+    const target = await UserModel.findOne({ _id: guser.uid }).exec();
+    if (target === null) {
       // If not found, return status 404
       // In this case, expect recourse be created by PUT soon after
       res.sendStatus(404);
     } else {
-      res.send(targetUser);
+      res.send({ item: target });
     }
   })().catch((err: unknown) => {
     next(err);
   });
 });
 
-router.put('/:uuid', authChecker, (req, res, next) => {
+router.patch('/:uuid', authChecker, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const guser = req.guser!;
