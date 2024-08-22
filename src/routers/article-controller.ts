@@ -10,7 +10,7 @@ const router = Router();
 const ArticleModel = models.Article;
 
 // get all articles
-router.get('/', paginationParser(ArticleModel), (req, res, next) => {
+router.get('/', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
@@ -24,15 +24,16 @@ router.get('/', paginationParser(ArticleModel), (req, res, next) => {
 router.post('/', (req, res, next) => {
   (async () => {
     const uuid = randomUUID();
-
-    const result = ZArticleSchema.safeParse({ _id: uuid, ...req.body });
-    if (!result.success) {
-      console.log(result.error);
+    let article: Article;
+    try {
+      article = ZArticleSchema.parse({ ...req.body, _id: uuid });
+    } catch (err: unknown) {
+      console.log(err);
       res.sendStatus(400);
       return;
     }
 
-    const targetArticle = new ArticleModel(result.data);
+    const targetArticle = new ArticleModel(article);
     await targetArticle.save();
     res.status(201).json({ uuid });
   })().catch((err: unknown) => {
@@ -40,7 +41,7 @@ router.post('/', (req, res, next) => {
   });
 });
 
-router.get('/search', paginationParser(ArticleModel), (req, res, next) => {
+router.get('/search', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
@@ -84,10 +85,10 @@ router.get('/:uuid', (req, res, next) => {
 router.patch('/:uuid', (req, res, next) => {
   (async () => {
     let uuid: UUID;
-    let newInfo: Partial<Article>;
+    let patch: Partial<Article>;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-      newInfo = ZArticleSchema.partial().parse(req.body);
+      patch = ZArticleSchema.partial().parse(req.body);
     } catch (err) {
       console.log(err);
       res.sendStatus(400);
@@ -95,10 +96,10 @@ router.patch('/:uuid', (req, res, next) => {
     }
 
     const targetArticle = await ArticleModel.findById(uuid).exec();
-    if ((newInfo._id !== undefined && newInfo._id !== uuid) || targetArticle === null) {
+    if ((patch._id !== undefined && patch._id !== uuid) || targetArticle === null) {
       res.sendStatus(400);
     } else {
-      targetArticle.set(newInfo);
+      targetArticle.set(patch);
       await targetArticle.save();
       res.sendStatus(204);
     }

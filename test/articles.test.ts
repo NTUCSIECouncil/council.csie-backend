@@ -36,7 +36,8 @@ describe('GET /api/articles', () => {
 
     res = await request(app)
       .get('/api/articles?' + qs.stringify({ offset: 21 }))
-      .expect(400);
+      .expect(200);
+    expect(res.body.items).toHaveLength(0);
   });
 
   it('should support controlling the limit size of page', async () => {
@@ -117,6 +118,38 @@ describe('POST /api/articles', () => {
       creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
     });
+  });
+
+  it('should ignore provided uuid', async () => {
+    let res = await request(app)
+      .post('/api/articles')
+      .send({
+        _id: '00000002-0022-0000-0000-000000000000',
+        title: '普通生物學',
+        lecturer: '你是誰',
+        tag: ['耶'],
+        content: '耶',
+        creator: '00000001-0003-0000-0000-000000000000',
+        course: '00000003-0003-0000-0000-000000000000',
+      })
+      .expect(201);
+
+    const uuid = ZUuidSchema.parse(res.body.uuid);
+
+    res = await request(app)
+      .get(`/api/articles/${uuid}`)
+      .expect(200);
+    expect(res.body.item).toMatchObject({
+      _id: uuid,
+      title: '普通生物學',
+      lecturer: '你是誰',
+      tag: ['耶'],
+      content: '耶',
+      creator: '00000001-0003-0000-0000-000000000000',
+      course: '00000003-0003-0000-0000-000000000000',
+    });
+
+    expect(uuid).not.toEqual('00000002-0022-0000-0000-000000000000');
   });
 });
 

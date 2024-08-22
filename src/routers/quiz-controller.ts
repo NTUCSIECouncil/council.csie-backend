@@ -12,7 +12,7 @@ const router = Router();
 const QuizModel = models.Quiz;
 
 // get all quizzes
-router.get('/', paginationParser(QuizModel), (req, res, next) => {
+router.get('/', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
@@ -26,16 +26,17 @@ router.get('/', paginationParser(QuizModel), (req, res, next) => {
 router.post('/', (req, res, next) => {
   (async () => {
     const uuid = randomUUID();
-    let newInfo: Quiz;
+    let quiz: Quiz;
     try {
-      newInfo = ZQuizSchema.parse({ _id: uuid, ...req.body });
+      quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
+      console.log(quiz);
     } catch (err: unknown) {
       console.log(err);
       res.sendStatus(400);
       return;
     }
 
-    const targetQuiz = new QuizModel(newInfo);
+    const targetQuiz = new QuizModel(quiz);
     await targetQuiz.save();
     res.status(201).send({ uuid });
   })().catch((err: unknown) => {
@@ -43,7 +44,7 @@ router.post('/', (req, res, next) => {
   });
 });
 
-router.get('/search', paginationParser(QuizModel), (req, res, next) => {
+router.get('/search', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
