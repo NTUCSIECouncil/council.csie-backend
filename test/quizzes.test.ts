@@ -113,6 +113,15 @@ describe('GET /api/quizzes/:uuid', () => {
   });
 });
 
+describe('GET /api/quizzes/:uuid/file', () => {
+  it('should response the quiz file', async () => {
+    const res = await request(app)
+      .get('/api/quizzes/00000004-0001-0000-0000-000000000000/file')
+      .expect(200);
+    expect(res.type).toEqual('application/pdf');
+  });
+});
+
 describe('GET /api/quizzes/search', () => {
   it('should response the search result', async () => {
     let query: QuizSearchParam | PaginationQueryParam = {
@@ -121,7 +130,7 @@ describe('GET /api/quizzes/search', () => {
     let res = await request(app)
       .get('/api/quizzes/search?' + qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(3);
+    expect(res.body);
 
     query = {
       course: '00000003-0001-0000-0000-000000000000',

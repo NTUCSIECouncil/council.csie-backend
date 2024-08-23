@@ -28,7 +28,7 @@ router.post('/', (req, res, next) => {
     try {
       quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -48,7 +48,7 @@ router.get('/search', paginationParser, (req, res, next) => {
     try {
       params = ZQuizSearchParam.parse(req.query);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -58,40 +58,13 @@ router.get('/search', paginationParser, (req, res, next) => {
   })().catch(next);
 });
 
-router.get('/:uuid/file', (req, res, next) => {
-  (async () => {
-    let uuid: UUID;
-    try {
-      uuid = ZUuidSchema.parse(req.params.uuid);
-    } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
-      res.sendStatus(400);
-      return;
-    }
-
-    const target = await QuizModel.findById(uuid).exec();
-    if (target === null) {
-      res.sendStatus(404);
-    } else {
-      // Some how getting filename
-      const fileName = 'not implemented';
-      if (process.env.QUIZ_FILE_DIR === undefined) throw new Error('QUIZ_FILE_DIR is not defined.');
-      const options = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
-        root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
-      };
-      res.sendFile(fileName, options);
-    }
-  })().catch(next);
-});
-
 router.get('/:uuid', (req, res, next) => {
   (async () => {
     let uuid: UUID;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -113,7 +86,7 @@ router.patch('/:uuid', (req, res, next) => {
       uuid = ZUuidSchema.parse(req.params.uuid);
       patch = ZQuizSchema.partial().parse(req.body);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -125,6 +98,33 @@ router.patch('/:uuid', (req, res, next) => {
       target.set(patch);
       await target.save();
       res.sendStatus(204);
+    }
+  })().catch(next);
+});
+
+router.get('/:uuid/file', (req, res, next) => {
+  (async () => {
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err) {
+      if (err instanceof ZodError) console.error(err.format());
+      res.sendStatus(400);
+      return;
+    }
+
+    const target = await QuizModel.findById(uuid).exec();
+    if (target === null) {
+      res.sendStatus(404);
+    } else {
+      // Some how getting filename
+      const fileName = `${uuid}.pdf`;
+      if (process.env.QUIZ_FILE_DIR === undefined) throw new Error('QUIZ_FILE_DIR is not defined.');
+      const options = {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
+        root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
+      };
+      res.sendFile(fileName, options);
     }
   })().catch(next);
 });

@@ -38,7 +38,7 @@ expressApp.use((req, res, next) => {
       next();
     }
   })().catch((err: unknown) => {
-    console.log(err);
+    console.error(err);
     next();
   });
 });

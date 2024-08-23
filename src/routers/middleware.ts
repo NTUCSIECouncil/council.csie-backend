@@ -8,7 +8,7 @@ const authChecker: RequestHandler = (req, res, next) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.log(err.format());
+    if (err instanceof ZodError) console.error(err.format());
     res.sendStatus(400);
     return;
   }
@@ -28,7 +28,7 @@ const paginationParser: RequestHandler = (req, res, next) => {
   try {
     param = ZPaginationQueryParam.parse(req.query);
   } catch (err) {
-    if (err instanceof ZodError) console.log(err.format());
+    if (err instanceof ZodError) console.error(err.format());
     res.sendStatus(400);
     return;
   }

@@ -105,3 +105,4 @@ dist
 
 # Absolute secret
 service-account-file.json
+uploads/

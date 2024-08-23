@@ -4,6 +4,8 @@ import APIController from '@routers/API-controller.ts';
 
 const expressApp = express();
 
+process.env.QUIZ_FILE_DIR = 'uploads/quizzes';
+
 expressApp.use((req, res, next) => {
   const uidHeader = req.headers.uid;
   let uid = 'uid';

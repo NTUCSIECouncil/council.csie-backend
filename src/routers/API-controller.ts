@@ -6,7 +6,7 @@ import userInfoController from './user-controller.ts';
 const router = Router();
 
 const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  console.log(err);
+  console.error(err);
   if (res.headersSent) {
     next(err);
     return;

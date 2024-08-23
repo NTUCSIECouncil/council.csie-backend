@@ -27,7 +27,7 @@ router.post('/', (req, res, next) => {
     try {
       article = ZArticleSchema.parse({ ...req.body, _id: uuid });
     } catch (err) {
-      if (err instanceof ZodError) console.log(err);
+      if (err instanceof ZodError) console.error(err);
       res.sendStatus(400);
       return;
     }
@@ -46,7 +46,7 @@ router.get('/search', paginationParser, (req, res, next) => {
     try {
       param = ZArticleSearchQueryParam.parse(req.query);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -62,7 +62,7 @@ router.get('/:uuid', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
@@ -84,7 +84,7 @@ router.patch('/:uuid', (req, res, next) => {
       uuid = ZUuidSchema.parse(req.params.uuid);
       patch = ZArticleSchema.partial().parse(req.body);
     } catch (err) {
-      if (err instanceof ZodError) console.log(err.format());
+      if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
       return;
     }
