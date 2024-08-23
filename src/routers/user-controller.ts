@@ -27,9 +27,7 @@ router.get('/:uuid', authChecker, (req, res, next) => {
     } else {
       res.send({ item: target });
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.post('/:uuid', authChecker, (req, res, next) => {
@@ -54,9 +52,7 @@ router.post('/:uuid', authChecker, (req, res, next) => {
       await targetUser.save();
       res.sendStatus(201);
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 export default router;

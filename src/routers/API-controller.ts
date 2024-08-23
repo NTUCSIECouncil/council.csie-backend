@@ -6,11 +6,11 @@ import userInfoController from './user-controller.ts';
 const router = Router();
 
 const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.log(err);
   if (res.headersSent) {
     next(err);
     return;
   }
-  console.log(err);
   res.sendStatus(500);
 };
 

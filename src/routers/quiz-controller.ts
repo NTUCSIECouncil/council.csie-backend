@@ -18,9 +18,7 @@ router.get('/', paginationParser, (req, res, next) => {
     const [offset, limit] = [req.offset!, req.limit!];
     const items = await QuizModel.find().skip(offset).limit(limit).exec();
     res.json({ items });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.post('/', (req, res, next) => {
@@ -29,19 +27,16 @@ router.post('/', (req, res, next) => {
     let quiz: Quiz;
     try {
       quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
-      console.log(quiz);
-    } catch (err: unknown) {
-      console.log(err);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
 
-    const targetQuiz = new QuizModel(quiz);
-    await targetQuiz.save();
+    const quizDoc = new QuizModel(quiz);
+    await quizDoc.save();
     res.status(201).send({ uuid });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.get('/search', paginationParser, (req, res, next) => {
@@ -49,20 +44,18 @@ router.get('/search', paginationParser, (req, res, next) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
 
-    let searchParams: QuizSearchParam;
+    let params: QuizSearchParam;
     try {
-      searchParams = ZQuizSearchParam.parse(req.query);
-    } catch (err: unknown) {
+      params = ZQuizSearchParam.parse(req.query);
+    } catch (err) {
       if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
 
-    const items = await QuizModel.searchQuizzes(searchParams, offset, limit);
+    const items = await QuizModel.searchQuizzes(params, offset, limit);
     res.send({ items });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.get('/:uuid/file', (req, res, next) => {
@@ -70,14 +63,14 @@ router.get('/:uuid/file', (req, res, next) => {
     let uuid: UUID;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-    } catch (err: unknown) {
-      console.log(err);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
 
-    const targetQuiz = await QuizModel.findById(uuid).exec();
-    if (targetQuiz === null) {
+    const target = await QuizModel.findById(uuid).exec();
+    if (target === null) {
       res.sendStatus(404);
     } else {
       // Some how getting filename
@@ -89,9 +82,7 @@ router.get('/:uuid/file', (req, res, next) => {
       };
       res.sendFile(fileName, options);
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.get('/:uuid', (req, res, next) => {
@@ -99,7 +90,7 @@ router.get('/:uuid', (req, res, next) => {
     let uuid: UUID;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
@@ -111,35 +102,31 @@ router.get('/:uuid', (req, res, next) => {
     } else {
       res.send({ item: target });
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
-router.put('/:uuid', (req, res, next) => {
+router.patch('/:uuid', (req, res, next) => {
   (async () => {
     let uuid: UUID;
-    let newInfo: Partial<Quiz>;
+    let patch: Partial<Quiz>;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-      newInfo = ZQuizSchema.partial().parse(req.body);
-    } catch (err: unknown) {
-      console.log(err);
+      patch = ZQuizSchema.partial().parse(req.body);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
 
-    const targetQuiz = await QuizModel.findById(uuid).exec();
-    if (targetQuiz === null) {
+    const target = await QuizModel.findById(uuid).exec();
+    if ((patch._id !== undefined && patch._id !== uuid) || target === null) {
       res.sendStatus(400);
     } else {
-      targetQuiz.set(newInfo);
-      await targetQuiz.save();
+      target.set(patch);
+      await target.save();
       res.sendStatus(204);
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 export default router;

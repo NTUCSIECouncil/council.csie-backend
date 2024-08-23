@@ -1,5 +1,6 @@
 import { type UUID, randomUUID } from 'crypto';
 import { Router } from 'express';
+import { ZodError } from 'zod';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -12,13 +13,11 @@ const ArticleModel = models.Article;
 // get all articles
 router.get('/', paginationParser, (req, res, next) => {
   (async () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
     const [offset, limit] = [req.offset!, req.limit!];
     const items = await ArticleModel.find().skip(offset).limit(limit).exec();
     res.json({ items });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.post('/', (req, res, next) => {
@@ -27,37 +26,34 @@ router.post('/', (req, res, next) => {
     let article: Article;
     try {
       article = ZArticleSchema.parse({ ...req.body, _id: uuid });
-    } catch (err: unknown) {
-      console.log(err);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err);
       res.sendStatus(400);
       return;
     }
 
-    const targetArticle = new ArticleModel(article);
-    await targetArticle.save();
+    const articleDoc = new ArticleModel(article);
+    await articleDoc.save();
     res.status(201).json({ uuid });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.get('/search', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
-    let queryParam: ArticleSearchQueryParam;
+    let param: ArticleSearchQueryParam;
     try {
-      queryParam = ZArticleSearchQueryParam.parse(req.query);
-    } catch (err: unknown) {
-      console.log(err);
+      param = ZArticleSearchQueryParam.parse(req.query);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
-    const items = await ArticleModel.searchArticles(queryParam, offset, limit);
+
+    const items = await ArticleModel.searchArticles(param, offset, limit);
     res.send({ items });
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.get('/:uuid', (req, res, next) => {
@@ -65,8 +61,8 @@ router.get('/:uuid', (req, res, next) => {
     let uuid: UUID;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-    } catch (err: unknown) {
-      console.log(err);
+    } catch (err) {
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
@@ -77,9 +73,7 @@ router.get('/:uuid', (req, res, next) => {
     } else {
       res.send({ item: target });
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 router.patch('/:uuid', (req, res, next) => {
@@ -90,22 +84,20 @@ router.patch('/:uuid', (req, res, next) => {
       uuid = ZUuidSchema.parse(req.params.uuid);
       patch = ZArticleSchema.partial().parse(req.body);
     } catch (err) {
-      console.log(err);
+      if (err instanceof ZodError) console.log(err.format());
       res.sendStatus(400);
       return;
     }
 
-    const targetArticle = await ArticleModel.findById(uuid).exec();
-    if ((patch._id !== undefined && patch._id !== uuid) || targetArticle === null) {
+    const target = await ArticleModel.findById(uuid).exec();
+    if ((patch._id !== undefined && patch._id !== uuid) || target === null) {
       res.sendStatus(400);
     } else {
-      targetArticle.set(patch);
-      await targetArticle.save();
+      target.set(patch);
+      await target.save();
       res.sendStatus(204);
     }
-  })().catch((err: unknown) => {
-    next(err);
-  });
+  })().catch(next);
 });
 
 export default router;

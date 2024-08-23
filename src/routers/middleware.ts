@@ -1,13 +1,14 @@
 import { UUID } from 'crypto';
 import { type RequestHandler } from 'express';
+import { ZodError } from 'zod';
 import { ZPaginationQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
   let uuid: UUID;
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
-  } catch (err: unknown) {
-    console.log(err);
+  } catch (err) {
+    if (err instanceof ZodError) console.log(err.format());
     res.sendStatus(400);
     return;
   }
@@ -26,8 +27,8 @@ const paginationParser: RequestHandler = (req, res, next) => {
   let param;
   try {
     param = ZPaginationQueryParam.parse(req.query);
-  } catch (err: unknown) {
-    console.log(err);
+  } catch (err) {
+    if (err instanceof ZodError) console.log(err.format());
     res.sendStatus(400);
     return;
   }

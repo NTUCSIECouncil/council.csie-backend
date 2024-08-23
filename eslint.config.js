@@ -37,7 +37,6 @@ export default tseslint.config(
       eslint.configs.recommended,
       ...tseslint.configs.strictTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
-      ...compat.config(importx.configs.recommended),
       ...compat.config(importx.configs.typescript),
       stylistic.configs.customize({
         semi: true,
@@ -49,11 +48,14 @@ export default tseslint.config(
 
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
+      "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
 
       'import-x/order': ['warn', {
         groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
         alphabetize: { order: 'asc' },
       }],
+      'import-x/export': "error",
+      'import-x/no-duplicates': "warn",
 
       '@stylistic/max-statements-per-line': 'off',
     },
