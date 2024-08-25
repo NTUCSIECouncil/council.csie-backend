@@ -48,14 +48,16 @@ export default tseslint.config(
 
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
-      "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
+      '@typescript-eslint/consistent-type-imports': ['warn', { fixStyle: 'inline-type-imports' }],
 
       'import-x/order': ['warn', {
-        groups: ["builtin", "external", "internal", "parent", "sibling", "index"],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         alphabetize: { order: 'asc' },
       }],
-      'import-x/export': "error",
-      'import-x/no-duplicates': "warn",
+      'import-x/export': 'error',
+      'import-x/no-duplicates': 'warn',
+      'import-x/consistent-type-specifier-style': ['warn', 'prefer-inline'],
 
       '@stylistic/max-statements-per-line': 'off',
     },

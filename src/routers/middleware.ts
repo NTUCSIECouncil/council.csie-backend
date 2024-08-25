@@ -1,4 +1,4 @@
-import { UUID } from 'crypto';
+import { type UUID } from 'crypto';
 import { type RequestHandler } from 'express';
 import { ZodError } from 'zod';
 import { ZPaginationQueryParam, ZUuidSchema } from '@models/util-schema.ts';

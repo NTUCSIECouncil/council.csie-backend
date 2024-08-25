@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
-import { PaginationQueryParam, QuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
+import { type PaginationQueryParam, type QuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
 import app from './app.ts';
 import { insertFromFile } from './utils.ts';
 

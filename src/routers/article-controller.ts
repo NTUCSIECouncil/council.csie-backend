@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { ZodError } from 'zod';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
-import { ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
