@@ -110,6 +110,10 @@ describe('GET /api/quizzes/:uuid', () => {
       semester: '111-2',
       downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     });
+
+    await request(app)
+      .get('/api/quizzes/00000004-0000-0000-0000-000000000000')
+      .expect(404);
   });
 });
 
@@ -119,6 +123,10 @@ describe('GET /api/quizzes/:uuid/file', () => {
       .get('/api/quizzes/00000004-0001-0000-0000-000000000000/file')
       .expect(200);
     expect(res.type).toEqual('application/pdf');
+
+    await request(app)
+      .get('/api/quizzes/00000004-0000-0000-0000-000000000000/file')
+      .expect(404);
   });
 });
 

@@ -27,6 +27,17 @@ describe('GET /api/users/:uuid', () => {
       .set({ uid: '00000001-0001-0000-0000-000000000000' })
       .expect(200);
     expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
+
+    await request(app)
+      .get('/api/users/myself')
+      .expect(400);
+  });
+
+  it('should deny request for other users\' info', async () => {
+    await request(app)
+      .get('/api/users/00000001-0001-0000-0000-000000000000')
+      .set({ uid: '00000001-0002-0000-0000-000000000000' })
+      .expect(403);
   });
 });
 
