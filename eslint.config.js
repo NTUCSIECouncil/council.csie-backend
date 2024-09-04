@@ -2,13 +2,9 @@ import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import importx from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
-import { FlatCompat } from '@eslint/eslintrc';
 
 // The eslint-import-plugin has been replaced with eslint-import-plugin-x
 // Need to be reconsidered when appropriate
-
-
-const compat = new FlatCompat();
 
 export default tseslint.config(
   {
@@ -37,7 +33,7 @@ export default tseslint.config(
       eslint.configs.recommended,
       ...tseslint.configs.strictTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
-      ...compat.config(importx.configs.typescript),
+      importx.flatConfigs.typescript,
       stylistic.configs.customize({
         semi: true,
         braceStyle: '1tbs'
