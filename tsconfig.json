@@ -8,15 +8,12 @@
     "paths": {
       "@routers/*": [
         "./src/routers/*",
-        "./src/routers"
       ],
       "@models/*": [
         "./src/models/*",
-        "./src/models"
       ],
       "@type/*": [
         "./src/types/*",
-        "./src/types"
       ],
       "@/*": [
         "./src/*"
@@ -24,12 +21,12 @@
     },
     "typeRoots": [
       "./src/types",
-      "./node_modules/@types"
+      "./node_modules/@types",
     ]
   },
   "include": [
     "src/**/*",
     "test/**/*",
-    "scripts/**/*"
-  ]
+    "scripts/**/*",
+  ],
 }
