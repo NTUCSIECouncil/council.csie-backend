@@ -6,7 +6,7 @@ import userInfoController from './user-controller.ts';
 const router = Router();
 
 /* istanbul ignore next */
-const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+const uncaughtErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error(err);
   if (res.headersSent) {
     next(err);
@@ -19,6 +19,6 @@ router.use('/articles', articleController);
 router.use('/quizzes', quizController);
 router.use('/users', userInfoController);
 
-router.use(uncatchErrorHandler);
+router.use(uncaughtErrorHandler);
 
 export default router;

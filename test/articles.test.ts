@@ -25,66 +25,78 @@ describe('GET /api/articles', () => {
 
   it('should support controlling the offset of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 1 }))
+      .get('/api/articles')
+      .query({ offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(10);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 20 }))
+      .get('/api/articles')
+      .query({ offset: 20 })
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 21 }))
+      .get('/api/articles')
+      .query(({ offset: 21 }))
       .expect(200);
     expect(res.body.items).toHaveLength(0);
   });
 
   it('should support controlling the limit size of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1 }))
+      .get('/api/articles')
+      .query(({ limit: 1 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5 }))
+      .get('/api/articles')
+      .query(({ limit: 5 }))
       .expect(200);
     expect(res.body.items).toHaveLength(5);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 20 }))
+      .get('/api/articles')
+      .query(({ limit: 20 }))
       .expect(200);
     expect(res.body.items).toHaveLength(20);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 21 }))
+      .get('/api/articles')
+      .query(({ limit: 21 }))
       .expect(200);
     expect(res.body.items).toHaveLength(21);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 50 }))
+      .get('/api/articles')
+      .query(({ limit: 50 }))
       .expect(200);
     expect(res.body.items).toHaveLength(21);
   });
 
   it('should support controlling both the offset and the limit size of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1, offset: 1 }))
+      .get('/api/articles')
+      .query(({ limit: 1, offset: 1 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1, offset: 20 }))
+      .get('/api/articles')
+      .query(({ limit: 1, offset: 20 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5, offset: 1 }))
+      .get('/api/articles')
+      .query({ limit: 5, offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(5);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5, offset: 19 }))
+      .get('/api/articles')
+      .query(qs.stringify({ limit: 5, offset: 19 }))
       .expect(200);
     expect(res.body.items).toHaveLength(2);
   });
@@ -241,7 +253,8 @@ describe('GET /api/articles/search', () => {
       tag: ['德邦讚'],
     };
     const res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
 
     expect(res.body.items).toHaveLength(10);
@@ -253,7 +266,8 @@ describe('GET /api/articles/search', () => {
       offset: 10,
     };
     let res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(4);
 
@@ -262,7 +276,8 @@ describe('GET /api/articles/search', () => {
       limit: 14,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(14);
 
@@ -271,7 +286,8 @@ describe('GET /api/articles/search', () => {
       limit: 15,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(14);
 
@@ -281,7 +297,8 @@ describe('GET /api/articles/search', () => {
       limit: 3,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(3);
   });

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
-import qs from 'qs';
 import request from 'supertest';
 import { type PaginationQueryParam, type QuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
 import app from './app.ts';
@@ -25,22 +24,26 @@ describe('GET /api/quizzes', () => {
 
   it('should support controlling both the offset and the limit size of page', async () => {
     let res = await request(app)
-      .get('/api/quizzes?' + qs.stringify({ limit: 1, offset: 1 }))
+      .get('/api/quizzes')
+      .query({ limit: 1, offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/quizzes?' + qs.stringify({ limit: 1, offset: 20 }))
+      .get('/api/quizzes')
+      .query({ limit: 1, offset: 20 })
       .expect(200);
     expect(res.body.items).toHaveLength(0);
 
     res = await request(app)
-      .get('/api/quizzes?' + qs.stringify({ limit: 5, offset: 1 }))
+      .get('/api/quizzes')
+      .query({ limit: 5, offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(4);
 
     res = await request(app)
-      .get('/api/quizzes?' + qs.stringify({ limit: 3, offset: 1 }))
+      .get('/api/quizzes')
+      .query({ limit: 3, offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(3);
   });
@@ -136,7 +139,8 @@ describe('GET /api/quizzes/search', () => {
       course: '00000003-0001-0000-0000-000000000000',
     };
     let res = await request(app)
-      .get('/api/quizzes/search?' + qs.stringify(query))
+      .get('/api/quizzes/search')
+      .query(query)
       .expect(200);
     expect(res.body);
 
@@ -145,7 +149,8 @@ describe('GET /api/quizzes/search', () => {
       keyword: '111-2',
     };
     res = await request(app)
-      .get('/api/quizzes/search?' + qs.stringify(query))
+      .get('/api/quizzes/search')
+      .query(query)
       .expect(200);
     expect(res.body.items).toHaveLength(1);
   });
@@ -156,7 +161,8 @@ describe('GET /api/quizzes/search', () => {
       course: '00000003-0001-0000-0000-000000000000',
     };
     let res = await request(app)
-      .get('/api/quizzes/search?' + qs.stringify(query))
+      .get('/api/quizzes/search')
+      .query(query)
       .expect(200);
     expect(res.body.items).toHaveLength(2);
 
@@ -165,7 +171,8 @@ describe('GET /api/quizzes/search', () => {
       course: '00000003-0001-0000-0000-000000000000',
     };
     res = await request(app)
-      .get('/api/quizzes/search?' + qs.stringify(query))
+      .get('/api/quizzes/search')
+      .query(query)
       .expect(200);
     expect(res.body.items).toHaveLength(2);
 
@@ -174,7 +181,8 @@ describe('GET /api/quizzes/search', () => {
       course: '00000003-0001-0000-0000-000000000000',
     };
     res = await request(app)
-      .get('/api/quizzes/search?' + qs.stringify(query))
+      .get('/api/quizzes/search')
+      .query(query)
       .expect(200);
     expect(res.body.items).toHaveLength(0);
   });
