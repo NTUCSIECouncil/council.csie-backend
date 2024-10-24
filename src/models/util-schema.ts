@@ -19,7 +19,7 @@ const ZArticleSearchQueryParam = z.object({
   keyword: z.string().optional(),
   categories: z.string().array().optional(),
   lecturer: z.string().optional(),
-  grade: z.number().gte(1).lte(4).optional(),
+  grade: z.coerce.number().gte(1).lte(4).optional(),
 });
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};
