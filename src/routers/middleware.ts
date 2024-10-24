@@ -1,5 +1,4 @@
 import { type RequestHandler } from 'express';
-import { ZodError } from 'zod';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
@@ -16,14 +15,7 @@ const paginationParser: RequestHandler = (req, res, next) => {
   req.limit = 10;
   req.offset = 0;
 
-  let param;
-  try {
-    param = ZPaginationQueryParam.parse(req.query);
-  } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
-    res.sendStatus(400);
-    return;
-  }
+  const param = ZPaginationQueryParam.parse(req.query);
   if (param.limit !== undefined) req.limit = param.limit;
   if (param.offset !== undefined) req.offset = param.offset;
 

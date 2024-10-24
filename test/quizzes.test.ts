@@ -98,6 +98,14 @@ describe('POST /api/quizzes', () => {
       downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     });
     expect(uuid).not.toEqual('00000004-0006-0000-0000-000000000000');
+
+    res = await request(app)
+      .post('/api/quizzes')
+      .send({
+        _id: '00000004-0006-0000-0000-000000000000',
+        title: '普通生物學',
+      })
+      .expect(400);
   });
 });
 
@@ -117,6 +125,10 @@ describe('GET /api/quizzes/:uuid', () => {
     await request(app)
       .get('/api/quizzes/00000004-0000-0000-0000-000000000000')
       .expect(404);
+
+    await request(app)
+      .get('/api/quizzes/00000004-0000-0000-0000')
+      .expect(400);
   });
 });
 
@@ -130,6 +142,10 @@ describe('GET /api/quizzes/:uuid/file', () => {
     await request(app)
       .get('/api/quizzes/00000004-0000-0000-0000-000000000000/file')
       .expect(404);
+
+    await request(app)
+      .get('/api/quizzes/00000004-0000-0000-0000/file')
+      .expect(400);
   });
 });
 
@@ -153,6 +169,14 @@ describe('GET /api/quizzes/search', () => {
       .query(query)
       .expect(200);
     expect(res.body.items).toHaveLength(1);
+
+    query = {
+      limit: 2,
+    };
+    res = await request(app)
+      .get('/api/quizzes/search')
+      .query(query)
+      .expect(400);
   });
 
   it('should support pagination', async () => {

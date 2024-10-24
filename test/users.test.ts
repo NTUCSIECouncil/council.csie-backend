@@ -21,7 +21,7 @@ describe('GET /api/users/:uuid', () => {
     expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
   });
 
-  it('should have alias, GET /api/users/myself', async () => {
+  it('should have alias - GET /api/users/myself', async () => {
     const res = await request(app)
       .get('/api/users/myself')
       .set({ uid: '00000001-0001-0000-0000-000000000000' })
@@ -38,6 +38,13 @@ describe('GET /api/users/:uuid', () => {
       .get('/api/users/00000001-0001-0000-0000-000000000000')
       .set({ uid: '00000001-0002-0000-0000-000000000000' })
       .expect(403);
+  });
+
+  it('should response 404 for request for not existing user\'s info', async () => {
+    await request(app)
+      .get('/api/users/00000000-0000-0000-0000-000000000000')
+      .set({ uid: '00000000-0000-0000-0000-000000000000' })
+      .expect(404);
   });
 });
 

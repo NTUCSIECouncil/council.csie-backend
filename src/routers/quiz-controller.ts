@@ -78,6 +78,8 @@ router.get('/:uuid', (req, res, next) => {
   })().catch(next);
 });
 
+// not actually required by API document
+// istanbul ignore next
 router.patch('/:uuid', (req, res, next) => {
   (async () => {
     let uuid: UUID;

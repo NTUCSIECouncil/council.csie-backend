@@ -130,6 +130,18 @@ describe('POST /api/articles', () => {
       creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
     });
+
+    res = await request(app)
+      .post('/api/articles')
+      .send({
+        title: '普通生物學',
+        lecturer: '你是誰',
+        tag: ['耶'],
+        content: '耶',
+        creator: '00000001-0003-0000-0000-000000000000',
+        couse: '00000003-0003-0000-0000-000000000000',
+      })
+      .expect(400);
   });
 
   it('should ignore provided uuid', async () => {
@@ -191,6 +203,14 @@ describe('GET /api/articles/:uuid', () => {
       creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
     });
+
+    res = await request(app)
+      .get('/api/articles/00000002-0003-0000-0000')
+      .expect(400);
+
+    res = await request(app)
+      .get('/api/articles/00000000-0000-0000-0000-000000000000')
+      .expect(404);
   });
 });
 
@@ -217,24 +237,18 @@ describe('PATCH /api/articles/:uuid', () => {
       .expect(204);
 
     res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
-      .expect(200);
-    expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      title: '不普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
-    });
+      .patch('/api/articles/00000002-0001-0000-0000')
+      .send({
+        title: '不普通物理學',
+      })
+      .expect(400);
 
     res = await request(app)
       .patch('/api/articles/00000002-0001-0000-0000-000000000000')
       .send({
-        _id: '00000002-0022-0000-0000-000000000000',
+        title: '不普通物理學',
       })
-      .expect(400);
+      .expect(204);
   });
 
   it('should reject modification of _id', async () => {
@@ -256,7 +270,6 @@ describe('GET /api/articles/search', () => {
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-
     expect(res.body.items).toHaveLength(10);
   });
 

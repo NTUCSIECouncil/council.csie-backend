@@ -42,14 +42,7 @@ router.get('/search', paginationParser, (req, res, next) => {
   (async () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
     const [offset, limit] = [req.offset!, req.limit!];
-    let param: ArticleSearchQueryParam;
-    try {
-      param = ZArticleSearchQueryParam.parse(req.query);
-    } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
-      res.sendStatus(400);
-      return;
-    }
+    const param: ArticleSearchQueryParam = ZArticleSearchQueryParam.parse(req.query);
 
     const items = await ArticleModel.searchArticles(param, offset, limit);
     res.send({ items });
@@ -78,11 +71,10 @@ router.get('/:uuid', (req, res, next) => {
 
 router.patch('/:uuid', (req, res, next) => {
   (async () => {
+    const patch: Partial<Article> = ZArticleSchema.partial().parse(req.body);
     let uuid: UUID;
-    let patch: Partial<Article>;
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
-      patch = ZArticleSchema.partial().parse(req.body);
     } catch (err) {
       if (err instanceof ZodError) console.error(err.format());
       res.sendStatus(400);
