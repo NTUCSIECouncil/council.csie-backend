@@ -7,8 +7,8 @@ const ZUuidSchema = z.custom<UUID>((val) => {
 });
 
 const ZPaginationQueryParam = z.object({
-  offset: z.coerce.number().positive().optional(),
-  limit: z.coerce.number().nonnegative().optional(),
+  offset: z.coerce.number().nonnegative().optional(),
+  limit: z.coerce.number().positive().optional(),
 });
 
 interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
