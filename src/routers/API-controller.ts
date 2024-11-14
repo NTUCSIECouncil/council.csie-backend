@@ -1,5 +1,6 @@
 import { type ErrorRequestHandler, Router } from 'express';
 import articleController from './article-controller.ts';
+import courseController from './course-controller.ts';
 import quizController from './quiz-controller.ts';
 import userInfoController from './user-controller.ts';
 
@@ -16,6 +17,7 @@ const uncaughtErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
 };
 
 router.use('/articles', articleController);
+router.use('/courses', courseController);
 router.use('/quizzes', quizController);
 router.use('/users', userInfoController);
 
