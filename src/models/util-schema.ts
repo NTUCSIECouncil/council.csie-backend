@@ -24,14 +24,6 @@ const ZArticleSearchQueryParam = z.object({
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};
 
-// interface ArticleSearchQueryParam {
-//   tag?: string[];
-//   keyword?: string;
-//   categories?: string[];
-//   lecturer?: string;
-//   grade?: number;
-// }
-
 const ZQuizSearchParam = z.object({
   course: ZUuidSchema,
   keyword: z.string().optional(),
@@ -39,9 +31,8 @@ const ZQuizSearchParam = z.object({
 
 interface QuizSearchParam extends z.infer<typeof ZQuizSearchParam> {};
 
-// interface QuizSearchParam {
-//   course: UUID;
-//   keyword?: string;
-// }
+const ZCategorySchema = z.enum(['compulsory', 'elective', 'general', 'chinese', 'english', 'japanese', 'language', 'calculus', 'programming']);
 
-export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam };
+type Category = z.infer<typeof ZCategorySchema>;
+
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema };

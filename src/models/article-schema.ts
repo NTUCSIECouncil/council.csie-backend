@@ -5,16 +5,11 @@ import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
+  course: ZUuidSchema, // foreign key to Course
+  creator: ZUuidSchema, // foreign key to User
+  semester: z.string(), // 學期, e.g. '113-2'
   title: z.string(),
-  lecturer: z.string(),
-  tag: z.string().array().optional(), // any tags the creator wants to add
-  grade: z.number().optional(), // what grade is the creator when posted
-  categories: z.string().array().optional(), // more official tags, ex: elective, required, etc.
-  content: z.string().optional(),
-  course: ZUuidSchema,
-  creator: ZUuidSchema,
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
 });
 
 interface Article extends z.infer<typeof ZArticleSchema> {};
@@ -27,16 +22,11 @@ interface ArticleModel extends Model<ArticleWithOptionalId> {
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   _id: { type: String, default: () => randomUUID() },
-  title: { type: String, required: true },
-  lecturer: { type: String, required: true },
-  tag: { type: [{ type: String, required: false }], required: false },
-  grade: { type: Number, required: false },
-  categories: { type: [{ type: String, required: false }], required: false },
-  content: { type: String, required: false },
   course: { type: String, ref: 'Course', required: true },
   creator: { type: String, ref: 'User', required: true },
-  createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
-  updatedAt: { type: Date, required: false, default: () => Date.now() },
+  semester: { type: String, required: true },
+  title: { type: String, required: true },
+  tags: { type: [{ type: String, required: false }], required: false },
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {

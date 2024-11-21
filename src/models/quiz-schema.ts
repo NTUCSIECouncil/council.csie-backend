@@ -5,10 +5,10 @@ import { type QuizSearchParam, ZUuidSchema } from './util-schema.ts';
 
 const ZQuizSchema = z.object({
   _id: ZUuidSchema,
-  title: z.string(),
   course: ZUuidSchema,
-  semester: z.string(),
-  downloadLink: z.string(),
+  uploader: ZUuidSchema,
+  semester: z.string(), // 學期, e.g. '113-2'
+  session: z.enum(['midterm', 'final', 'first', 'second']),
 });
 
 interface Quiz extends z.infer<typeof ZQuizSchema> {};
@@ -21,10 +21,10 @@ interface QuizModel extends Model<QuizWithOptionalId> {
 
 const quizSchema = new Schema<QuizWithOptionalId, QuizModel>({
   _id: { type: String, default: () => randomUUID() },
-  title: { type: String, required: true },
   course: { type: String, ref: 'Course', required: true },
+  uploader: { type: String, ref: 'User', required: true },
   semester: { type: String, required: true },
-  downloadLink: { type: String, required: true },
+  session: { type: String, required: true },
 });
 
 const staticSearchQuizzes: QuizModel['searchQuizzes'] = async function (params, offset, limit) {
