@@ -19,10 +19,12 @@ describe('GET /api/courses/:uuid', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: '00000003-0001-0000-0000-000000000000',
-      title: '普通物理學',
-      semester: '111-1',
-      credit: 0,
-      lecturer: '胡德邦',
+      curriculum: 'CSIE1212',
+      lecturer: '林軒田',
+      class: '01',
+      names: ['資料結構與演算法', 'Data Structures and Algorithms', 'DSA'],
+      credit: 3,
+      categories: ['compulsory', 'programming'],
     });
 
     await request(app)

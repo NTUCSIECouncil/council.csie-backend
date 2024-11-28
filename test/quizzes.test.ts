@@ -54,10 +54,10 @@ describe('POST /api/quizzes', () => {
     let res = await request(app)
       .post('/api/quizzes')
       .send({
-        title: '普通生物學',
         course: '00000003-0003-0000-0000-000000000000',
+        uploader: '00000002-0000-0000-0000-000000000000',
         semester: '112-1',
-        downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        session: 'midterm',
       })
       .expect(201);
 
@@ -67,10 +67,10 @@ describe('POST /api/quizzes', () => {
       .get(`/api/quizzes/${uuid}`)
       .expect(200);
     expect(res.body.item).toMatchObject({
-      title: '普通生物學',
       course: '00000003-0003-0000-0000-000000000000',
+      uploader: '00000002-0000-0000-0000-000000000000',
       semester: '112-1',
-      downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      session: 'midterm',
     });
   });
 
@@ -79,10 +79,10 @@ describe('POST /api/quizzes', () => {
       .post('/api/quizzes')
       .send({
         _id: '00000004-0006-0000-0000-000000000000',
-        title: '普通生物學',
         course: '00000003-0003-0000-0000-000000000000',
+        uploader: '00000002-0000-0000-0000-000000000000',
         semester: '112-1',
-        downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        session: 'midterm',
       })
       .expect(201);
 
@@ -92,10 +92,10 @@ describe('POST /api/quizzes', () => {
       .get(`/api/quizzes/${uuid}`)
       .expect(200);
     expect(res.body.item).toMatchObject({
-      title: '普通生物學',
       course: '00000003-0003-0000-0000-000000000000',
+      uploader: '00000002-0000-0000-0000-000000000000',
       semester: '112-1',
-      downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      session: 'midterm',
     });
     expect(uuid).not.toEqual('00000004-0006-0000-0000-000000000000');
 
@@ -103,7 +103,7 @@ describe('POST /api/quizzes', () => {
       .post('/api/quizzes')
       .send({
         _id: '00000004-0006-0000-0000-000000000000',
-        title: '普通生物學',
+        course: '00000003-0003-0000-0000-000000000000',
       })
       .expect(400);
   });
@@ -116,10 +116,10 @@ describe('GET /api/quizzes/:uuid', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: '00000004-0002-0000-0000-000000000000',
-      title: '普通物理學',
-      course: '00000003-0001-0000-0000-000000000000',
-      semester: '111-2',
-      downloadLink: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      course: '00000003-0003-0000-0000-000000000000',
+      uploader: '00000002-0000-0000-0000-000000000000',
+      semester: '112-1',
+      session: 'midterm',
     });
 
     await request(app)

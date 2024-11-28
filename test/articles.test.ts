@@ -107,12 +107,11 @@ describe('POST /api/articles', () => {
     let res = await request(app)
       .post('/api/articles')
       .send({
-        title: '普通生物學',
-        lecturer: '你是誰',
-        tag: ['耶'],
-        content: '耶',
-        creator: '00000001-0003-0000-0000-000000000000',
         course: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
       })
       .expect(201);
 
@@ -123,23 +122,21 @@ describe('POST /api/articles', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: uuid,
-      title: '普通生物學',
-      lecturer: '你是誰',
-      tag: ['耶'],
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
+      creator: '00000001-0003-0000-0000-000000000000',
+      semester: '113-2',
+      title: '普通生物學',
+      tags: ['耶'],
     });
 
     res = await request(app)
       .post('/api/articles')
       .send({
-        title: '普通生物學',
-        lecturer: '你是誰',
-        tag: ['耶'],
-        content: '耶',
-        creator: '00000001-0003-0000-0000-000000000000',
         couse: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
       })
       .expect(400);
   });
@@ -149,12 +146,11 @@ describe('POST /api/articles', () => {
       .post('/api/articles')
       .send({
         _id: '00000002-0022-0000-0000-000000000000',
-        title: '普通生物學',
-        lecturer: '你是誰',
-        tag: ['耶'],
-        content: '耶',
-        creator: '00000001-0003-0000-0000-000000000000',
         course: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
       })
       .expect(201);
 
@@ -165,12 +161,11 @@ describe('POST /api/articles', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: uuid,
-      title: '普通生物學',
-      lecturer: '你是誰',
-      tag: ['耶'],
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
+      creator: '00000001-0003-0000-0000-000000000000',
+      semester: '113-2',
+      title: '普通生物學',
+      tags: ['耶'],
     });
 
     expect(uuid).not.toEqual('00000002-0022-0000-0000-000000000000');
@@ -184,12 +179,11 @@ describe('GET /api/articles/:uuid', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: '00000002-0001-0000-0000-000000000000',
-      title: '普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
       course: '00000003-0001-0000-0000-000000000000',
+      creator: '00000001-0001-0000-0000-000000000000',
+      semester: '111-2',
+      title: '普通物理學',
+      tags: ['德邦讚'],
     });
 
     res = await request(app)
@@ -197,11 +191,11 @@ describe('GET /api/articles/:uuid', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: '00000002-0003-0000-0000-000000000000',
-      title: '普通生物學',
-      lecturer: '你是誰',
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
+      creator: '00000001-0003-0000-0000-000000000000',
+      semester: '113-2',
+      title: '普通生物學',
+      tags: ['耶'],
     });
 
     res = await request(app)
@@ -221,12 +215,11 @@ describe('PATCH /api/articles/:uuid', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: '00000002-0001-0000-0000-000000000000',
-      title: '普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
       course: '00000003-0001-0000-0000-000000000000',
+      creator: '00000001-0001-0000-0000-000000000000',
+      semester: '111-2',
+      title: '普通物理學',
+      tags: ['德邦讚'],
     });
 
     res = await request(app)
