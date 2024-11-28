@@ -5,8 +5,8 @@ import { type QuizSearchParam, ZUuidSchema } from './util-schema.ts';
 
 const ZQuizSchema = z.object({
   _id: ZUuidSchema,
-  course: ZUuidSchema,
-  uploader: ZUuidSchema,
+  course: ZUuidSchema, // foreign key to Course
+  uploader: ZUuidSchema, // foreign key to User
   semester: z.string(), // 學期, e.g. '113-2'
   session: z.enum(['midterm', 'final', 'first', 'second']),
 });
