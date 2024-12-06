@@ -1,54 +1,114 @@
 import fs from 'fs/promises';
-import { getBatchCourseData } from '@scripts/fetch-batch-course-data.ts';
+import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
-// import { models } from '@models/index.ts';
+import { type Quiz } from '@models/quiz-schema.ts';
 
-// const CourseModel = models.Course;
-// const ArticleModel = models.Article;
-
-async function generateArticlesFromCourses() {
+async function readJsonFile(filePath: string): Promise<Course[]> {
   try {
-    // Connect to MongoDB
-    // Fetch all courses
-    // let courseList: Course[] = [];
-    const courseList: Course[] = await getBatchCourseData(27500, 27502);
-
-    if (courseList.length === 0) {
-      console.log('No courses found. Please add courses to the database.');
-      return;
-    }
-    for (const course of courseList) {
-      const jsonString = JSON.stringify(course);
-      console.log('Course:', jsonString);
-      await fs.writeFile('./test/dummy-data/Course.json', jsonString);
-    }
-    // Generate articles based on courses
-    // const sampleArticles = courses.map((course: { _id: string; lecturer?: string; names: string[] }) => {
-    const sampleArticles = courseList.map((course: Course) => {
-      const lecturerName = course.lecturer || 'Unknown Lecturer';
-      const articleId = `${course._id}-article`;
-
-      return {
-        _id: articleId, // Generate an article ID using the course ID
-        course: course._id, // Link to the course
-        creator: '00000001-0001-0000-0000-000000000000', // Default creator ID
-        semester: '113-2', // Sample semester
-        title: `Sample Article for ${course.names[0]}`,
-        lecturer: lecturerName,
-        tags: [lecturerName, course.names[0]], // Tags based on course and lecturer
-      };
-    });
-
-    // Insert all sample articles into the database
-    // const createdArticles = await ArticleModel.insertMany(sampleArticles);
-
-    console.log('Sample articles created:', sampleArticles);
+    const data = await fs.readFile(filePath, 'utf8');
+    const jsonArray: Course[] = JSON.parse(data) as Course[];
+    return jsonArray;
   } catch (error) {
-    console.error('Error generating articles from courses:', error);
-  } finally {
-    process.exit();
+    console.error('Error reading JSON file:', error);
+    return [];
   }
 }
 
-// Run the script
-await generateArticlesFromCourses();
+async function generateCourses(courseJsonPath: string, originalCourseJsonPath: string) {
+  try {
+    const courseList = await readJsonFile(originalCourseJsonPath);
+    // change its id to our format
+    courseList.forEach((course, courseIndex) => {
+      course._id = `00000003-0000-0000-0000-${courseIndex.toString().padStart(12, '0')}`;
+    });
+
+    // write to file in JSON format
+    const jsonString = JSON.stringify(courseList, null, 2);
+    await fs.writeFile(courseJsonPath, jsonString);
+  } catch (error) {
+    console.error('Error generating courses:', error);
+  }
+}
+
+async function generateArticles(articleJsonPath: string, courseJsonPath: string, userJasonPath: string) {
+  try {
+    const articleList: Article[] = [];
+    // read course and user data
+    const userList = await readJsonFile(userJasonPath);
+    const courseList = await readJsonFile(courseJsonPath);
+
+    // generate articles for each course
+    courseList.forEach((course) => {
+      // get department from curriculum(the alphabet part)
+      const dep = course.curriculum.match(/[a-zA-Z]/g)?.join('') ?? '';
+      const lecturer = course.lecturer || '';
+      const courseId: string[] = course._id.split('-');
+      // randomly select an uploader
+      const randomUploader = userList[Math.floor(Math.random() * userList.length)];
+
+      const articale: Article = {
+        _id: `00000002-1131-0000-0000-${courseId[courseId.length - 1]}`,
+        course: course._id,
+        creator: randomUploader._id,
+        semester: '113-1',
+        title: course.names[0],
+        tags: [lecturer, course.names[0], dep],
+      };
+
+      articleList.push(articale);
+    });
+
+    // write to the file in JSON format
+    const jsonString = JSON.stringify(articleList, null, 2);
+    await fs.writeFile(articleJsonPath, jsonString);
+  } catch (error) {
+    console.error('Error generating articles from courses:', error);
+  }
+}
+
+async function generateQuiz(quizJsonPath: string, courseJsonPath: string, userJasonPath: string) {
+  try {
+    const quizList: Quiz[] = [];
+    const userList = await readJsonFile(userJasonPath);
+    const courseList = await readJsonFile(courseJsonPath);
+
+    courseList.forEach((course) => {
+      const sessions: ('midterm' | 'final' | 'first' | 'second')[] = ['midterm', 'final', 'first', 'second'];
+      const courseId: string[] = course._id.split('-');
+
+      for (const session of sessions) {
+        // randomly select an uploader
+        const randomUploader = userList[Math.floor(Math.random() * userList.length)];
+
+        // generate quiz
+        const quiz: Quiz = {
+          _id: `00000002-1131-0000-0000-${courseId[courseId.length - 1]}`,
+          course: course._id,
+          uploader: randomUploader._id,
+          semester: '113-1',
+          session: session,
+        };
+
+        quizList.push(quiz);
+      }
+    });
+
+    // write to the file in JSON format
+    const jsonString = JSON.stringify(quizList, null, 2);
+    await fs.writeFile(quizJsonPath, jsonString);
+  } catch (error) {
+    console.error('Error generating quizzes from courses:', error);
+  }
+}
+
+// file paths
+const originalCourseJsonPath = './test/dummy-data/course_original.json';
+const courseJsonPath = './test/dummy-data/course_samples.json';
+const articleJsonPath = './test/dummy-data/article_samples.json';
+const quizJsonPath = './test/dummy-data/quiz_samples.json';
+const userJasonPath = './test/dummy-data/user_samples.json';
+
+// generate dummy data
+await generateCourses(courseJsonPath, originalCourseJsonPath);
+await generateArticles(articleJsonPath, courseJsonPath, userJasonPath);
+await generateQuiz(quizJsonPath, courseJsonPath, userJasonPath);
