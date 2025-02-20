@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import Fuse from 'fuse.js';
 import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
@@ -18,6 +19,7 @@ interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Artic
 
 interface ArticleModel extends Model<ArticleWithOptionalId> {
   searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
+  fuzzySearchArticles: (this: ArticleModel, keyword: string, offset: number, limit: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
@@ -60,6 +62,21 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);
+
+const staticFuzzySearchArticles: ArticleModel['fuzzySearchArticles'] = async function (keyword, offset, limit) {
+  const fuseOptions = {
+    keys: [
+      'title',
+      'content',
+    ],
+  };
+  const fuse = new Fuse(await this.find().exec(), fuseOptions);
+  const result = fuse.search(keyword);
+
+  return result.map(r => r.item).slice(offset, offset + limit);
+};
+
+articleSchema.static('fuzzySearchArticles', staticFuzzySearchArticles);
 
 const ArticleModel = model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema);
 
