@@ -15,11 +15,11 @@ interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
 
 // no need to catch error, because all attributes are optional
 const ZArticleSearchQueryParam = z.object({
-  tag: z.string().array().optional(),
-  keyword: z.string().optional(),
-  categories: z.string().array().optional(),
+  course: z.string().optional(),
   lecturer: z.string().optional(),
-  grade: z.coerce.number().gte(1).lte(4).optional(),
+  tags: z.string().array().optional(),
+  categories: z.string().array().optional(),
+  keyword: z.string().optional(),
 });
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};

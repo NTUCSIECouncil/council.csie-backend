@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { type UUID, randomUUID } from 'crypto';
 import Fuse from 'fuse.js';
 import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
@@ -41,53 +41,53 @@ const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
   const query: FilterQuery<Article> = {};
 
-  if (params.tag != null) {
-    query.tag = { $all: params.tag };
+  if (params.tags) {
+    query.tags = { $all: params.tags };
+  }
+  if (params.categories) {
+    query.categories = { $all: params.categories };
   }
 
-  if (params.categories != null) {
-    query.categories = { $in: params.categories };
+  let articles = await this.find(query)
+    .populate<{ course: { names: string[]; lecturer: string } }>('course', 'names lecturer')
+    .exec();
+
+  if (params.course) {
+    const courseName = params.course;
+    articles = articles.filter(article =>
+      article.course.names.includes(courseName),
+    );
   }
 
-  if (params.lecturer != null) {
-    query.lecturer = params.lecturer;
+  if (params.lecturer) {
+    const lecturer = params.lecturer;
+    articles = articles.filter(article =>
+      article.course.lecturer === lecturer,
+    );
   }
 
-  if (params.grade != null) {
-    query.grade = params.grade;
+  if (params.keyword) {
+    const fuseOptions = {
+      keys: [
+        'title',
+        'course.names',
+        'course.lecturer',
+      ],
+      threshold: 0.3,
+    };
+    const fuse = new Fuse(articles, fuseOptions);
+
+    const result = fuse.search(params.keyword);
+
+    articles = result.map(result => result.item);
   }
 
-  if (params.keyword != null) {
-    query.$or = [
-      { title: { $regex: params.keyword, $options: 'i' } },
-      { content: { $regex: params.keyword, $options: 'i' } },
-    ];
-  }
+  articles = articles.slice(offset, offset + limit);
 
-  const result = await this.find(query).skip(offset).limit(limit).exec();
-  return result;
+  return articles.map(article => article.depopulate<{ course: UUID }>());
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);
-
-const staticFuzzySearch: ArticleModel['fuzzySearch'] = async function (keyword, offset, limit) {
-  const articles = await this.find().populate('course', 'names lecturer').exec();
-
-  const fuseOptions = {
-    keys: [
-      'course.names',
-      'course.lecturer',
-    ],
-    threshold: 0.3,
-  };
-  const fuse = new Fuse(articles, fuseOptions);
-
-  const result = fuse.search(keyword);
-
-  return result.map(r => r.item).slice(offset, offset + limit);
-};
-
-articleSchema.static('fuzzySearch', staticFuzzySearch);
 
 const ArticleModel = model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema);
 
