@@ -19,7 +19,14 @@ interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Artic
 
 interface ArticleModel extends Model<ArticleWithOptionalId> {
   searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
-  fuzzySearchArticles: (this: ArticleModel, keyword: string, offset: number, limit: number) => Promise<Article[]>;
+  /**
+ * Fuzzy search articles by course name or lecturer.
+ * @param keyword The keyword to search.
+ * @param offset The offset of the result.
+ * @param limit The limit of the result.
+ * @returns The articles that match the keyword.
+ */
+  fuzzySearch: (this: ArticleModel, keyword: string, offset: number, limit: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
@@ -63,20 +70,24 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 
 articleSchema.static('searchArticles', staticSearchArticles);
 
-const staticFuzzySearchArticles: ArticleModel['fuzzySearchArticles'] = async function (keyword, offset, limit) {
+const staticFuzzySearch: ArticleModel['fuzzySearch'] = async function (keyword, offset, limit) {
+  const articles = await this.find().populate('course', 'names lecturer').exec();
+
   const fuseOptions = {
     keys: [
-      'title',
-      'content',
+      'course.names',
+      'course.lecturer',
     ],
+    threshold: 0.3,
   };
-  const fuse = new Fuse(await this.find().exec(), fuseOptions);
+  const fuse = new Fuse(articles, fuseOptions);
+
   const result = fuse.search(keyword);
 
   return result.map(r => r.item).slice(offset, offset + limit);
 };
 
-articleSchema.static('fuzzySearchArticles', staticFuzzySearchArticles);
+articleSchema.static('fuzzySearch', staticFuzzySearch);
 
 const ArticleModel = model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema);
 
