@@ -6,14 +6,17 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@routers/*": [
-        "./src/routers/*",
-      ],
       "@models/*": [
         "./src/models/*",
       ],
+      "@routers/*": [
+        "./src/routers/*",
+      ],
       "@type/*": [
         "./src/types/*",
+      ],
+      "@utils/*": [
+        "./src/utils/*",
       ],
       "@/*": [
         "./src/*"

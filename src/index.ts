@@ -2,7 +2,9 @@ import express from 'express';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
+import morgan, { type StreamOptions } from 'morgan';
 import APIController from '@routers/API-controller.ts';
+import logger from '@utils/logger.ts';
 
 // File back/service-account-file.json is the private key to access firebase-admin
 // It is ignored by git intentionally. Please refer to back/README.md
@@ -17,6 +19,14 @@ const port = process.env.PORT;
 if (port === undefined) {
   throw new Error('PORT is not defined.');
 }
+
+const stream: StreamOptions = {
+  write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
+};
+
+const morganMiddleware = morgan(':method :url :status :res[content-length] - :response-time ms', { stream });
+
+expressApp.use(morganMiddleware);
 
 // TODO: necessity
 // import cors from 'cors';
