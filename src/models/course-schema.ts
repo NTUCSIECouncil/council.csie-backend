@@ -23,10 +23,10 @@ const courseSchema = new Schema<CourseWithOptionalId>({
   _id: { type: String, default: () => randomUUID() },
   curriculum: { type: String, required: true },
   lecturer: { type: String, required: true },
-  class: { type: String, required: false },
-  names: { type: [{ type: String, required: true }], required: true },
+  class: { type: String },
+  names: { type: [String], required: true },
   credit: { type: Number, required: true },
-  categories: { type: [{ type: String, required: true }], required: true },
+  categories: { type: [String], required: true },
 });
 
 const CourseModel = model<CourseWithOptionalId>('Course', courseSchema);

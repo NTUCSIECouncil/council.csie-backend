@@ -18,15 +18,14 @@ interface Article extends z.infer<typeof ZArticleSchema> {};
 interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Article, '_id'>> {};
 
 interface ArticleModel extends Model<ArticleWithOptionalId> {
-  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
   /**
- * Fuzzy search articles by course name or lecturer.
- * @param keyword The keyword to search.
- * @param offset The offset of the result.
- * @param limit The limit of the result.
- * @returns The articles that match the keyword.
- */
-  fuzzySearch: (this: ArticleModel, keyword: string, offset: number, limit: number) => Promise<Article[]>;
+   * Search articles by query parameters.
+   * @param params - Query parameters. No additional parsing is needed.
+   * @param offset - The offset of the first article to return.
+   * @param limit - The maximum number of articles to return.
+   * @returns The articles that match the query parameters.
+   */
+  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
@@ -35,7 +34,7 @@ const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   creator: { type: String, ref: 'User', required: true },
   semester: { type: String, required: true },
   title: { type: String, required: true },
-  tags: { type: [{ type: String, required: false }], required: false },
+  tags: { type: [String], default: [] },
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
