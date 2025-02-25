@@ -7,8 +7,9 @@ import app from './app.ts';
 import { insertFromFile } from './utils.ts';
 
 beforeEach(async () => {
-  await insertFromFile('Article');
+  await insertFromFile('Course');
   await insertFromFile('User');
+  await insertFromFile('Article');
 });
 
 afterEach(async () => {
@@ -181,8 +182,8 @@ describe('GET /api/articles/:uuid', () => {
       _id: '00000002-0001-0000-0000-000000000000',
       course: '00000003-0001-0000-0000-000000000000',
       creator: '00000001-0001-0000-0000-000000000000',
-      semester: '111-2',
-      title: '普通物理學',
+      semester: '113-1',
+      title: '普物',
       tags: ['德邦讚'],
     });
 
@@ -217,8 +218,8 @@ describe('PATCH /api/articles/:uuid', () => {
       _id: '00000002-0001-0000-0000-000000000000',
       course: '00000003-0001-0000-0000-000000000000',
       creator: '00000001-0001-0000-0000-000000000000',
-      semester: '111-2',
-      title: '普通物理學',
+      semester: '113-1',
+      title: '普物',
       tags: ['德邦讚'],
     });
 
@@ -257,7 +258,7 @@ describe('PATCH /api/articles/:uuid', () => {
 describe('GET /api/articles/search', () => {
   it('should response the search result', async () => {
     const query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
     };
     const res = await request(app)
       .get('/api/articles/search')
@@ -268,7 +269,7 @@ describe('GET /api/articles/search', () => {
 
   it('should support pagination', async () => {
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       offset: 10,
     };
     let res = await request(app)
@@ -278,7 +279,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(4);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       limit: 14,
     };
     res = await request(app)
@@ -288,7 +289,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       limit: 15,
     };
     res = await request(app)
@@ -298,7 +299,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       offset: 10,
       limit: 3,
     };
