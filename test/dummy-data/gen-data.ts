@@ -88,7 +88,7 @@ async function generateQuiz(quizJsonPath: string, courseJsonPath: string, userJa
 
         // generate quiz
         const quiz: Quiz = {
-          _id: `00000002-1131-000${String(sessionNum)}-0000-${courseId[courseId.length - 1]}`,
+          _id: `00000004-1131-000${String(sessionNum)}-0000-${courseId[courseId.length - 1]}`,
           course: course._id,
           uploader: randomUploader._id,
           semester: '113-1',
