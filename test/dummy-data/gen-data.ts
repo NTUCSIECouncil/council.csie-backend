@@ -20,6 +20,12 @@ async function generateCourses(courseJsonPath: string, originalCourseJsonPath: s
     // change its id to our format
     courseList.forEach((course, courseIndex) => {
       course._id = `00000003-0000-0000-0000-${courseIndex.toString().padStart(12, '0')}`;
+
+      // remove class field if it is empty(some course on course.ntu.edu.tw doesn't have class)
+      if (!course.class) delete course.class;
+
+      // add default value for lecturer (some course on course.ntu.edu.tw doesn't have lecturer)
+      course.lecturer = course.lecturer || 'N/A';
     });
 
     // write to file in JSON format
@@ -76,21 +82,20 @@ async function generateQuiz(quizJsonPath: string, courseJsonPath: string, userJa
       const sessions: ('midterm' | 'final' | 'first' | 'second')[] = ['midterm', 'final', 'first', 'second'];
       const courseId: string[] = course._id.split('-');
 
-      for (const session of sessions) {
+      sessions.forEach((session, sessionNum) => {
         // randomly select an uploader
         const randomUploader = userList[Math.floor(Math.random() * userList.length)];
 
         // generate quiz
         const quiz: Quiz = {
-          _id: `00000002-1131-0000-0000-${courseId[courseId.length - 1]}`,
+          _id: `00000002-1131-000${String(sessionNum)}-0000-${courseId[courseId.length - 1]}`,
           course: course._id,
           uploader: randomUploader._id,
           semester: '113-1',
           session: session,
         };
-
         quizList.push(quiz);
-      }
+      });
     });
 
     // write to the file in JSON format
