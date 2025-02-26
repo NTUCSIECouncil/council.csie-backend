@@ -14,7 +14,7 @@ const ZSchema = {
 
 const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
   const filePath = `test/dummy-data/${model.charAt(0).toLowerCase() + model.slice(1)}_samples.json`;
-  const objs = ZSchema[model].array().parse(JSON.parse(readFileSync(filePath, 'utf-8')));
+  const objs = ZSchema[model].array().parse((JSON.parse(readFileSync(filePath, 'utf-8')) as unknown[]).slice(0, 1000));
 
   for (const obj of objs) {
     const doc = new models[model](obj);
