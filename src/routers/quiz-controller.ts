@@ -6,6 +6,7 @@ import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { type QuizSearchParam, ZQuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
 import { paginationParser } from './middleware.ts';
+import fs from 'fs';
 
 const router = Router();
 
@@ -116,6 +117,7 @@ router.get('/:uuid/file', (req, res, next) => {
     }
 
     const target = await QuizModel.findById(uuid).exec();
+    // if uuid is not found
     if (target === null) {
       res.sendStatus(404);
     } else {
@@ -126,7 +128,10 @@ router.get('/:uuid/file', (req, res, next) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
         root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
       };
-      res.sendFile(fileName, options);
+
+      // if the uuid exists but the file does not exist
+      if (!fs.existsSync(path.join(options.root, fileName))) res.sendStatus(404);
+      else res.sendFile(fileName, options);
     }
   })().catch(next);
 });
