@@ -27,7 +27,7 @@ router.post('/', (req, res, next) => {
     try {
       article = ZArticleSchema.parse({ ...req.body, _id: uuid });
     } catch (err) {
-      if (err instanceof ZodError) console.error(err);
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }
@@ -55,7 +55,7 @@ router.get('/:uuid', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }
@@ -76,7 +76,7 @@ router.patch('/:uuid', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }

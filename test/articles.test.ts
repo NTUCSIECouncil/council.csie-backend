@@ -32,13 +32,19 @@ describe('GET /api/articles', () => {
 
     res = await request(app)
       .get('/api/articles')
-      .query({ offset: 20 })
+      .query({ offset: 99 })
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
       .get('/api/articles')
-      .query(({ offset: 21 }))
+      .query(({ offset: 100 }))
+      .expect(200);
+    expect(res.body.items).toHaveLength(0);
+
+    res = await request(app)
+      .get('/api/articles')
+      .query(({ offset: 101 }))
       .expect(200);
     expect(res.body.items).toHaveLength(0);
   });
@@ -64,15 +70,15 @@ describe('GET /api/articles', () => {
 
     res = await request(app)
       .get('/api/articles')
-      .query(({ limit: 21 }))
+      .query(({ limit: 100 }))
       .expect(200);
-    expect(res.body.items).toHaveLength(21);
+    expect(res.body.items).toHaveLength(100);
 
     res = await request(app)
       .get('/api/articles')
-      .query(({ limit: 50 }))
+      .query(({ limit: 105 }))
       .expect(200);
-    expect(res.body.items).toHaveLength(21);
+    expect(res.body.items).toHaveLength(100);
   });
 
   it('should support controlling both the offset and the limit size of page', async () => {
@@ -96,7 +102,7 @@ describe('GET /api/articles', () => {
 
     res = await request(app)
       .get('/api/articles')
-      .query(qs.stringify({ limit: 5, offset: 19 }))
+      .query(qs.stringify({ limit: 5, offset: 98 }))
       .expect(200);
     expect(res.body.items).toHaveLength(2);
   });
@@ -175,27 +181,35 @@ describe('POST /api/articles', () => {
 describe('GET /api/articles/:uuid', () => {
   it('should response the article with uuid', async () => {
     let res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000000')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
-      creator: '00000001-0001-0000-0000-000000000000',
-      semester: '111-2',
-      title: '普通物理學',
-      tags: ['德邦讚'],
+      _id: '00000002-1131-0000-0000-000000000000',
+      course: '00000003-0000-0000-0000-000000000000',
+      creator: '00000001-0002-0000-0000-000000000000',
+      semester: '113-1',
+      title: '大學國文：文學鑑賞與寫作（一）',
+      tags: [
+        '汪詩珮',
+        '大學國文：文學鑑賞與寫作（一）',
+        'CHIN',
+      ],
     });
 
     res = await request(app)
-      .get('/api/articles/00000002-0003-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000098')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0003-0000-0000-000000000000',
-      course: '00000003-0003-0000-0000-000000000000',
-      creator: '00000001-0003-0000-0000-000000000000',
-      semester: '113-2',
-      title: '普通生物學',
-      tags: ['耶'],
+      _id: '00000002-1131-0000-0000-000000000098',
+      course: '00000003-0000-0000-0000-000000000098',
+      creator: '00000001-0001-0000-0000-000000000000',
+      semester: '113-1',
+      title: '英文(附一小時英聽)一',
+      tags: [
+        '黃允蔚',
+        '英文(附一小時英聽)一',
+        'FL',
+      ],
     });
 
     res = await request(app)
@@ -211,19 +225,23 @@ describe('GET /api/articles/:uuid', () => {
 describe('PATCH /api/articles/:uuid', () => {
   it('should update the article with uuid', async () => {
     let res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000000')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
-      creator: '00000001-0001-0000-0000-000000000000',
-      semester: '111-2',
-      title: '普通物理學',
-      tags: ['德邦讚'],
+      _id: '00000002-1131-0000-0000-000000000000',
+      course: '00000003-0000-0000-0000-000000000000',
+      creator: '00000001-0002-0000-0000-000000000000',
+      semester: '113-1',
+      title: '大學國文：文學鑑賞與寫作（一）',
+      tags: [
+        '汪詩珮',
+        '大學國文：文學鑑賞與寫作（一）',
+        'CHIN',
+      ],
     });
 
     res = await request(app)
-      .patch('/api/articles/00000002-0001-0000-0000-000000000000')
+      .patch('/api/articles/00000002-1131-0000-0000-000000000000')
       .send({
         title: '不普通物理學',
       })
@@ -237,7 +255,7 @@ describe('PATCH /api/articles/:uuid', () => {
       .expect(400);
 
     res = await request(app)
-      .patch('/api/articles/00000002-0001-0000-0000-000000000000')
+      .patch('/api/articles/00000002-1131-0000-0000-000000000000')
       .send({
         title: '不普通物理學',
       })
