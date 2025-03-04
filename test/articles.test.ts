@@ -257,7 +257,7 @@ describe('PATCH /api/articles/:uuid', () => {
 describe('GET /api/articles/search', () => {
   it('should response the search result', async () => {
     const query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
     };
     const res = await request(app)
       .get('/api/articles/search')
@@ -268,7 +268,7 @@ describe('GET /api/articles/search', () => {
 
   it('should support pagination', async () => {
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       offset: 10,
     };
     let res = await request(app)
@@ -278,7 +278,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(4);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       limit: 14,
     };
     res = await request(app)
@@ -288,7 +288,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       limit: 15,
     };
     res = await request(app)
@@ -298,7 +298,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['德邦讚'],
       offset: 10,
       limit: 3,
     };
