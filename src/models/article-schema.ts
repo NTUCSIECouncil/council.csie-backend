@@ -1,20 +1,17 @@
-import { randomUUID } from 'crypto';
+import { type UUID, randomUUID } from 'crypto';
+import Fuse from 'fuse.js';
 import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
+import { type Course } from './course-schema.ts';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
+  course: ZUuidSchema, // foreign key to Course
+  creator: ZUuidSchema, // foreign key to User
+  semester: z.string(), // 學期, e.g. '113-2'
   title: z.string(),
-  lecturer: z.string(),
-  tag: z.string().array().optional(), // any tags the creator wants to add
-  grade: z.number().optional(), // what grade is the creator when posted
-  categories: z.string().array().optional(), // more official tags, ex: elective, required, etc.
-  content: z.string().optional(),
-  course: ZUuidSchema,
-  creator: ZUuidSchema,
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
 });
 
 interface Article extends z.infer<typeof ZArticleSchema> {};
@@ -22,51 +19,65 @@ interface Article extends z.infer<typeof ZArticleSchema> {};
 interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Article, '_id'>> {};
 
 interface ArticleModel extends Model<ArticleWithOptionalId> {
+  /**
+   * Search articles by query parameters.
+   * @param params - Query parameters. No additional parsing is needed.
+   * @param offset - The offset of the first article to return.
+   * @param limit - The maximum number of articles to return.
+   * @returns The articles that match the query parameters.
+   */
   searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   _id: { type: String, default: () => randomUUID() },
-  title: { type: String, required: true },
-  lecturer: { type: String, required: true },
-  tag: { type: [{ type: String, required: false }], required: false },
-  grade: { type: Number, required: false },
-  categories: { type: [{ type: String, required: false }], required: false },
-  content: { type: String, required: false },
   course: { type: String, ref: 'Course', required: true },
   creator: { type: String, ref: 'User', required: true },
-  createdAt: { type: Date, required: false, immutable: true, default: () => Date.now() },
-  updatedAt: { type: Date, required: false, default: () => Date.now() },
+  semester: { type: String, required: true },
+  title: { type: String, required: true },
+  tags: { type: [String], default: [] },
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
   const query: FilterQuery<Article> = {};
 
-  if (params.tag != null) {
-    query.tag = { $all: params.tag };
+  if (params.tags) {
+    query.tags = { $all: params.tags };
   }
 
-  if (params.categories != null) {
-    query.categories = { $in: params.categories };
+  let articles = await this.find(query).populate<{ course: Course }>('course').exec();
+
+  if (params.categories) {
+    const categories = params.categories;
+    articles = articles.filter((article) => {
+      // If the article has fewer categories than the query, it cannot match.
+      if (article.course.categories.length < categories.length) return false;
+
+      // If all categories in the query are in the article, it matches.
+      return article.course.categories.every(category => categories.includes(category));
+    },
+    );
   }
 
-  if (params.lecturer != null) {
-    query.lecturer = params.lecturer;
+  if (params.keyword) {
+    const fuseOptions = {
+      keys: [
+        'title',
+        'course.names',
+        'course.lecturer',
+      ],
+      threshold: 0.6,
+    };
+    const fuse = new Fuse(articles, fuseOptions);
+
+    const result = fuse.search(params.keyword);
+
+    articles = result.map(result => result.item);
   }
 
-  if (params.grade != null) {
-    query.grade = params.grade;
-  }
+  articles = articles.slice(offset, offset + limit);
 
-  if (params.keyword != null) {
-    query.$or = [
-      { title: { $regex: params.keyword, $options: 'i' } },
-      { content: { $regex: params.keyword, $options: 'i' } },
-    ];
-  }
-
-  const result = await this.find(query).skip(offset).limit(limit).exec();
-  return result;
+  return articles.map(article => article.depopulate<{ course: UUID }>());
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);

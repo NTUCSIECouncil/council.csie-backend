@@ -25,66 +25,84 @@ describe('GET /api/articles', () => {
 
   it('should support controlling the offset of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 1 }))
+      .get('/api/articles')
+      .query({ offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(10);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 20 }))
+      .get('/api/articles')
+      .query({ offset: 99 })
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ offset: 21 }))
+      .get('/api/articles')
+      .query(({ offset: 100 }))
+      .expect(200);
+    expect(res.body.items).toHaveLength(0);
+
+    res = await request(app)
+      .get('/api/articles')
+      .query(({ offset: 101 }))
       .expect(200);
     expect(res.body.items).toHaveLength(0);
   });
 
   it('should support controlling the limit size of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1 }))
+      .get('/api/articles')
+      .query(({ limit: 1 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5 }))
+      .get('/api/articles')
+      .query(({ limit: 5 }))
       .expect(200);
     expect(res.body.items).toHaveLength(5);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 20 }))
+      .get('/api/articles')
+      .query(({ limit: 20 }))
       .expect(200);
     expect(res.body.items).toHaveLength(20);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 21 }))
+      .get('/api/articles')
+      .query(({ limit: 100 }))
       .expect(200);
-    expect(res.body.items).toHaveLength(21);
+    expect(res.body.items).toHaveLength(100);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 50 }))
+      .get('/api/articles')
+      .query(({ limit: 105 }))
       .expect(200);
-    expect(res.body.items).toHaveLength(21);
+    expect(res.body.items).toHaveLength(100);
   });
 
   it('should support controlling both the offset and the limit size of page', async () => {
     let res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1, offset: 1 }))
+      .get('/api/articles')
+      .query(({ limit: 1, offset: 1 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 1, offset: 20 }))
+      .get('/api/articles')
+      .query(({ limit: 1, offset: 20 }))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5, offset: 1 }))
+      .get('/api/articles')
+      .query({ limit: 5, offset: 1 })
       .expect(200);
     expect(res.body.items).toHaveLength(5);
 
     res = await request(app)
-      .get('/api/articles?' + qs.stringify({ limit: 5, offset: 19 }))
+      .get('/api/articles')
+      .query(qs.stringify({ limit: 5, offset: 98 }))
       .expect(200);
     expect(res.body.items).toHaveLength(2);
   });
@@ -95,12 +113,11 @@ describe('POST /api/articles', () => {
     let res = await request(app)
       .post('/api/articles')
       .send({
-        title: '普通生物學',
-        lecturer: '你是誰',
-        tag: ['耶'],
-        content: '耶',
-        creator: '00000001-0003-0000-0000-000000000000',
         course: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
       })
       .expect(201);
 
@@ -111,13 +128,23 @@ describe('POST /api/articles', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: uuid,
-      title: '普通生物學',
-      lecturer: '你是誰',
-      tag: ['耶'],
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
+      creator: '00000001-0003-0000-0000-000000000000',
+      semester: '113-2',
+      title: '普通生物學',
+      tags: ['耶'],
     });
+
+    res = await request(app)
+      .post('/api/articles')
+      .send({
+        couse: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
+      })
+      .expect(400);
   });
 
   it('should ignore provided uuid', async () => {
@@ -125,12 +152,11 @@ describe('POST /api/articles', () => {
       .post('/api/articles')
       .send({
         _id: '00000002-0022-0000-0000-000000000000',
-        title: '普通生物學',
-        lecturer: '你是誰',
-        tag: ['耶'],
-        content: '耶',
-        creator: '00000001-0003-0000-0000-000000000000',
         course: '00000003-0003-0000-0000-000000000000',
+        creator: '00000001-0003-0000-0000-000000000000',
+        semester: '113-2',
+        title: '普通生物學',
+        tags: ['耶'],
       })
       .expect(201);
 
@@ -141,12 +167,11 @@ describe('POST /api/articles', () => {
       .expect(200);
     expect(res.body.item).toMatchObject({
       _id: uuid,
-      title: '普通生物學',
-      lecturer: '你是誰',
-      tag: ['耶'],
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
       course: '00000003-0003-0000-0000-000000000000',
+      creator: '00000001-0003-0000-0000-000000000000',
+      semester: '113-2',
+      title: '普通生物學',
+      tags: ['耶'],
     });
 
     expect(uuid).not.toEqual('00000002-0022-0000-0000-000000000000');
@@ -156,73 +181,85 @@ describe('POST /api/articles', () => {
 describe('GET /api/articles/:uuid', () => {
   it('should response the article with uuid', async () => {
     let res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000000')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      title: '普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
+      _id: '00000002-1131-0000-0000-000000000000',
+      course: '00000003-0000-0000-0000-000000000000',
+      creator: '00000001-0002-0000-0000-000000000000',
+      semester: '113-1',
+      title: '大學國文：文學鑑賞與寫作（一）',
+      tags: [
+        '汪詩珮',
+        '大學國文：文學鑑賞與寫作（一）',
+        'CHIN',
+      ],
     });
 
     res = await request(app)
-      .get('/api/articles/00000002-0003-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000098')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0003-0000-0000-000000000000',
-      title: '普通生物學',
-      lecturer: '你是誰',
-      content: '耶',
-      creator: '00000001-0003-0000-0000-000000000000',
-      course: '00000003-0003-0000-0000-000000000000',
+      _id: '00000002-1131-0000-0000-000000000098',
+      course: '00000003-0000-0000-0000-000000000098',
+      creator: '00000001-0001-0000-0000-000000000000',
+      semester: '113-1',
+      title: '英文(附一小時英聽)一',
+      tags: [
+        '黃允蔚',
+        '英文(附一小時英聽)一',
+        'FL',
+      ],
     });
+
+    res = await request(app)
+      .get('/api/articles/00000002-0003-0000-0000')
+      .expect(400);
+
+    res = await request(app)
+      .get('/api/articles/00000000-0000-0000-0000-000000000000')
+      .expect(404);
   });
 });
 
 describe('PATCH /api/articles/:uuid', () => {
   it('should update the article with uuid', async () => {
     let res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
+      .get('/api/articles/00000002-1131-0000-0000-000000000000')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      title: '普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
+      _id: '00000002-1131-0000-0000-000000000000',
+      course: '00000003-0000-0000-0000-000000000000',
+      creator: '00000001-0002-0000-0000-000000000000',
+      semester: '113-1',
+      title: '大學國文：文學鑑賞與寫作（一）',
+      tags: [
+        '汪詩珮',
+        '大學國文：文學鑑賞與寫作（一）',
+        'CHIN',
+      ],
     });
 
     res = await request(app)
-      .patch('/api/articles/00000002-0001-0000-0000-000000000000')
+      .patch('/api/articles/00000002-1131-0000-0000-000000000000')
       .send({
         title: '不普通物理學',
       })
       .expect(204);
 
     res = await request(app)
-      .get('/api/articles/00000002-0001-0000-0000-000000000000')
-      .expect(200);
-    expect(res.body.item).toMatchObject({
-      _id: '00000002-0001-0000-0000-000000000000',
-      title: '不普通物理學',
-      lecturer: '胡德邦',
-      tag: ['德邦讚'],
-      content: '好誒',
-      creator: '00000001-0001-0000-0000-000000000000',
-      course: '00000003-0001-0000-0000-000000000000',
-    });
-
-    res = await request(app)
-      .patch('/api/articles/00000002-0001-0000-0000-000000000000')
+      .patch('/api/articles/00000002-0001-0000-0000')
       .send({
-        _id: '00000002-0022-0000-0000-000000000000',
+        title: '不普通物理學',
       })
       .expect(400);
+
+    res = await request(app)
+      .patch('/api/articles/00000002-1131-0000-0000-000000000000')
+      .send({
+        title: '不普通物理學',
+      })
+      .expect(204);
   });
 
   it('should reject modification of _id', async () => {
@@ -236,52 +273,124 @@ describe('PATCH /api/articles/:uuid', () => {
 });
 
 describe('GET /api/articles/search', () => {
-  it('should response the search result', async () => {
-    const query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
-    };
-    const res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
-      .expect(200);
-
-    expect(res.body.items).toHaveLength(10);
-  });
-
-  it('should support pagination', async () => {
+  it('should response the search results', async () => {
+    // test the tags
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tag: ['德邦讚'],
-      offset: 10,
+      tags: ['CHIN'],
+      limit: 10,
     };
     let res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(4);
+    expect(res.body.items).toHaveLength(10);
+
+    // test the tags
+    query = {
+      tags: ['CHIN', '汪詩珮'],
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+
+    // test the category
+    query = {
+      categories: ['General'],
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+
+    // test the course
+    query = {
+      course: '大學國文',
+      limit: 100,
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(100);
+
+    // test the lecturer
+    query = {
+      lecturer: '汪詩珮',
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body).toMatchObject({
+      _id: '00000003-0000-0000-0000-000000000000',
+      curriculum: 'CHIN8012',
+      lecturer: '汪詩珮',
+      class: '01',
+      names: [
+        '大學國文：文學鑑賞與寫作（一）',
+      ],
+      credit: 3,
+      categories: [
+        'General Education',
+      ],
+    });
+
+    // test the keyword
+    query = {
+      keyword: '文學',
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+  });
+
+  // test the query by course
+  it('should support pagination', async () => {
+    let query: ArticleSearchQueryParam | PaginationQueryParam = {
+      tags: ['CHIN'],
+      offset: 0,
+      limit: 100,
+    };
+    let res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(100);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['CHIN'],
       limit: 14,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['CHIN'],
       limit: 15,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tag: ['德邦讚'],
+      tags: ['CHIN'],
       offset: 10,
       limit: 3,
     };
     res = await request(app)
-      .get('/api/articles/search?' + qs.stringify(query))
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(3);
   });

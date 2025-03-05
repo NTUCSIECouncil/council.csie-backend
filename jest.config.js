@@ -8,9 +8,7 @@ const config = {
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
-      {
-        useESM: true,
-      },
+      { useESM: true },
     ],
   },
   verbose: true,

@@ -1,11 +1,15 @@
 import { type ErrorRequestHandler, Router } from 'express';
 import articleController from './article-controller.ts';
+import categoryController from './category-controller.ts';
+import courseController from './course-controller.ts';
 import quizController from './quiz-controller.ts';
+import tagController from './tag-controller.ts';
 import userInfoController from './user-controller.ts';
 
 const router = Router();
 
-const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+/* istanbul ignore next */
+const uncaughtErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error(err);
   if (res.headersSent) {
     next(err);
@@ -15,9 +19,12 @@ const uncatchErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
 };
 
 router.use('/articles', articleController);
+router.use('/categories', categoryController);
+router.use('/courses', courseController);
 router.use('/quizzes', quizController);
+router.use('/tags', tagController);
 router.use('/users', userInfoController);
 
-router.use(uncatchErrorHandler);
+router.use(uncaughtErrorHandler);
 
 export default router;

@@ -6,17 +6,20 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@routers/*": [
-        "./src/routers/*",
-        "./src/routers"
+      "@scripts/*": [
+        "./scripts/*",
       ],
       "@models/*": [
         "./src/models/*",
-        "./src/models"
+      ],
+      "@routers/*": [
+        "./src/routers/*",
       ],
       "@type/*": [
         "./src/types/*",
-        "./src/types"
+      ],
+      "@utils/*": [
+        "./src/utils/*",
       ],
       "@/*": [
         "./src/*"
@@ -24,12 +27,12 @@
     },
     "typeRoots": [
       "./src/types",
-      "./node_modules/@types"
+      "./node_modules/@types",
     ]
   },
   "include": [
     "src/**/*",
     "test/**/*",
-    "scripts/**/*"
-  ]
+    "scripts/**/*",
+  ],
 }

@@ -7,29 +7,20 @@ const ZUuidSchema = z.custom<UUID>((val) => {
 });
 
 const ZPaginationQueryParam = z.object({
-  offset: z.coerce.number().positive().optional(),
-  limit: z.coerce.number().nonnegative().optional(),
+  offset: z.coerce.number().nonnegative().optional(),
+  limit: z.coerce.number().positive().optional(),
 });
 
 interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
 
+// no need to catch error, because all attributes are optional
 const ZArticleSearchQueryParam = z.object({
-  tag: z.string().array().optional(),
-  keyword: z.string().optional(),
+  tags: z.string().array().optional(),
   categories: z.string().array().optional(),
-  lecturer: z.string().optional(),
-  grade: z.number().gte(1).lte(4).optional(),
+  keyword: z.string().optional(),
 });
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};
-
-// interface ArticleSearchQueryParam {
-//   tag?: string[];
-//   keyword?: string;
-//   categories?: string[];
-//   lecturer?: string;
-//   grade?: number;
-// }
 
 const ZQuizSearchParam = z.object({
   course: ZUuidSchema,
@@ -38,9 +29,8 @@ const ZQuizSearchParam = z.object({
 
 interface QuizSearchParam extends z.infer<typeof ZQuizSearchParam> {};
 
-// interface QuizSearchParam {
-//   course: UUID;
-//   keyword?: string;
-// }
+const ZCategorySchema = z.enum(['compulsory', 'elective', 'general', 'chinese', 'english', 'japanese', 'language', 'calculus', 'programming']);
 
-export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam };
+type Category = z.infer<typeof ZCategorySchema>;
+
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema };

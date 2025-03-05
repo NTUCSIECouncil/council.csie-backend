@@ -13,7 +13,7 @@ interface UserModel extends Model<User> { };
 
 const userSchema = new Schema<User, UserModel>({
   _id: { type: String },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
 });
 
