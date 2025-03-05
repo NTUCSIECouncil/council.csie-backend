@@ -273,30 +273,98 @@ describe('PATCH /api/articles/:uuid', () => {
 });
 
 describe('GET /api/articles/search', () => {
-  it('should response the search result', async () => {
-    const query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tags: ['德邦讚'],
-    };
-    const res = await request(app)
-      .get('/api/articles/search')
-      .query(qs.stringify(query))
-      .expect(200);
-    expect(res.body.items).toHaveLength(10);
-  });
-
-  it('should support pagination', async () => {
+  it('should response the search results', async () => {
+    // test the tags
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
-      tags: ['德邦讚'],
-      offset: 10,
+      tags: ['CHIN'],
+      limit: 10,
     };
     let res = await request(app)
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(4);
+    expect(res.body.items).toHaveLength(10);
+
+    // test the tags
+    query = {
+      tags: ['CHIN', '汪詩珮'],
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+
+    // test the category
+    query = {
+      categories: ['General'],
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+
+    // test the course
+    query = {
+      course: '大學國文',
+      limit: 100,
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(100);
+
+    // test the lecturer
+    query = {
+      lecturer: '汪詩珮',
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body).toMatchObject({
+      _id: '00000003-0000-0000-0000-000000000000',
+      curriculum: 'CHIN8012',
+      lecturer: '汪詩珮',
+      class: '01',
+      names: [
+        '大學國文：文學鑑賞與寫作（一）',
+      ],
+      credit: 3,
+      categories: [
+        'General Education',
+      ],
+    });
+
+    // test the keyword
+    query = {
+      keyword: '文學',
+    };
+    res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(1);
+  });
+
+  // test the query by course
+  it('should support pagination', async () => {
+    let query: ArticleSearchQueryParam | PaginationQueryParam = {
+      tags: ['CHIN'],
+      offset: 0,
+      limit: 100,
+    };
+    let res = await request(app)
+      .get('/api/articles/search')
+      .query(qs.stringify(query))
+      .expect(200);
+    expect(res.body.items).toHaveLength(100);
 
     query = {
-      tags: ['德邦讚'],
+      tags: ['CHIN'],
       limit: 14,
     };
     res = await request(app)
@@ -306,7 +374,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tags: ['德邦讚'],
+      tags: ['CHIN'],
       limit: 15,
     };
     res = await request(app)
@@ -316,7 +384,7 @@ describe('GET /api/articles/search', () => {
     expect(res.body.items).toHaveLength(14);
 
     query = {
-      tags: ['德邦讚'],
+      tags: ['CHIN'],
       offset: 10,
       limit: 3,
     };
