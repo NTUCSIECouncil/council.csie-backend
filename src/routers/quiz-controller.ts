@@ -2,10 +2,10 @@ import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
-import { ZodError } from 'zod';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { type QuizSearchParam, ZQuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
+import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
   try {
     quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse quiz in POST /quizzes: ', err);
     res.sendStatus(400);
     return;
   }
@@ -44,7 +44,7 @@ router.get('/search', paginationParser, async (req, res) => {
   try {
     params = ZQuizSearchParam.parse(req.query);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse search query in GET /quizzes/search: ', err);
     res.sendStatus(400);
     return;
   }
@@ -58,7 +58,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse UUID in GET /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -80,7 +80,7 @@ router.patch('/:uuid', async (req, res) => {
     uuid = ZUuidSchema.parse(req.params.uuid);
     patch = ZQuizSchema.partial().parse(req.body);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -100,7 +100,7 @@ router.get('/:uuid/file', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
     res.sendStatus(400);
     return;
   }
@@ -112,10 +112,9 @@ router.get('/:uuid/file', async (req, res) => {
   } else {
     // Some how getting filename
     const fileName = `${uuid}.pdf`;
-    if (process.env.QUIZ_FILE_DIR === undefined) throw new Error('QUIZ_FILE_DIR is not defined.');
     const options = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
-      root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, QUIZ_FILE_DIR was checked in index.ts
+      root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR!),
     };
 
     // If the uuid exists but the file does not exist

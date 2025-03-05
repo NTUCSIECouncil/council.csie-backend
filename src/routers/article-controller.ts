@@ -1,9 +1,9 @@
 import { type UUID, randomUUID } from 'crypto';
 import { Router } from 'express';
-import { ZodError } from 'zod';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
   try {
     article = ZArticleSchema.parse({ ...req.body, _id: uuid });
   } catch (err) {
-    if (err instanceof ZodError) console.error('Validation failed:', err.errors);
+    logger.error('Failed to parse article in POST /articles: ', err);
     res.sendStatus(400);
     return;
   }
@@ -48,7 +48,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error('Validation failed:', err.errors);
+    logger.error('Failed to parse UUID in GET /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -67,7 +67,7 @@ router.patch('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error('Validation failed:', err.errors);
+    logger.error('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -87,7 +87,7 @@ router.get('/:uuid/quizzes', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
     res.sendStatus(400);
     return;
   }
@@ -108,7 +108,7 @@ router.get('/:uuid/quizzes', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
+      logger.error('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
       res.sendStatus(400);
       return;
     }

@@ -1,8 +1,8 @@
 import { type UUID } from 'crypto';
 import { Router } from 'express';
-import { ZodError } from 'zod';
 import { models } from '@models/index.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
+import logger from '@utils/logger.ts';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    if (err instanceof ZodError) console.error(err.format());
+    logger.error('Failed to parse UUID in GET /courses/:uuid: ', err);
     res.sendStatus(400);
     return;
   }

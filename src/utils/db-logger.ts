@@ -8,11 +8,10 @@ const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.colorize(),
     logFormat,
   ),
   transports: [
-    new winston.transports.File({ filename: 'logs/database.log' }),
+    new winston.transports.File({ filename: 'logs/database.log', level: 'silly' }),
   ],
 });
 
