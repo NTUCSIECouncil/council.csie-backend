@@ -50,11 +50,11 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
   if (params.categories) {
     const categories = params.categories;
     articles = articles.filter((article) => {
-      if (article.course.categories.length !== categories.length) return false;
+      // If the article has fewer categories than the query, it cannot match.
+      if (article.course.categories.length < categories.length) return false;
 
-      const sortedCategories = article.course.categories.slice().sort();
-      const sortedParams = categories.slice().sort();
-      return sortedCategories.every((category, index) => category === sortedParams[index]);
+      // If all categories in the query are in the article, it matches.
+      return article.course.categories.every(category => categories.includes(category));
     },
     );
   }
