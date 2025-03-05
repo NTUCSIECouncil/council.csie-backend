@@ -1,4 +1,5 @@
 import { type UUID, randomUUID } from 'crypto';
+import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import { ZodError } from 'zod';
@@ -6,7 +7,6 @@ import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { type QuizSearchParam, ZQuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
 import { paginationParser } from './middleware.ts';
-import fs from 'fs';
 
 const router = Router();
 
@@ -117,7 +117,7 @@ router.get('/:uuid/file', (req, res, next) => {
     }
 
     const target = await QuizModel.findById(uuid).exec();
-    // if uuid is not found
+    // If uuid is not found
     if (target === null) {
       res.sendStatus(404);
     } else {
@@ -129,9 +129,10 @@ router.get('/:uuid/file', (req, res, next) => {
         root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
       };
 
-      // if the uuid exists but the file does not exist
-      if (!fs.existsSync(path.join(options.root, fileName))) res.sendStatus(404);
-      else res.sendFile(fileName, options);
+      // If the uuid exists but the file does not exist
+      if (!fs.existsSync(path.join(options.root, fileName))) return res.sendStatus(500);
+
+      res.sendFile(fileName, options);
     }
   })().catch(next);
 });
