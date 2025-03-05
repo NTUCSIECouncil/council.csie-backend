@@ -59,20 +59,6 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
     );
   }
 
-  if (params.course) {
-    const courseName = params.course;
-    articles = articles.filter(article =>
-      article.course.names.includes(courseName),
-    );
-  }
-
-  if (params.lecturer) {
-    const lecturer = params.lecturer;
-    articles = articles.filter(article =>
-      article.course.lecturer === lecturer,
-    );
-  }
-
   if (params.keyword) {
     const fuseOptions = {
       keys: [
