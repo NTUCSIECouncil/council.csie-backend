@@ -6,6 +6,9 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
+      "@scripts/*": [
+        "./scripts/*",
+      ],
       "@models/*": [
         "./src/models/*",
       ],

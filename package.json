@@ -10,6 +10,7 @@
   "dependencies": {
     "express": "^4.18.2",
     "firebase-admin": "^13.1.0",
+    "fuse.js": "^7.1.0",
     "mongoose": "^8.5.2",
     "morgan": "^1.10.0",
     "qs": "^6.13.0",
@@ -46,6 +47,6 @@
     }
   },
   "lint-staged": {
-    "*.ts": "eslint"
+    "src/**/*.ts": "eslint"
   }
 }

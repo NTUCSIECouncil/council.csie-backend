@@ -9,6 +9,7 @@ import { paginationParser } from './middleware.ts';
 const router = Router();
 
 const ArticleModel = models.Article;
+const QuizModel = models.Quiz;
 
 // get all articles
 router.get('/', paginationParser, (req, res, next) => {
@@ -27,7 +28,7 @@ router.post('/', (req, res, next) => {
     try {
       article = ZArticleSchema.parse({ ...req.body, _id: uuid });
     } catch (err) {
-      if (err instanceof ZodError) console.error(err);
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }
@@ -55,7 +56,7 @@ router.get('/:uuid', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }
@@ -76,7 +77,7 @@ router.patch('/:uuid', (req, res, next) => {
     try {
       uuid = ZUuidSchema.parse(req.params.uuid);
     } catch (err) {
-      if (err instanceof ZodError) console.error(err.format());
+      if (err instanceof ZodError) console.error('Validation failed:', err.errors);
       res.sendStatus(400);
       return;
     }
@@ -89,6 +90,27 @@ router.patch('/:uuid', (req, res, next) => {
       await target.save();
       res.sendStatus(204);
     }
+  })().catch(next);
+});
+
+router.get('/:uuid/quizzes', (req, res, next) => {
+  (async () => {
+    let uuid: UUID;
+    try {
+      uuid = ZUuidSchema.parse(req.params.uuid);
+    } catch (err) {
+      if (err instanceof ZodError) console.error(err.format());
+      res.sendStatus(400);
+      return;
+    }
+
+    const article = await ArticleModel.findById(uuid).exec();
+    if (article === null) {
+      return res.sendStatus(404);
+    }
+
+    const quizzes = await QuizModel.find({ course: uuid }).exec();
+    res.send({ items: quizzes });
   })().catch(next);
 });
 

@@ -9,13 +9,13 @@ const ZUserSchema = z.object({
   name: z.string(),
 });
 
-interface User extends z.infer<typeof ZUserSchema > {};
+interface User extends z.infer<typeof ZUserSchema> {};
 
 interface UserModel extends Model<User> { };
 
 const userSchema = new Schema<User, UserModel>({
   _id: { type: String, default: () => randomUUID() },
-  email: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
 });
 
