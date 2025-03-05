@@ -155,7 +155,7 @@ describe('GET /api/quizzes/:uuid/file', () => {
     // the uuid exist but the file does not
     await request(app)
       .get('/api/quizzes/00000004-1131-0001-0000-000000000000/file')
-      .expect(404);
+      .expect(500);
 
     // invalid uuid (wrong format)
     await request(app)

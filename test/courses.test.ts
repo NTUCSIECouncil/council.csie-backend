@@ -15,16 +15,16 @@ afterEach(async () => {
 describe('GET /api/courses/:uuid', () => {
   it('should response the course with uuid', async () => {
     const res = await request(app)
-      .get('/api/courses/00000003-0001-0000-0000-000000000000')
+      .get('/api/courses/00000003-0000-0000-0000-000000000000')
       .expect(200);
     expect(res.body.item).toMatchObject({
-      _id: '00000003-0001-0000-0000-000000000000',
-      curriculum: 'CSIE1212',
-      lecturer: '林軒田',
+      _id: '00000003-0000-0000-0000-000000000000',
+      curriculum: 'CHIN8012',
+      lecturer: '汪詩珮',
       class: '01',
-      names: ['資料結構與演算法', 'Data Structures and Algorithms', 'DSA'],
+      names: ['大學國文：文學鑑賞與寫作（一）'],
       credit: 3,
-      categories: ['compulsory', 'programming'],
+      categories: [],
     });
 
     await request(app)
