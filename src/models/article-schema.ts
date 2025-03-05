@@ -80,7 +80,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
         'course.names',
         'course.lecturer',
       ],
-      threshold: 0.3,
+      threshold: 0.6,
     };
     const fuse = new Fuse(articles, fuseOptions);
 
