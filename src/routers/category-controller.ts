@@ -1,5 +1,5 @@
-import { models } from '@models/index.ts';
 import { Router } from 'express';
+import { models } from '@models/index.ts';
 
 const router = Router();
 
