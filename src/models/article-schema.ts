@@ -2,6 +2,7 @@ import { type UUID, randomUUID } from 'crypto';
 import Fuse from 'fuse.js';
 import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
+import { type Course } from './course-schema.ts';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
 const ZArticleSchema = z.object({
@@ -43,13 +44,20 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
   if (params.tags) {
     query.tags = { $all: params.tags };
   }
-  if (params.categories) {
-    query.categories = { $all: params.categories };
-  }
 
-  let articles = await this.find(query)
-    .populate<{ course: { names: string[]; lecturer: string } }>('course', 'names lecturer')
-    .exec();
+  let articles = await this.find(query).populate<{ course: Course }>('course').exec();
+
+  if (params.categories) {
+    const categories = params.categories;
+    articles = articles.filter((article) => {
+      if (article.course.categories.length !== categories.length) return false;
+
+      const sortedCategories = article.course.categories.slice().sort();
+      const sortedParams = categories.slice().sort();
+      return sortedCategories.every((category, index) => category === sortedParams[index]);
+    },
+    );
+  }
 
   if (params.course) {
     const courseName = params.course;
@@ -72,7 +80,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
         'course.names',
         'course.lecturer',
       ],
-      threshold: 0.3,
+      threshold: 0.6,
     };
     const fuse = new Fuse(articles, fuseOptions);
 

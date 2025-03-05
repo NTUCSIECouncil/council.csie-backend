@@ -1,4 +1,5 @@
 import { type UUID, randomUUID } from 'crypto';
+import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import { ZodError } from 'zod';
@@ -116,6 +117,7 @@ router.get('/:uuid/file', (req, res, next) => {
     }
 
     const target = await QuizModel.findById(uuid).exec();
+    // If uuid is not found
     if (target === null) {
       res.sendStatus(404);
     } else {
@@ -126,6 +128,10 @@ router.get('/:uuid/file', (req, res, next) => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist
         root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR),
       };
+
+      // If the uuid exists but the file does not exist
+      if (!fs.existsSync(path.join(options.root, fileName))) return res.sendStatus(500);
+
       res.sendFile(fileName, options);
     }
   })().catch(next);
