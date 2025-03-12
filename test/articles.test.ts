@@ -373,13 +373,13 @@ describe('GET /api/articles/search', () => {
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
       tags: ['CHIN'],
       offset: 0,
-      limit: 64,
+      limit: 100,
     };
     let res = await request(app)
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(100);
+    expect(res.body.items).toHaveLength(64);
 
     query = {
       tags: ['CHIN'],
