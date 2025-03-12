@@ -50,6 +50,8 @@ try {
 
 const expressApp = express();
 
+expressApp.set('query parser', 'extended');
+
 expressApp.use(express.json());
 
 const stream: StreamOptions = {
