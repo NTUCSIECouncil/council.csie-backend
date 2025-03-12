@@ -373,7 +373,7 @@ describe('GET /api/articles/search', () => {
     let query: ArticleSearchQueryParam | PaginationQueryParam = {
       tags: ['CHIN'],
       offset: 0,
-      limit: 100,
+      limit: 64,
     };
     let res = await request(app)
       .get('/api/articles/search')
