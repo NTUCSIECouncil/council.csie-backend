@@ -102,25 +102,4 @@ router.get('/:uuid/quizzes', async (req, res) => {
   res.send({ items: quizzes });
 });
 
-router.get('/:uuid/quizzes', (req, res, next) => {
-  (async () => {
-    let uuid: UUID;
-    try {
-      uuid = ZUuidSchema.parse(req.params.uuid);
-    } catch (err) {
-      logger.error('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
-      res.sendStatus(400);
-      return;
-    }
-
-    const article = await ArticleModel.findById(uuid).exec();
-    if (article === null) {
-      return res.sendStatus(404);
-    }
-
-    const quizzes = await QuizModel.find({ course: uuid }).exec();
-    res.send({ items: quizzes });
-  })().catch(next);
-});
-
 export default router;
