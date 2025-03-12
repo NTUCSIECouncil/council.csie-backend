@@ -1,7 +1,8 @@
 import { randomUUID } from 'crypto';
-import { type Model, Schema, model } from 'mongoose';
+import Fuse from 'fuse.js';
+import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
-import { ZUuidSchema } from './util-schema.ts';
+import { type CourseSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
 const ZCourseSchema = z.object({
   _id: ZUuidSchema,
@@ -17,9 +18,11 @@ interface Course extends z.infer<typeof ZCourseSchema> {};
 
 interface CourseWithOptionalId extends Omit<Course, '_id'>, Partial<Pick<Course, '_id'>> {};
 
-interface CourseModel extends Model<CourseWithOptionalId> {};
+interface CourseModel extends Model<CourseWithOptionalId> {
+  searchCourses: (this: CourseModel, params: CourseSearchQueryParam, offset: number, limit: number) => Promise<Course[]>;
+};
 
-const courseSchema = new Schema<CourseWithOptionalId>({
+const courseSchema = new Schema<CourseWithOptionalId, CourseModel>({
   _id: { type: String, default: () => randomUUID() },
   curriculum: { type: String, required: true },
   lecturer: { type: String, required: true },
@@ -29,6 +32,35 @@ const courseSchema = new Schema<CourseWithOptionalId>({
   categories: { type: [String], required: true },
 });
 
-const CourseModel = model<CourseWithOptionalId>('Course', courseSchema);
+const staticSearchCourses: CourseModel['searchCourses'] = async function (params, offset, limit) {
+  const query: FilterQuery<Course> = {};
+
+  if (params.categories) {
+    query.categories = { $all: params.categories };
+  }
+
+  let courses = await this.find(query).exec();
+
+  if (params.keyword) {
+    const fuseOptions = {
+      keys: [
+        'lecturer',
+        'names',
+      ],
+      threshold: 0.6,
+    };
+
+    const fuse = new Fuse(courses, fuseOptions);
+
+    const result = fuse.search(params.keyword);
+    courses = result.map(item => item.item);
+  }
+
+  return courses.slice(offset, offset + limit);
+};
+
+courseSchema.static('searchCourses', staticSearchCourses);
+
+const CourseModel = model<CourseWithOptionalId, CourseModel>('Course', courseSchema);
 
 export { type Course, CourseModel, ZCourseSchema };

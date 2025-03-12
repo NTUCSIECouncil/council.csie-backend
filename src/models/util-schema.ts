@@ -13,7 +13,6 @@ const ZPaginationQueryParam = z.object({
 
 interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
 
-// no need to catch error, because all attributes are optional
 const ZArticleSearchQueryParam = z.object({
   tags: z.string().array().optional(),
   categories: z.string().array().optional(),
@@ -21,6 +20,13 @@ const ZArticleSearchQueryParam = z.object({
 });
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};
+
+const ZCourseSearchQueryParam = z.object({
+  categories: z.string().array().optional(),
+  keyword: z.string().optional(),
+});
+
+interface CourseSearchQueryParam extends z.infer<typeof ZCourseSearchQueryParam> {};
 
 const ZQuizSearchParam = z.object({
   course: ZUuidSchema,
@@ -33,4 +39,4 @@ const ZCategorySchema = z.enum(['compulsory', 'elective', 'general', 'chinese', 
 
 type Category = z.infer<typeof ZCategorySchema>;
 
-export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema };
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema, type CourseSearchQueryParam, ZCourseSearchQueryParam };
