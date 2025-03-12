@@ -36,23 +36,6 @@ router.post('/', async (req, res) => {
   res.status(201).send({ uuid });
 });
 
-router.get('/search', paginationParser, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-  const [offset, limit] = [req.offset!, req.limit!];
-
-  let params: QuizSearchParam;
-  try {
-    params = ZQuizSearchParam.parse(req.query);
-  } catch (err) {
-    logger.error('Failed to parse search query in GET /quizzes/search: ', err);
-    res.sendStatus(400);
-    return;
-  }
-
-  const items = await QuizModel.searchQuizzes(params, offset, limit);
-  res.send({ items });
-});
-
 router.get('/:uuid', async (req, res) => {
   let uuid: UUID;
   try {
