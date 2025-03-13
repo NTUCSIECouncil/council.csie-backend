@@ -18,7 +18,7 @@ router.all(('/myself'), (req, res, next) => {
 router.get('/:uuid', authChecker, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const guser = req.guser!;
-  const target = await UserModel.findOne({ _id: guser.uid }).exec();
+  const target = await UserModel.findOne({ _id: guser.uid }).lean().exec();
   if (target === null) {
     // If not found, return status 404
     // In this case, expect recourse be created by PUT soon after

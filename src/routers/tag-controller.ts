@@ -11,7 +11,7 @@ router.get('/', (req, res, next) => {
       { $unwind: '$tags' },
       { $group: { _id: '$tags' } },
       { $sort: { _id: 1 } },
-    ]);
+    ]).exec();
 
     res.json({ items: tags.map(tag => tag._id) });
   })().catch(next);

@@ -6,9 +6,9 @@ const authChecker: RequestHandler = (req, res, next) => {
 
   if (req.guser?.uid === undefined || req.guser.uid !== uuid) {
     res.sendStatus(403);
-  } else {
-    next();
+    return;
   }
+  next();
 };
 
 const paginationParser: RequestHandler = (req, res, next) => {

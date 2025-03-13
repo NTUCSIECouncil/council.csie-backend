@@ -14,7 +14,7 @@ const QuizModel = models.Quiz;
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const items = await ArticleModel.find().skip(offset).limit(limit).exec();
+  const items = await ArticleModel.find().skip(offset).limit(limit).lean().exec();
   res.json({ items });
 });
 
@@ -53,7 +53,7 @@ router.get('/:uuid', async (req, res) => {
     return;
   }
 
-  const target = await ArticleModel.findById(uuid).exec();
+  const target = await ArticleModel.findById(uuid).lean().exec();
   if (target === null) {
     res.sendStatus(404);
   } else {
@@ -92,7 +92,7 @@ router.get('/:uuid/quizzes', async (req, res) => {
     return;
   }
 
-  const article = await ArticleModel.findById(uuid).exec();
+  const article = await ArticleModel.findById(uuid).lean().exec();
   if (article === null) {
     res.sendStatus(404);
     return;
