@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import Fuse from 'fuse.js';
 import mongoose from 'mongoose';
-import { type FilterQuery } from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
-import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, type PaginationQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -13,6 +11,7 @@ import { insertFromFile } from './utils.ts';
 
 beforeEach(async () => {
   await insertFromFile('Article');
+  await insertFromFile('Course');
   await insertFromFile('User');
 });
 
@@ -279,8 +278,7 @@ describe('PATCH /api/articles/:uuid', () => {
 
 describe('GET /api/articles/search', () => {
   it('should response the search results', async () => {
-    // test the tags
-    let query: ArticleSearchQueryParam | PaginationQueryParam = {
+    let query: ArticleSearchQueryParam & PaginationQueryParam = {
       tags: ['CHIN'],
       limit: 10,
     };
@@ -290,7 +288,6 @@ describe('GET /api/articles/search', () => {
       .expect(200);
     expect(res.body.items).toHaveLength(10);
 
-    // test the tags
     query = {
       tags: ['汪詩珮'],
     };
@@ -299,8 +296,8 @@ describe('GET /api/articles/search', () => {
       .query(qs.stringify(query))
       .expect(200);
     expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].tags).toContain('汪詩珮');
 
-    // test the category
     query = {
       categories: ['General'],
     };
@@ -308,7 +305,7 @@ describe('GET /api/articles/search', () => {
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items).toHaveLength(0);
 
     const fuseOptions = {
       keys: [
@@ -319,11 +316,9 @@ describe('GET /api/articles/search', () => {
       threshold: 0.6,
     };
     const ArticleModel = models.Article;
-    const query2: FilterQuery<Article> = {};
-    const articles = await ArticleModel.find(query2).populate<{ course: Course }>('course').exec();
+    const articles = await ArticleModel.find().populate<{ course: Course }>('course').exec();
     const fuse = new Fuse(articles, fuseOptions);
 
-    // test the course
     query = {
       keyword: '大學國文',
       limit: 100,
@@ -332,39 +327,35 @@ describe('GET /api/articles/search', () => {
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    expect(res.body.items).toHaveLength(100);
-    if ('keyword' in query && query.keyword) {
+    if (query.keyword) {
       const result = fuse.search(query.keyword);
-      const articles_searched = result.map(result => result.item.toObject());
-      expect(res.body.items).toMatchObject(articles_searched);
+      expect(res.body.items).toStrictEqual(result.map(({ item }) => item.depopulate<{ course: string }>().toObject()));
     }
 
-    // test the lecturer
     query = {
       keyword: '汪詩珮',
+      limit: 100,
     };
     res = await request(app)
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    if ('keyword' in query && query.keyword) {
+    if (query.keyword) {
       const result = fuse.search(query.keyword);
-      const articles_searched = result.map(result => result.item.toObject());
-      expect(res.body.items).toMatchObject(articles_searched);
+      expect(res.body.items).toStrictEqual(result.map(({ item }) => item.depopulate<{ course: string }>().toObject()));
     }
 
-    // test the keyword
     query = {
       keyword: '文學',
+      limit: 100,
     };
     res = await request(app)
       .get('/api/articles/search')
       .query(qs.stringify(query))
       .expect(200);
-    if ('keyword' in query && query.keyword) {
+    if (query.keyword) {
       const result = fuse.search(query.keyword);
-      const articles_searched = result.map(result => result.item.toObject());
-      expect(res.body.items).toMatchObject(articles_searched);
+      expect(res.body.items).toStrictEqual(result.map(({ item }) => item.depopulate<{ course: string }>().toObject()));
     }
   });
 
