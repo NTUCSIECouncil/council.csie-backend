@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import winston from 'winston';
 
 const logFormat = winston.format.printf((info: winston.Logform.TransformableInfo) => {
@@ -9,6 +11,17 @@ const logFormat = winston.format.printf((info: winston.Logform.TransformableInfo
     : log;
 },
 );
+
+const logDir = 'logs';
+const testLogDir = path.join(logDir, 'test');
+
+if (process.env.NODE_ENV === 'test') {
+  try {
+    await fs.promises.rm(testLogDir, { recursive: true, force: true });
+  } catch (err) {
+    console.warn('Failed to remove test log directory: ', err);
+  }
+}
 
 const logger = winston.createLogger({
   level: 'info',
@@ -22,16 +35,23 @@ const logger = winston.createLogger({
     logFormat,
   ),
   transports: [
-    new winston.transports.Console({
-      level: 'info',
-      format: winston.format.combine(
-        winston.format.colorize(),
-        logFormat,
-      ),
+    new winston.transports.File({
+      filename: path.join((process.env.NODE_ENV === 'test') ? testLogDir : logDir, 'error.log'),
+      level: 'error',
     }),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
+    new winston.transports.File({
+      filename: path.join((process.env.NODE_ENV === 'test') ? testLogDir : logDir, 'combined.log'),
+    }),
   ],
 });
+
+if (process.env.NODE_ENV !== 'test') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      logFormat,
+    ),
+  }));
+}
 
 export default logger;

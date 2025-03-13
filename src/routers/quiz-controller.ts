@@ -4,7 +4,7 @@ import path from 'path';
 import { Router } from 'express';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
-import { type QuizSearchParam, ZQuizSearchParam, ZUuidSchema } from '@models/util-schema.ts';
+import { ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
   try {
     quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
   } catch (err) {
-    logger.error('Failed to parse quiz in POST /quizzes: ', err);
+    logger.warn('Failed to parse quiz in POST /quizzes: ', err);
     res.sendStatus(400);
     return;
   }
@@ -41,7 +41,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in GET /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse UUID in GET /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -63,7 +63,7 @@ router.patch('/:uuid', async (req, res) => {
     uuid = ZUuidSchema.parse(req.params.uuid);
     patch = ZQuizSchema.partial().parse(req.body);
   } catch (err) {
-    logger.error('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -83,7 +83,7 @@ router.get('/:uuid/file', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
+    logger.warn('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
     res.sendStatus(400);
     return;
   }

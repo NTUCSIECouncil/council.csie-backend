@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
   try {
     article = ZArticleSchema.parse({ ...req.body, _id: uuid });
   } catch (err) {
-    logger.error('Failed to parse article in POST /articles: ', err);
+    logger.warn('Failed to parse article in POST /articles: ', err);
     res.sendStatus(400);
     return;
   }
@@ -48,7 +48,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in GET /articles/:uuid: ', err);
+    logger.warn('Failed to parse UUID in GET /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -67,7 +67,7 @@ router.patch('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in PATCH /articles/:uuid: ', err);
+    logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
@@ -87,7 +87,7 @@ router.get('/:uuid/quizzes', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
+    logger.warn('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
     res.sendStatus(400);
     return;
   }

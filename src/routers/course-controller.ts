@@ -23,7 +23,7 @@ router.get('/:uuid', async (req, res) => {
   try {
     uuid = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
-    logger.error('Failed to parse UUID in GET /courses/:uuid: ', err);
+    logger.warn('Failed to parse UUID in GET /courses/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
