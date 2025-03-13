@@ -1,10 +1,10 @@
 {
   "type": "module",
   "scripts": {
-    "lint": "eslint \"src/**\"",
     "prepare": "husky",
-    "setupDB": "tsx --env-file=.default.env --env-file=.env scripts/setup-testing-db.ts",
-    "start": "tsx watch --env-file=.default.env --env-file=.env src/index.ts",
+    "dev": "tsx watch --clear-screen=false --env-file=.default.env --env-file=.env src/index.ts",
+    "lint": "eslint \"src/**\"",
+    "setup-db": "tsx --env-file=.default.env --env-file=.env scripts/setup-testing-db.ts",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest"
   },
   "dependencies": {
@@ -48,6 +48,7 @@
     }
   },
   "lint-staged": {
-    "src/**/*.ts": "eslint"
+    "src/**/*.ts": "eslint",
+    "test/**/*.ts": "eslint"
   }
 }
