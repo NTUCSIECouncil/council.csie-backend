@@ -29,7 +29,7 @@ const courseSchema = new Schema<CourseWithOptionalId, CourseModel>({
   class: { type: String },
   names: { type: [String], required: true },
   credit: { type: Number, required: true },
-  categories: { type: [String], required: true },
+  categories: { type: [String], default: [] },
 });
 
 const staticSearchCourses: CourseModel['searchCourses'] = async function (params, offset, limit) {
