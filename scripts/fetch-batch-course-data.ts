@@ -1,9 +1,10 @@
+import { type UUID } from 'crypto';
 import { type Course } from '@models/course-schema.ts';
 
-interface dataInterface {
+interface CourseSearchResponse {
   totalCount: number;
   courses: [{
-    id: `${string}-${string}-${string}-${string}-${string}`;
+    id: UUID;
     identifier: string;
     name: string;
     class: string;
@@ -14,11 +15,11 @@ interface dataInterface {
   }];
 }
 
-const postCourseSearch = async (course_number_with_prefix_0: string): Promise<Course> => {
+const postCourseSearch = async (courseSerialNumber: string): Promise<Course> => {
   const url = 'https://course.ntu.edu.tw/api/v1/courses/search/quick?lang=zh_TW';
   const body = {
     query: {
-      keyword: course_number_with_prefix_0,
+      keyword: courseSerialNumber,
       time: [[], [], [], [], [], []],
       timeStrictMatch: false,
       isFullYear: null,
@@ -48,37 +49,41 @@ const postCourseSearch = async (course_number_with_prefix_0: string): Promise<Co
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status.toString()}`);
+    throw new Error(`HTTP error! Status: ${response.status.toString()}, message: ${await response.text()}`);
   }
-  const data = await response.json() as dataInterface;
-  const foundCourseCount = data.totalCount;
 
-  if (foundCourseCount == 1) {
-    const courseInstance: Course = {
-      _id: data.courses[0].id,
-      curriculum: data.courses[0].identifier,
-      lecturer: data.courses[0].teacher.name,
-      class: data.courses[0].class,
-      names: [data.courses[0].name],
-      credit: data.courses[0].credits,
+  const courseResponse = await response.json() as CourseSearchResponse;
+  const courseCount = courseResponse.totalCount;
+
+  if (courseCount === 1) {
+    const courseData: Course = {
+      _id: courseResponse.courses[0].id,
+      curriculum: courseResponse.courses[0].identifier,
+      lecturer: courseResponse.courses[0].teacher.name,
+      class: courseResponse.courses[0].class,
+      names: [courseResponse.courses[0].name],
+      credit: courseResponse.courses[0].credits,
       categories: [],
     };
-    return courseInstance;
+    return courseData;
   }
-  throw new Error(`Found ${foundCourseCount.toString()} courses on single course serial number ${course_number_with_prefix_0}`);
+
+  throw new Error(`Found ${courseCount.toString()} courses for serial number ${courseSerialNumber}`);
 };
 
-const getBatchCourseData = async (startSerialNumber: number, endSerialNumber: number): Promise<Course[]> => {
-  const courseBatchList: Course[] = [];
-  for (let serialNumber = startSerialNumber; serialNumber <= endSerialNumber; serialNumber += 1) {
+const getBatchCourseData = async (startSerial: number, endSerial: number): Promise<Course[]> => {
+  const courseList: Course[] = [];
+
+  for (let courseSerial = startSerial; courseSerial <= endSerial; courseSerial++) {
     try {
-      const obj = await postCourseSearch(serialNumber.toString().padStart(5, '0'));
-      courseBatchList.push(obj);
-    } catch (err) {
-      console.log(`Error on ${serialNumber.toString()} fetching`, err);
+      const courseData = await postCourseSearch(courseSerial.toString().padStart(5, '0'));
+      courseList.push(courseData);
+    } catch (error) {
+      console.error(`Error fetching course ${courseSerial.toString()}`, error);
     }
   }
-  return courseBatchList;
+
+  return courseList;
 };
 
 export { getBatchCourseData };
