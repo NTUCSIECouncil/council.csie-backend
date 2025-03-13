@@ -49,6 +49,7 @@
   },
   "lint-staged": {
     "src/**/*.ts": "eslint",
-    "test/**/*.ts": "eslint"
+    "test/**/*.ts": "eslint",
+    "scripts/**/*.ts": "eslint"
   }
 }
