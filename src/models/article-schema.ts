@@ -1,4 +1,4 @@
-import { type UUID, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import Fuse from 'fuse.js';
 import { type FilterQuery, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod';
@@ -36,6 +36,8 @@ const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   semester: { type: String, required: true },
   title: { type: String, required: true },
   tags: { type: [String], default: [] },
+}, {
+  toObject: { versionKey: false },
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
@@ -77,7 +79,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
 
   articles = articles.slice(offset, offset + limit);
 
-  return articles.map(article => article.depopulate<{ course: UUID }>());
+  return articles.map(article => article.depopulate().toObject<Article>());
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);
