@@ -16,7 +16,6 @@ export default tseslint.config(
       },
     },
     plugins: {
-      'import-x': importx,
       '@stylistic': stylistic,
     },
     settings: {

@@ -1,27 +1,21 @@
-/** @type {import('jest').Config} */
-const config = {
-  preset: 'ts-jest/presets/default-esm',
+import { createDefaultEsmPreset, pathsToModuleNameMapper } from 'ts-jest';
+import tsconfig from './tsconfig.json' with { type: 'json' };
 
-  setupFilesAfterEnv: [
-    "<rootDir>/test/setupFile.ts"
-  ],
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      { useESM: true, isolatedModules: true },
-    ],
-  },
+const presetConfig = createDefaultEsmPreset({
+  isolatedModules: true,
+});
+
+/** @type {import('ts-jest').JestConfigWithTsJest} **/
+const jestConfig = {
+  ...presetConfig,
+
+  setupFilesAfterEnv: ['<rootDir>/test/setupFile.ts'],
   verbose: true,
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+  roots: ['<rootDir>'],
+  moduleNameMapper: pathsToModuleNameMapper(tsconfig.compilerOptions.paths, {
+    prefix: '<rootDir>/',
+    useESM: true,
+  }),
+};
 
-    "@/(.*)": "<rootDir>/src/$1",
-    "@models/(.*)": "<rootDir>/src/models/$1",
-    "@routers/(.*)": "<rootDir>/src/routers/$1",
-    "@scripts/(.*)": "<rootDir>/scripts/$1",
-    "@type/(.*)": "<rootDir>/src/types/$1",
-    "@utils/(.*)": "<rootDir>/src/utils/$1",
-  },
-}
-
-export default config;
+export default jestConfig;

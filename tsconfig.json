@@ -10,29 +10,29 @@
         "./src/*"
       ],
       "@models/*": [
-        "./src/models/*",
+        "./src/models/*"
       ],
       "@routers/*": [
-        "./src/routers/*",
+        "./src/routers/*"
       ],
       "@scripts/*": [
-        "./scripts/*",
+        "./scripts/*"
       ],
       "@type/*": [
-        "./src/types/*",
+        "./src/types/*"
       ],
       "@utils/*": [
-        "./src/utils/*",
+        "./src/utils/*"
       ]
     },
     "typeRoots": [
       "./src/types",
-      "./node_modules/@types",
+      "./node_modules/@types"
     ]
   },
   "include": [
     "src/**/*",
     "test/**/*",
-    "scripts/**/*",
+    "scripts/**/*"
   ]
 }
