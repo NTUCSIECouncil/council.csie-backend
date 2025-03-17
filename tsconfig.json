@@ -2,12 +2,12 @@
   "extends": "@tsconfig/node22/tsconfig.json",
 
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "paths": {
-      "@scripts/*": [
-        "./scripts/*",
+      "@/*": [
+        "./src/*"
       ],
       "@models/*": [
         "./src/models/*",
@@ -15,14 +15,14 @@
       "@routers/*": [
         "./src/routers/*",
       ],
+      "@scripts/*": [
+        "./scripts/*",
+      ],
       "@type/*": [
         "./src/types/*",
       ],
       "@utils/*": [
         "./src/utils/*",
-      ],
-      "@/*": [
-        "./src/*"
       ]
     },
     "typeRoots": [
@@ -34,5 +34,5 @@
     "src/**/*",
     "test/**/*",
     "scripts/**/*",
-  ],
+  ]
 }

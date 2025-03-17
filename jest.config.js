@@ -8,48 +8,20 @@ const config = {
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
-      { useESM: true },
+      { useESM: true, isolatedModules: true },
     ],
   },
   verbose: true,
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
 
-    "@scripts/(.*)": [
-      "../../scripts/$1",
-      "../../scripts",
-      "../scripts/$1",
-      "../scripts"
-    ],
-    "@models/(.*)": [
-      "../../src/models/$1",
-      "../../src/models",
-      "../src/models/$1",
-      "../src/models"
-    ],
-    "@routers/(.*)": [
-      "../../src/routers/$1",
-      "../../src/routers",
-      "../src/routers/$1",
-      "../src/routers"
-    ],
-    "@type/(.*)": [
-      "../../src/types/$1",
-      "../../src/types",
-      "../src/types/$1",
-      "../src/types"
-    ],
-    "@utils/(.*)": [
-      "../../src/utils/$1",
-      "../../src/utils",
-      "../src/utils/$1",
-      "../src/utils"
-    ],
-    "@/(.*)": [
-      "../../src/$1",
-      "../src/$1"
-    ]
-  }
+    "@/(.*)": "<rootDir>/src/$1",
+    "@models/(.*)": "<rootDir>/src/models/$1",
+    "@routers/(.*)": "<rootDir>/src/routers/$1",
+    "@scripts/(.*)": "<rootDir>/scripts/$1",
+    "@type/(.*)": "<rootDir>/src/types/$1",
+    "@utils/(.*)": "<rootDir>/src/utils/$1",
+  },
 }
 
 export default config;
