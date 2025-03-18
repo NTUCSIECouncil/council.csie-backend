@@ -9,7 +9,6 @@ import { paginationParser } from './middleware.ts';
 const router = Router();
 
 const ArticleModel = models.Article;
-const QuizModel = models.Quiz;
 
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
@@ -80,26 +79,6 @@ router.patch('/:uuid', async (req, res) => {
     await target.save();
     res.sendStatus(204);
   }
-});
-
-router.get('/:uuid/quizzes', async (req, res) => {
-  let articleId: UUID;
-  try {
-    articleId = ZUuidSchema.parse(req.params.uuid);
-  } catch (err) {
-    logger.warn('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
-    res.sendStatus(400);
-    return;
-  }
-
-  const article = await ArticleModel.findById(articleId).lean().exec();
-  if (article === null) {
-    res.sendStatus(404);
-    return;
-  }
-
-  const quizzes = await QuizModel.find({ course: article.course }).lean({ versionKey: false }).exec();
-  res.send({ items: quizzes });
 });
 
 export default router;
