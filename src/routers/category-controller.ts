@@ -10,9 +10,9 @@ router.get('/', async (req, res) => {
     { $unwind: '$categories' },
     { $group: { _id: '$categories' } },
     { $sort: { _id: 1 } },
-  ]).exec();
+  ]).exec().then(categories => categories.map(category => category._id));
 
-  res.json({ items: categories.map(category => category._id) });
+  res.json({ items: categories });
 });
 
 export default router;

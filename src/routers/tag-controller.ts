@@ -5,16 +5,14 @@ const router = Router();
 
 const ArticleModel = models.Article;
 
-router.get('/', (req, res, next) => {
-  (async () => {
-    const tags = await ArticleModel.aggregate<{ _id: string }>([
-      { $unwind: '$tags' },
-      { $group: { _id: '$tags' } },
-      { $sort: { _id: 1 } },
-    ]).exec();
+router.get('/', async (req, res) => {
+  const tags = await ArticleModel.aggregate<{ _id: string }>([
+    { $unwind: '$tags' },
+    { $group: { _id: '$tags' } },
+    { $sort: { _id: 1 } },
+  ]).exec().then(tags => tags.map(tag => tag._id));
 
-    res.json({ items: tags.map(tag => tag._id) });
-  })().catch(next);
+  res.json({ items: tags });
 });
 
 export default router;
