@@ -38,8 +38,8 @@ router.get('/search', paginationParser, async (req, res) => {
   const [offset, limit] = [req.offset!, req.limit!];
   const param: ArticleSearchQueryParam = ZArticleSearchQueryParam.parse(req.query);
 
-  const items = await ArticleModel.searchArticles(param, offset, limit);
-  res.send({ items });
+  const articles = await ArticleModel.searchArticles(param, offset, limit);
+  res.send({ items: articles });
 });
 
 router.get('/:uuid', async (req, res) => {
@@ -52,11 +52,11 @@ router.get('/:uuid', async (req, res) => {
     return;
   }
 
-  const target = await ArticleModel.findById(articleId).lean({ versionKey: false }).exec();
-  if (target === null) {
+  const article = await ArticleModel.findById(articleId).lean({ versionKey: false }).exec();
+  if (article === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: target });
+    res.send({ item: article });
   }
 });
 
@@ -71,12 +71,12 @@ router.patch('/:uuid', async (req, res) => {
     return;
   }
 
-  const target = await ArticleModel.findById(articleId).exec();
-  if ((articleUpdates._id !== undefined && articleUpdates._id !== articleId) || target === null) {
+  const articleDoc = await ArticleModel.findById(articleId).exec();
+  if ((articleUpdates._id !== undefined && articleUpdates._id !== articleId) || articleDoc === null) {
     res.sendStatus(400);
   } else {
-    target.set(articleUpdates);
-    await target.save();
+    articleDoc.set(articleUpdates);
+    await articleDoc.save();
     res.sendStatus(204);
   }
 });

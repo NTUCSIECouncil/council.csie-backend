@@ -18,13 +18,13 @@ router.all(('/myself'), (req, res, next) => {
 router.get('/:uuid', authChecker, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const guser = req.guser!;
-  const target = await UserModel.findOne({ _id: guser.uid }).lean().exec();
-  if (target === null) {
+  const user = await UserModel.findById(guser.uid).lean({ versionKey: false }).exec();
+  if (user === null) {
     // If not found, return status 404
     // In this case, expect recourse be created by PUT soon after
     res.sendStatus(404);
   } else {
-    res.send({ item: target });
+    res.send({ item: user });
   }
 });
 
@@ -38,15 +38,15 @@ router.post('/:uuid', authChecker, async (req, res) => {
     email: guser.email,
   };
 
-  let targetUser = await UserModel.findOne({ _id: guser.uid }).exec();
-  if (targetUser !== null) {
-    targetUser.overwrite(user); // properties not in User will not be store into document
-    await targetUser.save();
+  let userDoc = await UserModel.findOne({ _id: guser.uid }).exec();
+  if (userDoc !== null) {
+    userDoc.overwrite(user); // properties not in user will not be store into document
+    await userDoc.save();
     res.sendStatus(204);
   } else {
     // If the target user does currently not exist, create it
-    targetUser = new UserModel(user);
-    await targetUser.save();
+    userDoc = new UserModel(user);
+    await userDoc.save();
     res.sendStatus(201);
   }
 });

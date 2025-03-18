@@ -16,15 +16,15 @@ const QuizModel = models.Quiz;
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const items = await QuizModel.find().skip(offset).limit(limit).lean().exec();
-  res.json({ items });
+  const quizzes = await QuizModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
+  res.json({ items: quizzes });
 });
 
 router.post('/', async (req, res) => {
-  const uuid = randomUUID();
+  const quizId = randomUUID();
   let quiz: Quiz;
   try {
-    quiz = ZQuizSchema.parse({ ...req.body, _id: uuid });
+    quiz = ZQuizSchema.parse({ ...req.body, _id: quizId });
   } catch (err) {
     logger.warn('Failed to parse quiz in POST /quizzes: ', err);
     res.sendStatus(400);
@@ -33,68 +33,68 @@ router.post('/', async (req, res) => {
 
   const quizDoc = new QuizModel(quiz);
   await quizDoc.save();
-  res.status(201).send({ uuid });
+  res.status(201).send({ uuid: quizId });
 });
 
 router.get('/:uuid', async (req, res) => {
-  let uuid: UUID;
+  let quizId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await QuizModel.findById(uuid).lean().exec();
-  if (target === null) {
+  const quiz = await QuizModel.findById(quizId).lean({ versionKey: false }).exec();
+  if (quiz === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: target });
+    res.send({ item: quiz });
   }
 });
 
 // not actually required by API document
 // istanbul ignore next
 router.patch('/:uuid', async (req, res) => {
-  let uuid: UUID;
-  let patch: Partial<Quiz>;
+  let quizId: UUID;
+  let quizUpdates: Partial<Quiz>;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
-    patch = ZQuizSchema.partial().parse(req.body);
+    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizUpdates = ZQuizSchema.partial().parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await QuizModel.findById(uuid).exec();
-  if ((patch._id !== undefined && patch._id !== uuid) || target === null) {
+  const target = await QuizModel.findById(quizId).exec();
+  if ((quizUpdates._id !== undefined && quizUpdates._id !== quizId) || target === null) {
     res.sendStatus(400);
   } else {
-    target.set(patch);
+    target.set(quizUpdates);
     await target.save();
     res.sendStatus(204);
   }
 });
 
 router.get('/:uuid/file', async (req, res) => {
-  let uuid: UUID;
+  let quizId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await QuizModel.findById(uuid).lean().exec();
+  const quiz = await QuizModel.findById(quizId).lean().exec();
   // If uuid is not found
-  if (target === null) {
+  if (quiz === null) {
     res.sendStatus(404);
   } else {
     // Some how getting filename
-    const fileName = `${uuid}.pdf`;
+    const fileName = `${quizId}.pdf`;
     const options = {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, QUIZ_FILE_DIR was checked in index.ts
       root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR!),

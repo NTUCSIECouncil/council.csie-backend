@@ -15,25 +15,25 @@ router.get('/search', paginationParser, async (req, res) => {
   const [offset, limit] = [req.offset!, req.limit!];
   const param: CourseSearchQueryParam = ZCourseSearchQueryParam.parse(req.query);
 
-  const items = await CourseModel.searchCourses(param, offset, limit);
-  res.send({ items });
+  const courses = await CourseModel.searchCourses(param, offset, limit);
+  res.send({ items: courses });
 });
 
 router.get('/:uuid', async (req, res) => {
-  let uuid: UUID;
+  let courseId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    courseId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /courses/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await CourseModel.findById(uuid).exec();
-  if (target === null) {
+  const course = await CourseModel.findById(courseId).lean({ versionKey: false }).exec();
+  if (course === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: target });
+    res.send({ item: course });
   }
 });
 
@@ -53,7 +53,7 @@ router.get('/:uuid/quizzes', async (req, res) => {
     return;
   }
 
-  const quizzes = await QuizModel.find({ course: courseId }).lean().exec();
+  const quizzes = await QuizModel.find({ course: courseId }).lean({ versionKey: false }).exec();
   res.send({ items: quizzes });
 });
 
