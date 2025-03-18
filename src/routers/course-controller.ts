@@ -13,7 +13,14 @@ const QuizModel = models.Quiz;
 router.get('/search', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const param: CourseSearchQueryParam = ZCourseSearchQueryParam.parse(req.query);
+  let param: CourseSearchQueryParam;
+  try {
+    param = ZCourseSearchQueryParam.parse(req.query);
+  } catch (err) {
+    logger.warn('Failed to parse query in GET /courses/search: ', err);
+    res.sendStatus(400);
+    return;
+  }
 
   const courses = await CourseModel.searchCourses(param, offset, limit);
   res.send({ items: courses });

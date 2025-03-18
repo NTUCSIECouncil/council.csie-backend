@@ -36,7 +36,14 @@ router.post('/', async (req, res) => {
 router.get('/search', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const param: ArticleSearchQueryParam = ZArticleSearchQueryParam.parse(req.query);
+  let param: ArticleSearchQueryParam;
+  try {
+    param = ZArticleSearchQueryParam.parse(req.query);
+  } catch (err) {
+    logger.warn('Failed to parse query in GET /articles/search: ', err);
+    res.sendStatus(400);
+    return;
+  }
 
   const articles = await ArticleModel.searchArticles(param, offset, limit);
   res.send({ items: articles });
