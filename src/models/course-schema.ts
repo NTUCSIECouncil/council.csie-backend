@@ -30,6 +30,8 @@ const courseSchema = new Schema<CourseWithOptionalId, CourseModel>({
   names: { type: [String], required: true },
   credit: { type: Number, required: true },
   categories: { type: [String], default: [] },
+}, {
+  toObject: { versionKey: false },
 });
 
 const staticSearchCourses: CourseModel['searchCourses'] = async function (params, offset, limit) {
@@ -56,7 +58,7 @@ const staticSearchCourses: CourseModel['searchCourses'] = async function (params
     courses = result.map(item => item.item);
   }
 
-  return courses.slice(offset, offset + limit);
+  return courses.map(course => course.toObject()).slice(offset, offset + limit);
 };
 
 courseSchema.static('searchCourses', staticSearchCourses);
