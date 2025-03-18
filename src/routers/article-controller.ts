@@ -19,10 +19,10 @@ router.get('/', paginationParser, async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const uuid = randomUUID();
+  const articleId = randomUUID();
   let article: Article;
   try {
-    article = ZArticleSchema.parse({ ...req.body, _id: uuid });
+    article = ZArticleSchema.parse({ ...req.body, _id: articleId });
   } catch (err) {
     logger.warn('Failed to parse article in POST /articles: ', err);
     res.sendStatus(400);
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 
   const articleDoc = new ArticleModel(article);
   await articleDoc.save();
-  res.status(201).json({ uuid });
+  res.status(201).json({ uuid: articleId });
 });
 
 router.get('/search', paginationParser, async (req, res) => {
@@ -44,16 +44,16 @@ router.get('/search', paginationParser, async (req, res) => {
 });
 
 router.get('/:uuid', async (req, res) => {
-  let uuid: UUID;
+  let articleId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await ArticleModel.findById(uuid).lean({ versionKey: false }).exec();
+  const target = await ArticleModel.findById(articleId).lean({ versionKey: false }).exec();
   if (target === null) {
     res.sendStatus(404);
   } else {
@@ -62,43 +62,43 @@ router.get('/:uuid', async (req, res) => {
 });
 
 router.patch('/:uuid', async (req, res) => {
-  const patch: Partial<Article> = ZArticleSchema.partial().parse(req.body);
-  let uuid: UUID;
+  const articleUpdates: Partial<Article> = ZArticleSchema.partial().parse(req.body);
+  let articleId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const target = await ArticleModel.findById(uuid).exec();
-  if ((patch._id !== undefined && patch._id !== uuid) || target === null) {
+  const target = await ArticleModel.findById(articleId).exec();
+  if ((articleUpdates._id !== undefined && articleUpdates._id !== articleId) || target === null) {
     res.sendStatus(400);
   } else {
-    target.set(patch);
+    target.set(articleUpdates);
     await target.save();
     res.sendStatus(204);
   }
 });
 
 router.get('/:uuid/quizzes', async (req, res) => {
-  let uuid: UUID;
+  let articleId: UUID;
   try {
-    uuid = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.uuid);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /articles/:uuid/quizzes: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const article = await ArticleModel.findById(uuid).lean().exec();
+  const article = await ArticleModel.findById(articleId).lean().exec();
   if (article === null) {
     res.sendStatus(404);
     return;
   }
 
-  const quizzes = await QuizModel.find({ course: uuid }).lean({ versionKey: false }).exec();
+  const quizzes = await QuizModel.find({ course: article.course }).lean({ versionKey: false }).exec();
   res.send({ items: quizzes });
 });
 
