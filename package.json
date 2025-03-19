@@ -30,6 +30,7 @@
     "@types/node": "^22.13.5",
     "@types/qs": "^6.9.18",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^16.4.7",
     "eslint": "^9.9.0",
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-import-x": "^4.1.1",
