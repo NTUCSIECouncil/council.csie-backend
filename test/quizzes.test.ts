@@ -1,7 +1,9 @@
+import { type UUID, randomUUID } from 'crypto';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { ZUuidSchema } from '@models/util-schema.ts';
+import { ZQuizSchema } from '@models/quiz-schema.ts';
 import app from './app.ts';
 import { insertFromFile } from './utils.ts';
 
@@ -135,6 +137,61 @@ describe('GET /api/quizzes/:uuid', () => {
 
     await request(app)
       .get('/api/quizzes/00000004-0000-0000-0000')
+      .expect(400);
+  });
+});
+
+describe('PATCH /api/quizzes/:uuid', () => {
+  it('should update the quiz with uuid', async () => {
+    let res = await request(app)
+      .get('/api/quizzes')
+      .query({ limit: 1 })
+      .expect(200);
+    const quiz = ZQuizSchema.parse(res.body.items[0]);
+
+    await request(app)
+      .patch(`/api/quizzes/${quiz._id}`)
+      .send({
+        semester: '110-1',
+      })
+      .expect(204);
+
+    res = await request(app)
+      .get(`/api/quizzes/${quiz._id}`)
+      .expect(200);
+    expect(res.body.item).toStrictEqual({ ...quiz, semester: '110-1' });
+  });
+
+  it('should reject invalid uuid', async () => {
+    await request(app)
+      .patch('/api/quizzes/00000002-0003-0000-0000')
+      .send({
+        semester: '110-1',
+      })
+      .expect(400);
+  });
+
+  it('should reject non-exist uuid', async () => {
+    await request(app)
+      .patch(`/api/quizzes/${randomUUID()}`)
+      .send({
+        semester: '110-1',
+      })
+      .expect(400);
+  });
+
+  it('should reject modification of _id', async () => {
+    const res = await request(app)
+      .get('/api/quizzes')
+      .query({ limit: 1 })
+      .expect(200);
+    const quiz = ZQuizSchema.parse(res.body.items[0]);
+
+    await request(app)
+      .patch(`/api/articles/${quiz._id}`)
+      .send({
+        _id: randomUUID(),
+      })
       .expect(400);
   });
 });

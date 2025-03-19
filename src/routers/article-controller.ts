@@ -1,4 +1,6 @@
 import { type UUID, randomUUID } from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { Router } from 'express';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
@@ -85,6 +87,38 @@ router.patch('/:uuid', async (req, res) => {
     articleDoc.set(articleUpdates);
     await articleDoc.save();
     res.sendStatus(204);
+  }
+});
+
+router.get('/:uuid/file', async (req, res) => {
+  let articleId: UUID;
+  try {
+    articleId = ZUuidSchema.parse(req.params.uuid);
+  } catch (err) {
+    logger.warn('Failed to parse UUID in GET /articles/:uuid/file: ', err);
+    res.sendStatus(400);
+    return;
+  }
+
+  const article = await ArticleModel.findById(articleId).lean().exec();
+  // If uuid is not found
+  if (article === null) {
+    res.sendStatus(404);
+  } else {
+    // Some how getting filename
+    const fileName = `${articleId}.md`;
+    const options = {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, ARTICLE_FILE_DIR was checked in index.ts
+      root: path.join(process.env.PWD!, process.env.ARTICLE_FILE_DIR!),
+    };
+
+    // If the uuid exists but the file does not exist
+    if (!fs.existsSync(path.join(options.root, fileName))) {
+      res.sendStatus(500);
+      return;
+    }
+
+    res.sendFile(fileName, options);
   }
 });
 

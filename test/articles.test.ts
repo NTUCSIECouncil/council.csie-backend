@@ -305,3 +305,28 @@ describe('GET /api/articles/search', () => {
     }
   });
 });
+
+describe('GET /api/articles/:uuid/file', () => {
+  it('should response the article file', async () => {
+    // the file exists
+    const res = await request(app)
+      .get('/api/articles/00000002-1131-0000-0000-000000000002/file')
+      .expect(200);
+    expect(res.type).toEqual('application/md');
+
+    // the uuid does not exist
+    await request(app)
+      .get('/api/articles/00000003-0000-0000-0000-000000000000/file')
+      .expect(404);
+
+    // the uuid exist but the file does not
+    await request(app)
+      .get('/api/articles/00000002-1131-0001-0000-000000000000/file')
+      .expect(500);
+
+    // invalid uuid (wrong format)
+    await request(app)
+      .get('/api/articles/00000002-0000-0000-0000/file')
+      .expect(400);
+  });
+});

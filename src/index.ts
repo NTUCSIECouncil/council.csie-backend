@@ -36,6 +36,12 @@ if (process.env.QUIZ_FILE_DIR === undefined) {
   process.exit(1);
 }
 
+if (process.env.ARTICLE_FILE_DIR === undefined) {
+  logger.error('ARTICLE_FILE_DIR is not defined.');
+  logger.error('Exiting...');
+  process.exit(1);
+}
+
 let auth;
 try {
   const firebaseApp = initializeApp({ credential: cert(process.env.FIREBASE_CERT_PATH) });
