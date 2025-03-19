@@ -1,12 +1,12 @@
 import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { Router } from 'express';
+import { type Request, Router } from 'express';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
-import { paginationParser } from './middleware.ts';
+import { fileUploader, paginationParser } from './middleware.ts';
 
 const router = Router();
 
@@ -108,6 +108,44 @@ router.get('/:uuid/file', async (req, res) => {
 
     res.sendFile(fileName, options);
   }
+});
+
+// console.log('11112process.env.QUIZ_FILE_DIR:', process.env.QUIZ_FILE_DIR);
+// console.log('11112process.env:', process.env);
+// Use the file uploader middleware for quizzes (PDF and MD)
+const quizFileUploader = fileUploader({
+  // fileDir: process.env.QUIZ_FILE_DIR!,
+  fileDir: 'uploads/quizzes',
+  allowedMimeTypes: ['application/pdf'],
+  getFilename: (req: Request) => {
+    return `${req.params.uuid}.pdf`;
+  },
+});
+
+router.put('/:uuid/file', quizFileUploader.single('file'), async (req, res) => {
+  let quizId: UUID;
+  try {
+    quizId = ZUuidSchema.parse(req.params.uuid);
+  } catch (err) {
+    logger.warn('Failed to parse UUID in PUT /quizzes/:uuid/file: ', err);
+    res.sendStatus(400);
+    return;
+  }
+
+  const quiz = await QuizModel.findById(quizId).lean().exec();
+  // If uuid is not found
+  if (quiz === null) {
+    res.sendStatus(404);
+    return;
+  }
+
+  // Check if file was uploaded successfully
+  if (!req.file) {
+    res.status(400).send({ error: 'No file uploaded or invalid file format' });
+    return;
+  }
+
+  res.sendStatus(204); // Successfully updated
 });
 
 export default router;

@@ -162,4 +162,20 @@ describe('GET /api/quizzes/:uuid/file', () => {
       .get('/api/quizzes/00000004-0000-0000-0000/file')
       .expect(400);
   });
+
+  describe('PUT /api/quizzes/:uuid/file', () => {
+    const validQuizId = '00000004-1131-0001-0000-000000000000';
+
+    it('should upload a PDF file successfully', async () => {
+      const response = await request(app)
+        .put(`/api/quizzes/${validQuizId}/file`)
+        .attach('file', Buffer.from('mock pdf content'), {
+          filename: 'test.pdf',
+          contentType: 'application/pdf',
+        });
+
+      expect(response.status).toBe(204);
+      // expect(models.Quiz.findById).toHaveBeenCalledWith(validQuizId);
+    });
+  });
 });
