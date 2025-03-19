@@ -13,6 +13,7 @@
     "fuse.js": "^7.1.0",
     "mongoose": "^8.5.2",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "qs": "^6.13.0",
     "winston": "^3.17.0",
     "zod": "^3.23.8"
@@ -25,6 +26,7 @@
     "@types/eslint__js": "^8.42.3",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.13.5",
     "@types/qs": "^6.9.18",
     "@types/supertest": "^6.0.2",
