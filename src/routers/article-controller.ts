@@ -1,12 +1,14 @@
 import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { Router } from 'express';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
-import { paginationParser } from './middleware.ts';
+import { fileUploader, paginationParser } from './middleware.ts';
 
 const router = Router();
 
@@ -90,6 +92,7 @@ router.patch('/:uuid', async (req, res) => {
   }
 });
 
+// Add file retrieval endpoint
 router.get('/:uuid/file', async (req, res) => {
   let articleId: UUID;
   try {
@@ -105,10 +108,9 @@ router.get('/:uuid/file', async (req, res) => {
   if (article === null) {
     res.sendStatus(404);
   } else {
-    // Some how getting filename
     const fileName = `${articleId}.md`;
     const options = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, ARTICLE_FILE_DIR was checked in index.ts
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, ARTICLE_FILE_DIR was checked in index.ts
       root: path.join(process.env.PWD!, process.env.ARTICLE_FILE_DIR!),
     };
 
@@ -120,6 +122,41 @@ router.get('/:uuid/file', async (req, res) => {
 
     res.sendFile(fileName, options);
   }
+});
+
+// Use the file uploader middleware for articles (MD only)
+const articleFileUploader = fileUploader({
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, QUIZ_FILE_DIR was checked in index.ts
+  fileDir: process.env.ARTICLE_FILE_DIR!,
+  allowedMimeTypes: ['text/markdown'],
+  getFilename: req => `${req.params.uuid}.md`,
+});
+
+// Add file upload endpoint
+router.put('/:uuid/file', articleFileUploader.single('file'), async (req, res) => {
+  let articleId: UUID;
+  try {
+    articleId = ZUuidSchema.parse(req.params.uuid);
+  } catch (err) {
+    logger.warn('Failed to parse UUID in PUT /articles/:uuid/file: ', err);
+    res.sendStatus(400);
+    return;
+  }
+
+  const article = await ArticleModel.findById(articleId).lean().exec();
+  // If uuid is not found
+  if (article === null) {
+    res.sendStatus(404);
+    return;
+  }
+
+  // Check if file was uploaded successfully
+  if (!req.file) {
+    res.status(400).send({ error: 'No Markdown file uploaded or invalid file format' });
+    return;
+  }
+
+  res.sendStatus(204); // Successfully updated
 });
 
 export default router;

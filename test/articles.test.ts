@@ -312,7 +312,7 @@ describe('GET /api/articles/:uuid/file', () => {
     const res = await request(app)
       .get('/api/articles/00000002-1131-0000-0000-000000000002/file')
       .expect(200);
-    expect(res.type).toEqual('application/md');
+    expect(res.type).toEqual('text/markdown');
 
     // the uuid does not exist
     await request(app)
@@ -321,7 +321,7 @@ describe('GET /api/articles/:uuid/file', () => {
 
     // the uuid exist but the file does not
     await request(app)
-      .get('/api/articles/00000002-1131-0001-0000-000000000000/file')
+      .get('/api/articles/00000002-1131-0000-0000-000000000003/file')
       .expect(500);
 
     // invalid uuid (wrong format)
