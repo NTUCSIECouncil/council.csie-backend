@@ -330,3 +330,18 @@ describe('GET /api/articles/:uuid/file', () => {
       .expect(400);
   });
 });
+
+describe('PUT /api/articles/:uuid/file', () => {
+  const validArticleId = '00000002-1131-0000-0000-000000000005';
+
+  it('should upload a Markdown file successfully', async () => {
+    const response = await request(app)
+      .put(`/api/articles/${validArticleId}/file`)
+      .attach('file', Buffer.from('mock md content'), {
+        filename: 'test.md',
+        contentType: 'text/markdown',
+      });
+
+    expect(response.status).toBe(204);
+  });
+});

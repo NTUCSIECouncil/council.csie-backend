@@ -233,6 +233,5 @@ describe('PUT /api/quizzes/:uuid/file', () => {
       });
 
     expect(response.status).toBe(204);
-    // expect(models.Quiz.findById).toHaveBeenCalledWith(validQuizId);
   });
 });
