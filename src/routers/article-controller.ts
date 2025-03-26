@@ -1,8 +1,6 @@
 import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import fs from 'fs';
-import path from 'path';
 import { Router } from 'express';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
