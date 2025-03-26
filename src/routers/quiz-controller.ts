@@ -110,12 +110,10 @@ router.get('/:uuid/file', async (req, res) => {
   }
 });
 
-// console.log('11112process.env.QUIZ_FILE_DIR:', process.env.QUIZ_FILE_DIR);
-// console.log('11112process.env:', process.env);
 // Use the file uploader middleware for quizzes (PDF and MD)
 const quizFileUploader = fileUploader({
-  // fileDir: process.env.QUIZ_FILE_DIR!,
-  fileDir: 'uploads/quizzes',
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- QUIZ_FILE_DIR was checked in index.ts
+  fileDir: process.env.QUIZ_FILE_DIR!,
   allowedMimeTypes: ['application/pdf'],
   getFilename: (req: Request) => {
     return `${req.params.uuid}.pdf`;

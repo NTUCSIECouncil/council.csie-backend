@@ -1,7 +1,7 @@
 import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { Router } from 'express';
+import { type Request, Router } from 'express';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -70,10 +70,11 @@ router.get('/:uuid', async (req, res) => {
 });
 
 router.patch('/:uuid', async (req, res) => {
-  const articleUpdates: Partial<Article> = ZArticleSchema.partial().parse(req.body);
   let articleId: UUID;
+  let articleUpdates: Partial<Article>;
   try {
     articleId = ZUuidSchema.parse(req.params.uuid);
+    articleUpdates = ZArticleSchema.partial().parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);
@@ -114,7 +115,7 @@ router.get('/:uuid/file', async (req, res) => {
 
     // If the uuid exists but the file does not exist
     if (!fs.existsSync(path.join(options.root, fileName))) {
-      res.sendStatus(500);
+      res.sendStatus(500).send({ error: 'UUID exists but file not found' });
       return;
     }
 
@@ -127,7 +128,9 @@ const articleFileUploader = fileUploader({
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- ARTICLE_FILE_DIR was checked in index.ts
   fileDir: process.env.ARTICLE_FILE_DIR!,
   allowedMimeTypes: ['text/markdown'],
-  getFilename: req => `${req.params.uuid}.md`,
+  getFilename: (req: Request) => {
+    return `${req.params.uuid}.md`;
+  },
 });
 
 // Add file upload endpoint
@@ -150,7 +153,7 @@ router.put('/:uuid/file', articleFileUploader.single('file'), async (req, res) =
 
   // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).send({ error: 'No Markdown file uploaded or invalid file format' });
+    res.status(400).send({ error: 'No file uploaded or invalid file format' });
     return;
   }
 

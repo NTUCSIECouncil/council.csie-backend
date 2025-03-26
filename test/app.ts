@@ -6,8 +6,6 @@ const expressApp = express();
 
 expressApp.set('query parser', 'extended');
 
-process.env.QUIZ_FILE_DIR = 'uploads/quizzes';
-
 expressApp.use((req, res, next) => {
   const uidHeader = req.headers.uid;
   if (typeof uidHeader == 'string') {

@@ -1,9 +1,12 @@
 import { afterAll, beforeAll } from '@jest/globals';
+import dotenv from 'dotenv';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import 'dotenv/config';
 
 let instance: MongoMemoryServer;
+
+dotenv.config({ path: '.default.env' });
+dotenv.config({ path: '.env' });
 
 beforeAll(async () => {
   instance = await MongoMemoryServer.create();
