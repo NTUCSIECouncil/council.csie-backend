@@ -124,7 +124,7 @@ router.get('/:uuid/file', async (req, res) => {
 
 // Use the file uploader middleware for articles (MD only)
 const articleFileUploader = fileUploader({
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, QUIZ_FILE_DIR was checked in index.ts
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- ARTICLE_FILE_DIR was checked in index.ts
   fileDir: process.env.ARTICLE_FILE_DIR!,
   allowedMimeTypes: ['text/markdown'],
   getFilename: req => `${req.params.uuid}.md`,
