@@ -2,6 +2,7 @@ import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { type Request, Router } from 'express';
+import { z } from 'zod';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -15,8 +16,9 @@ const ArticleModel = models.Article;
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const items = await ArticleModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
-  res.json({ items });
+  const articles = await ArticleModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
+  const totalCount = await ArticleModel.countDocuments().exec();
+  res.json({ articles, meta: { total: totalCount, offset, limit } });
 });
 
 router.post('/', async (req, res) => {
@@ -32,7 +34,7 @@ router.post('/', async (req, res) => {
 
   const articleDoc = new ArticleModel(article);
   await articleDoc.save();
-  res.status(201).json({ uuid: articleId });
+  res.status(201).json({ articleId });
 });
 
 router.get('/search', paginationParser, async (req, res) => {
@@ -47,14 +49,14 @@ router.get('/search', paginationParser, async (req, res) => {
     return;
   }
 
-  const articles = await ArticleModel.searchArticles(param, offset, limit);
-  res.send({ items: articles });
+  const [articles, totalCount] = await ArticleModel.searchArticles(param, offset, limit);
+  res.json({ articles, meta: { total: totalCount, offset, limit } });
 });
 
-router.get('/:uuid', async (req, res) => {
+router.get('/:articleId', async (req, res) => {
   let articleId: UUID;
   try {
-    articleId = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /articles/:uuid: ', err);
     res.sendStatus(400);
@@ -65,16 +67,18 @@ router.get('/:uuid', async (req, res) => {
   if (article === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: article });
+    res.json({ article });
   }
 });
 
-router.patch('/:uuid', async (req, res) => {
+router.patch('/:articleId', async (req, res) => {
   let articleId: UUID;
-  let articleUpdates: Partial<Article>;
+  let articleUpdates: Partial<Omit<Article, '_id'>>;
   try {
-    articleId = ZUuidSchema.parse(req.params.uuid);
-    articleUpdates = ZArticleSchema.partial().parse(req.body);
+    articleId = ZUuidSchema.parse(req.params.articleId);
+    articleUpdates = z.object({
+      article: ZArticleSchema.omit({ _id: true }).partial(),
+    }).parse(req.body).article;
   } catch (err) {
     logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);
@@ -82,8 +86,8 @@ router.patch('/:uuid', async (req, res) => {
   }
 
   const articleDoc = await ArticleModel.findById(articleId).exec();
-  if ((articleUpdates._id !== undefined && articleUpdates._id !== articleId) || articleDoc === null) {
-    res.sendStatus(400);
+  if (articleDoc === null) {
+    res.sendStatus(404);
   } else {
     articleDoc.set(articleUpdates);
     await articleDoc.save();
@@ -115,7 +119,7 @@ router.get('/:uuid/file', async (req, res) => {
 
     // If the uuid exists but the file does not exist
     if (!fs.existsSync(path.join(options.root, fileName))) {
-      res.sendStatus(500).send({ error: 'UUID exists but file not found' });
+      res.sendStatus(500).json({ error: 'UUID exists but file not found' });
       return;
     }
 
@@ -153,7 +157,7 @@ router.put('/:uuid/file', articleFileUploader.single('file'), async (req, res) =
 
   // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).send({ error: 'No file uploaded or invalid file format' });
+    res.status(400).json({ error: 'No file uploaded or invalid file format' });
     return;
   }
 

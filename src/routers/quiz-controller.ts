@@ -17,7 +17,8 @@ router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
   const quizzes = await QuizModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
-  res.json({ items: quizzes });
+  const totalCount = await QuizModel.countDocuments().exec();
+  res.json({ quizzes, meta: { total: totalCount, offset, limit } });
 });
 
 router.post('/', async (req, res) => {
@@ -33,7 +34,7 @@ router.post('/', async (req, res) => {
 
   const quizDoc = new QuizModel(quiz);
   await quizDoc.save();
-  res.status(201).send({ uuid: quizId });
+  res.status(201).json({ quizId });
 });
 
 router.get('/:uuid', async (req, res) => {
@@ -50,7 +51,7 @@ router.get('/:uuid', async (req, res) => {
   if (quiz === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: quiz });
+    res.json({ quiz });
   }
 });
 
@@ -139,7 +140,7 @@ router.put('/:uuid/file', quizFileUploader.single('file'), async (req, res) => {
 
   // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).send({ error: 'No file uploaded or invalid file format' });
+    res.status(400).json({ error: 'No file uploaded or invalid file format' });
     return;
   }
 

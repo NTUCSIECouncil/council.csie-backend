@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     { $sort: { _id: 1 } },
   ]).exec().then(categories => categories.map(category => category._id));
 
-  res.json({ items: categories });
+  res.json({ categories });
 });
 
 export default router;

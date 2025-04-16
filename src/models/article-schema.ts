@@ -26,7 +26,7 @@ interface ArticleModel extends Model<ArticleWithOptionalId> {
    * @param limit - The maximum number of articles to return.
    * @returns The articles that match the query parameters.
    */
-  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<Article[]>;
+  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<[Article[], number]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
@@ -77,9 +77,11 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
     articles = result.map(result => result.item);
   }
 
+  const totalCount = articles.length;
+
   articles = articles.slice(offset, offset + limit);
 
-  return articles.map(article => article.depopulate().toObject<Article>());
+  return [articles.map(article => article.depopulate().toObject<Article>()), totalCount];
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);

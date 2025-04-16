@@ -19,7 +19,7 @@ interface Course extends z.infer<typeof ZCourseSchema> {};
 interface CourseWithOptionalId extends Omit<Course, '_id'>, Partial<Pick<Course, '_id'>> {};
 
 interface CourseModel extends Model<CourseWithOptionalId> {
-  searchCourses: (this: CourseModel, params: CourseSearchQueryParam, offset: number, limit: number) => Promise<Course[]>;
+  searchCourses: (this: CourseModel, params: CourseSearchQueryParam, offset: number, limit: number) => Promise<[Course[], number]>;
 };
 
 const courseSchema = new Schema<CourseWithOptionalId, CourseModel>({
@@ -58,7 +58,11 @@ const staticSearchCourses: CourseModel['searchCourses'] = async function (params
     courses = result.map(item => item.item);
   }
 
-  return courses.map(course => course.toObject()).slice(offset, offset + limit);
+  const totalCount = courses.length;
+
+  courses = courses.slice(offset, offset + limit);
+
+  return [courses.map(course => course.toObject()), totalCount];
 };
 
 courseSchema.static('searchCourses', staticSearchCourses);

@@ -22,14 +22,14 @@ router.get('/search', paginationParser, async (req, res) => {
     return;
   }
 
-  const courses = await CourseModel.searchCourses(param, offset, limit);
-  res.send({ items: courses });
+  const [courses, totalCount] = await CourseModel.searchCourses(param, offset, limit);
+  res.json({ courses, meta: { total: totalCount, offset, limit } });
 });
 
-router.get('/:uuid', async (req, res) => {
+router.get('/:courseId', async (req, res) => {
   let courseId: UUID;
   try {
-    courseId = ZUuidSchema.parse(req.params.uuid);
+    courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /courses/:uuid: ', err);
     res.sendStatus(400);
@@ -40,14 +40,16 @@ router.get('/:uuid', async (req, res) => {
   if (course === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: course });
+    res.json({ course });
   }
 });
 
-router.get('/:uuid/quizzes', async (req, res) => {
+router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
+  const [offset, limit] = [req.offset!, req.limit!];
   let courseId: UUID;
   try {
-    courseId = ZUuidSchema.parse(req.params.uuid);
+    courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /courses/:uuid/quizzes: ', err);
     res.sendStatus(400);
@@ -60,8 +62,11 @@ router.get('/:uuid/quizzes', async (req, res) => {
     return;
   }
 
-  const quizzes = await QuizModel.find({ course: courseId }).lean({ versionKey: false }).exec();
-  res.send({ items: quizzes });
+  const totalCount = await QuizModel.countDocuments({ course: courseId }).exec();
+
+  const quizzes = await QuizModel.find({ course: courseId }).skip(offset).limit(limit)
+    .lean({ versionKey: false }).exec();
+  res.json({ quizzes, meta: { total: totalCount, offset, limit } });
 });
 
 export default router;
