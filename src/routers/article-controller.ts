@@ -2,7 +2,6 @@ import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { type Request, Router } from 'express';
-import { z } from 'zod';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -25,7 +24,8 @@ router.post('/', async (req, res) => {
   const articleId = randomUUID();
   let article: Article;
   try {
-    article = ZArticleSchema.parse({ ...req.body, _id: articleId });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    article = ZArticleSchema.parse({ ...req.body.article, _id: articleId });
   } catch (err) {
     logger.warn('Failed to parse article in POST /articles: ', err);
     res.sendStatus(400);
@@ -76,9 +76,8 @@ router.patch('/:articleId', async (req, res) => {
   let articleUpdates: Partial<Omit<Article, '_id'>>;
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
-    articleUpdates = z.object({
-      article: ZArticleSchema.omit({ _id: true }).partial(),
-    }).parse(req.body).article;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    articleUpdates = ZArticleSchema.omit({ _id: true }).partial().parse(req.body.article);
   } catch (err) {
     logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
     res.sendStatus(400);

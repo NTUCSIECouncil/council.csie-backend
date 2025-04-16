@@ -25,7 +25,8 @@ router.post('/', async (req, res) => {
   const quizId = randomUUID();
   let quiz: Quiz;
   try {
-    quiz = ZQuizSchema.parse({ ...req.body, _id: quizId });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    quiz = ZQuizSchema.parse({ ...req.body.quiz, _id: quizId });
   } catch (err) {
     logger.warn('Failed to parse quiz in POST /quizzes: ', err);
     res.sendStatus(400);
@@ -37,10 +38,10 @@ router.post('/', async (req, res) => {
   res.status(201).json({ quizId });
 });
 
-router.get('/:uuid', async (req, res) => {
+router.get('/:quizId', async (req, res) => {
   let quizId: UUID;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /quizzes/:uuid: ', err);
     res.sendStatus(400);
@@ -57,12 +58,13 @@ router.get('/:uuid', async (req, res) => {
 
 // not actually required by API document
 // istanbul ignore next
-router.patch('/:uuid', async (req, res) => {
+router.patch('/:quizId', async (req, res) => {
   let quizId: UUID;
   let quizUpdates: Partial<Quiz>;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
-    quizUpdates = ZQuizSchema.partial().parse(req.body);
+    quizId = ZUuidSchema.parse(req.params.quizId);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    quizUpdates = ZQuizSchema.partial().parse(req.body.quiz);
   } catch (err) {
     logger.warn('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
     res.sendStatus(400);
@@ -79,10 +81,10 @@ router.patch('/:uuid', async (req, res) => {
   }
 });
 
-router.get('/:uuid/file', async (req, res) => {
+router.get('/:quizId/file', async (req, res) => {
   let quizId: UUID;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
     logger.warn('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
     res.sendStatus(400);
@@ -90,7 +92,7 @@ router.get('/:uuid/file', async (req, res) => {
   }
 
   const quiz = await QuizModel.findById(quizId).lean().exec();
-  // If uuid is not found
+  // If quizId is not found
   if (quiz === null) {
     res.sendStatus(404);
   } else {
@@ -101,7 +103,7 @@ router.get('/:uuid/file', async (req, res) => {
       root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR!),
     };
 
-    // If the uuid exists but the file does not exist
+    // If the quizId exists but the file does not exist
     if (!fs.existsSync(path.join(options.root, fileName))) {
       res.sendStatus(500);
       return;

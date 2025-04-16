@@ -4,9 +4,9 @@ import multer from 'multer';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
-  const uuid = req.params.uuid;
+  const userId = req.params.userId;
 
-  if (req.guser?.uid === undefined || req.guser.uid !== uuid) {
+  if (req.guser?.uid === undefined || req.guser.uid !== userId) {
     res.sendStatus(403);
     return;
   }

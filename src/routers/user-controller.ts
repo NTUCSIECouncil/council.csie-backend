@@ -7,17 +7,16 @@ const router = Router();
 
 const UserModel = models.User;
 
-router.use('/me', (req, res, next) => {
+router.all('/me{/*splat}', (req, res, next) => {
   if (req.guser === undefined) {
     res.sendStatus(400);
     return;
   }
-  const restPath = req.url.replace(/^\/myself/, '');
-  req.url = `/${req.guser.uid}${restPath}`;
+  req.url = req.url.replace(/^\/me/, `/${req.guser.uid}`);
   next();
 });
 
-router.get('/:uuid', authChecker, async (req, res) => {
+router.get('/:userId', authChecker, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const guser = req.guser!;
   const user = await UserModel.findById(guser.uid).lean({ versionKey: false }).exec();
@@ -30,7 +29,7 @@ router.get('/:uuid', authChecker, async (req, res) => {
   }
 });
 
-router.post('/:uuid', authChecker, async (req, res) => {
+router.post('/:userId', authChecker, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const guser = req.guser!;
 
