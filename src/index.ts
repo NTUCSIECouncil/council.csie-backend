@@ -6,45 +6,11 @@ import morgan, { type StreamOptions } from 'morgan';
 import APIController from '@routers/API-controller.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
-
-if (process.env.FIREBASE_CERT_PATH === undefined) {
-  logger.error('FIREBASE_CERT_PATH is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
-
-if (process.env.MONGODB_URL === undefined) {
-  logger.error('MONGODB_URL is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
-if (process.env.MONGODB_DB_NAME === undefined) {
-  logger.error('MONGODB_DB_NAME is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
-
-if (process.env.PORT === undefined) {
-  logger.error('PORT is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
-
-if (process.env.QUIZ_FILE_DIR === undefined) {
-  logger.error('QUIZ_FILE_DIR is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
-
-if (process.env.ARTICLE_FILE_DIR === undefined) {
-  logger.error('ARTICLE_FILE_DIR is not defined.');
-  logger.error('Exiting...');
-  process.exit(1);
-}
+import { env } from './config.ts';
 
 let auth;
 try {
-  const firebaseApp = initializeApp({ credential: cert(process.env.FIREBASE_CERT_PATH) });
+  const firebaseApp = initializeApp({ credential: cert(env.FIREBASE_CERT_PATH) });
   logger.info('Connected to Firebase');
   auth = getAuth(firebaseApp);
   logger.info('Initialized Firebase Auth');
@@ -111,17 +77,16 @@ mongoose.connection.on('error', (err) => {
   dbLogger.error('Mongoose connection error: ', err);
 });
 
-await mongoose.connect(process.env.MONGODB_URL, { dbName: process.env.MONGODB_DB_NAME });
+await mongoose.connect(env.MONGODB_URL, { dbName: env.MONGODB_DB_NAME });
 
-logger.info(`Connected to ${process.env.MONGODB_URL}/${process.env.MONGODB_DB_NAME}`);
+logger.info(`Connected to ${env.MONGODB_URL}/${env.MONGODB_DB_NAME}`);
 
-expressApp.listen(process.env.PORT, (err) => {
+expressApp.listen(env.PORT, (err) => {
   if (err) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PORT is defined
-    logger.error(`Failed to start server at port ${process.env.PORT!}: `, err);
+    logger.error(`Failed to start server at port ${env.PORT}: `, err);
     logger.error('Exiting...');
     process.exit(1);
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PORT is defined
-  logger.info(`Listening at port ${process.env.PORT!}`);
+
+  logger.info(`Listening at port ${env.PORT}`);
 });
