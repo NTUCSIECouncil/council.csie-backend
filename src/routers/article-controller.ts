@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
     article = ZArticleSchema.parse({ ...req.body.article, _id: articleId });
   } catch (err) {
-    logger.warn('Failed to parse article in POST /articles: ', err);
+    logger.warn('Failed to parse request body in POST /articles: ', err);
     res.sendStatus(400);
     return;
   }
@@ -58,7 +58,7 @@ router.get('/:articleId', async (req, res) => {
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /articles/:uuid: ', err);
+    logger.warn('Failed to parse articleId in GET /articles/:articleId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -79,7 +79,7 @@ router.patch('/:articleId', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
     articleUpdates = ZArticleSchema.omit({ _id: true }).partial().parse(req.body.article);
   } catch (err) {
-    logger.warn('Failed to parse UUID in PATCH /articles/:uuid: ', err);
+    logger.warn('Failed to parse articleId or request body in PATCH /articles/:articleId: ', err);
     res.sendStatus(400);
     return;
   }

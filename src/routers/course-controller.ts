@@ -31,7 +31,7 @@ router.get('/:courseId', async (req, res) => {
   try {
     courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /courses/:uuid: ', err);
+    logger.warn('Failed to parse courseId in GET /courses/:courseId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -51,7 +51,7 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
   try {
     courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /courses/:uuid/quizzes: ', err);
+    logger.warn('Failed to parse courseId in GET /courses/:courseId/quizzes: ', err);
     res.sendStatus(400);
     return;
   }

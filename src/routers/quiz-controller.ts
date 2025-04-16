@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
     quiz = ZQuizSchema.parse({ ...req.body.quiz, _id: quizId });
   } catch (err) {
-    logger.warn('Failed to parse quiz in POST /quizzes: ', err);
+    logger.warn('Failed to parse request body in POST /quizzes: ', err);
     res.sendStatus(400);
     return;
   }
@@ -43,7 +43,7 @@ router.get('/:quizId', async (req, res) => {
   try {
     quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse quizId in GET /quizzes/:quizId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -66,7 +66,7 @@ router.patch('/:quizId', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
     quizUpdates = ZQuizSchema.partial().parse(req.body.quiz);
   } catch (err) {
-    logger.warn('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse quizId or patch in PATCH /quizzes/:quizId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -86,7 +86,7 @@ router.get('/:quizId/file', async (req, res) => {
   try {
     quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
+    logger.warn('Failed to parse quizId in GET /quizzes/:quizId/file: ', err);
     res.sendStatus(400);
     return;
   }
