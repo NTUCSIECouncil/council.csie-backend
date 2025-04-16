@@ -12,24 +12,24 @@ afterEach(async () => {
   await mongoose.connection.db?.dropDatabase();
 });
 
-describe('GET /api/users/:uuid', () => {
+describe('GET /api/users/:userId', () => {
   it('should response user with uuid', async () => {
     const res = await request(app)
       .get('/api/users/00000001-0001-0000-0000-000000000000')
       .set({ uid: '00000001-0001-0000-0000-000000000000' })
       .expect(200);
-    expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
+    expect(res.body.user._id).toBe('00000001-0001-0000-0000-000000000000');
   });
 
-  it('should have alias - GET /api/users/myself', async () => {
+  it('should have alias - GET /api/users/me', async () => {
     const res = await request(app)
-      .get('/api/users/myself')
+      .get('/api/users/me')
       .set({ uid: '00000001-0001-0000-0000-000000000000' })
       .expect(200);
-    expect(res.body.item._id).toBe('00000001-0001-0000-0000-000000000000');
+    expect(res.body.user._id).toBe('00000001-0001-0000-0000-000000000000');
 
     await request(app)
-      .get('/api/users/myself')
+      .get('/api/users/me')
       .expect(400);
   });
 
@@ -48,7 +48,7 @@ describe('GET /api/users/:uuid', () => {
   });
 });
 
-describe('POST /api/users/:uuid', () => {
+describe('POST /api/users/:userId', () => {
   it('should create a user', async () => {
     let res = await request(app)
       .post('/api/users/00000001-0004-0000-0000-000000000000')
@@ -59,27 +59,27 @@ describe('POST /api/users/:uuid', () => {
       .get('/api/users/00000001-0004-0000-0000-000000000000')
       .set({ uid: '00000001-0004-0000-0000-000000000000' })
       .expect(200);
-    expect(res.body.item).toMatchObject({
+    expect(res.body.user).toMatchObject({
       _id: '00000001-0004-0000-0000-000000000000',
       name: 'Mock Person',
-      email: 'mock-email@gail.com',
+      email: 'mock@gmail.com',
     });
   });
 
-  it('should have alias, POST /api/users/myself', async () => {
+  it('should have alias, POST /api/users/me', async () => {
     let res = await request(app)
-      .post('/api/users/myself')
+      .post('/api/users/me')
       .set({ uid: '00000001-0004-0000-0000-000000000000' })
       .expect(201);
 
     res = await request(app)
-      .get('/api/users/myself')
+      .get('/api/users/me')
       .set({ uid: '00000001-0004-0000-0000-000000000000' })
       .expect(200);
-    expect(res.body.item).toMatchObject({
+    expect(res.body.user).toMatchObject({
       _id: '00000001-0004-0000-0000-000000000000',
       name: 'Mock Person',
-      email: 'mock-email@gail.com',
+      email: 'mock@gmail.com',
     });
   });
 });

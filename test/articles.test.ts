@@ -25,7 +25,7 @@ describe('GET /api/articles', () => {
       .get('/api/articles')
       .query({ limit: 1 })
       .expect(200);
-    expect(ZArticleSchema.safeParse(res.body.items[0]).success).toBe(true);
+    expect(ZArticleSchema.safeParse(res.body.articles[0]).success).toBe(true);
   });
 
   it('should support pagination', async () => {
@@ -35,7 +35,7 @@ describe('GET /api/articles', () => {
           .get('/api/articles')
           .query({ limit, offset })
           .expect(200);
-        expect(res.body.items).toHaveLength(Math.max(0, Math.min(100 - offset, limit)));
+        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(100 - offset, limit)));
       }
     }
 
@@ -43,12 +43,12 @@ describe('GET /api/articles', () => {
       .get('/api/articles')
       .query({ limit: 10, offset: 0 })
       .expect(200);
-    const page = ZArticleSchema.array().parse(res.body.items);
+    const page = ZArticleSchema.array().parse(res.body.articles);
 
     res = await request(app)
       .get('/api/articles')
       .expect(200);
-    expect(res.body.items).toStrictEqual(page);
+    expect(res.body.articles).toStrictEqual(page);
   });
 });
 
@@ -64,16 +64,16 @@ describe('POST /api/articles', () => {
 
     let res = await request(app)
       .post('/api/articles')
-      .send(article)
+      .send({ article })
       .expect(201);
 
-    const uuid = ZUuidSchema.parse(res.body.uuid);
+    const articleId = ZUuidSchema.parse(res.body.articleId);
 
     res = await request(app)
-      .get(`/api/articles/${uuid}`)
+      .get(`/api/articles/${articleId}`)
       .expect(200);
 
-    expect(res.body.item).toStrictEqual({ ...article, _id: uuid });
+    expect(res.body.article).toStrictEqual({ ...article, _id: articleId });
   });
 
   it('should reject invalid article', async () => {
@@ -87,7 +87,7 @@ describe('POST /api/articles', () => {
 
     await request(app)
       .post('/api/articles')
-      .send({ ...article, course: undefined })
+      .send({ article: { ...article, course: undefined } })
       .expect(400);
   });
 
@@ -102,32 +102,32 @@ describe('POST /api/articles', () => {
 
     let res = await request(app)
       .post('/api/articles')
-      .send({ ...article, _id: '00000002-0022-0000-0000-000000000000' })
+      .send({ article: { ...article, _id: '00000002-0022-0000-0000-000000000000' } })
       .expect(201);
 
-    const uuid = ZUuidSchema.parse(res.body.uuid);
+    const articleId = ZUuidSchema.parse(res.body.articleId);
 
     res = await request(app)
-      .get(`/api/articles/${uuid}`)
+      .get(`/api/articles/${articleId}`)
       .expect(200);
-    expect(res.body.item).toStrictEqual({ ...article, _id: uuid });
+    expect(res.body.article).toStrictEqual({ ...article, _id: articleId });
 
-    expect(uuid).not.toEqual('00000002-0022-0000-0000-000000000000');
+    expect(articleId).not.toEqual('00000002-0022-0000-0000-000000000000');
   });
 });
 
-describe('GET /api/articles/:uuid', () => {
+describe('GET /api/articles/:articleId', () => {
   it('should response the article with uuid', async () => {
     let res = await request(app)
       .get('/api/articles')
       .query({ limit: 1 })
       .expect(200);
-    const article = ZArticleSchema.parse(res.body.items[0]);
+    const article = ZArticleSchema.parse(res.body.articles[0]);
 
     res = await request(app)
       .get(`/api/articles/${article._id}`)
       .expect(200);
-    expect(res.body.item).toStrictEqual(article);
+    expect(res.body.article).toStrictEqual(article);
   });
 
   it('should reject invalid uuid', async () => {
@@ -143,32 +143,36 @@ describe('GET /api/articles/:uuid', () => {
   });
 });
 
-describe('PATCH /api/articles/:uuid', () => {
+describe('PATCH /api/articles/:articleId', () => {
   it('should update the article with uuid', async () => {
     let res = await request(app)
       .get('/api/articles')
       .query({ limit: 1 })
       .expect(200);
-    const article = ZArticleSchema.parse(res.body.items[0]);
+    const article = ZArticleSchema.parse(res.body.articles[0]);
 
     await request(app)
       .patch(`/api/articles/${article._id}`)
       .send({
-        title: '不普通物理學',
+        article: {
+          title: '不普通物理學',
+        },
       })
       .expect(204);
 
     res = await request(app)
       .get(`/api/articles/${article._id}`)
       .expect(200);
-    expect(res.body.item).toStrictEqual({ ...article, title: '不普通物理學' });
+    expect(res.body.article).toStrictEqual({ ...article, title: '不普通物理學' });
   });
 
   it('should reject invalid uuid', async () => {
     await request(app)
       .patch('/api/articles/00000002-0003-0000-0000')
       .send({
-        title: '不普通物理學',
+        article: {
+          title: '不普通物理學',
+        },
       })
       .expect(400);
   });
@@ -177,24 +181,33 @@ describe('PATCH /api/articles/:uuid', () => {
     await request(app)
       .patch(`/api/articles/${randomUUID()}`)
       .send({
-        title: '不普通物理學',
+        article: {
+          title: '不普通物理學',
+        },
       })
-      .expect(400);
+      .expect(404);
   });
 
-  it('should reject modification of _id', async () => {
+  it('should ignore modification of _id', async () => {
     const res = await request(app)
       .get('/api/articles')
       .query({ limit: 1 })
       .expect(200);
-    const article = ZArticleSchema.parse(res.body.items[0]);
+    const article = ZArticleSchema.parse(res.body.articles[0]);
 
+    const newId = randomUUID();
     await request(app)
       .patch(`/api/articles/${article._id}`)
       .send({
-        _id: randomUUID(),
+        article: {
+          _id: newId,
+        },
       })
-      .expect(400);
+      .expect(204);
+
+    await request(app)
+      .get(`/api/articles/${newId}`)
+      .expect(404);
   });
 });
 
@@ -213,7 +226,7 @@ describe('GET /api/articles/search', () => {
         .get('/api/articles/search')
         .query(qs.stringify({ tags }))
         .expect(200);
-      for (const article of res.body.items) {
+      for (const article of res.body.articles) {
         expect(article.tags).toEqual(expect.arrayContaining(tags));
       }
     }
@@ -225,7 +238,7 @@ describe('GET /api/articles/search', () => {
         .get('/api/articles/search')
         .query(qs.stringify({ categories }))
         .expect(200);
-      for (const article of res.body.items) {
+      for (const article of res.body.articles) {
         expect(article.course.categories).toEqual(expect.arrayContaining(categories));
       }
     }
@@ -249,7 +262,7 @@ describe('GET /api/articles/search', () => {
         .query(qs.stringify({ keyword, limit: 100 }))
         .expect(200);
       const result = fuse.search(keyword).map(({ item }) => item.depopulate<{ course: string }>().toObject());
-      expect(res.body.items).toStrictEqual(result);
+      expect(res.body.articles).toStrictEqual(result);
     }
   });
 
@@ -261,7 +274,7 @@ describe('GET /api/articles/search', () => {
           .get('/api/articles/search')
           .query(qs.stringify({ tags, limit, offset }))
           .expect(200);
-        expect(res.body.items).toHaveLength(Math.max(0, Math.min(64 - offset, limit)));
+        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(64 - offset, limit)));
       }
     }
   });
@@ -299,7 +312,7 @@ describe('GET /api/articles/search', () => {
         .query(qs.stringify({ keyword, tags, categories }))
         .expect(200);
 
-      const articles = ZArticleSchema.array().parse(res.body.items);
+      const articles = ZArticleSchema.array().parse(res.body.articles);
 
       expect(filteredResult).toEqual(expect.arrayContaining(articles));
     }

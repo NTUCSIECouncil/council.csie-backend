@@ -1,5 +1,5 @@
 import express from 'express';
-import { type DecodedIdToken } from 'firebase-admin/auth';
+import { type UserRecord } from 'firebase-admin/auth';
 import APIController from '@routers/API-controller.ts';
 
 const expressApp = express();
@@ -9,22 +9,36 @@ expressApp.set('query parser', 'extended');
 expressApp.use((req, res, next) => {
   const uidHeader = req.headers.uid;
   if (typeof uidHeader == 'string') {
-    const guser: DecodedIdToken = {
-      name: 'Mock Person',
-      iss: 'https://securetoken.google.com/csie-council',
-      aud: 'csie-council',
-      auth_time: 1724052294,
-      user_id: uidHeader,
-      sub: uidHeader,
-      iat: 1724144419,
-      exp: 1724148019,
-      email: 'mock-email@gail.com',
-      email_verified: true,
-      firebase: {
-        identities: { 'google.com': [Array], 'email': [Array] },
-        sign_in_provider: 'google.com',
-      },
+    const guser: UserRecord = {
       uid: uidHeader,
+      email: 'mock@gmail.com',
+      emailVerified: true,
+      displayName: 'Mock Person',
+      photoURL: 'https://mock.com/photo.jpg',
+      phoneNumber: undefined,
+      disabled: false,
+      metadata: {
+        creationTime: 'Thu, 25 Jan 2024 09:21:26 GMT',
+        lastSignInTime: 'Wed, 16 Apr 2025 16:38:59 GMT',
+        lastRefreshTime: 'Wed, 16 Apr 2025 18:34:38 GMT',
+        toJSON: () => ({}),
+      },
+      providerData: [
+        {
+          uid: '106273168733193938381',
+          displayName: 'Mock Person',
+          email: 'mock@gmail.com',
+          photoURL: 'https://mock.com/photo.jpg',
+          providerId: 'google.com',
+          phoneNumber: '+886912345678',
+          toJSON: () => ({}),
+        },
+      ],
+      passwordHash: undefined,
+      passwordSalt: undefined,
+      tokensValidAfterTime: 'Thu, 25 Jan 2024 09:21:26 GMT',
+      tenantId: undefined,
+      toJSON: () => ({}),
     };
     req.guser = guser;
   }

@@ -32,7 +32,7 @@ describe('GET /api/courses/:uuid', () => {
     const res = await request(app)
       .get(`/api/courses/${targetCourse._id}`)
       .expect(200);
-    expect(res.body.item).toStrictEqual(targetCourse);
+    expect(res.body.course).toStrictEqual(targetCourse);
   });
 
   it('should reject invalid uuid', async () => {
@@ -56,9 +56,9 @@ describe('GET /api/courses/search', () => {
         .query(qs.stringify({ categories }))
         .expect(200);
 
-      expect(ZCourseSchema.strict().array().safeParse(res.body.items).success).toBe(true);
+      expect(ZCourseSchema.strict().array().safeParse(res.body.courses).success).toBe(true);
 
-      for (const course of res.body.items) {
+      for (const course of res.body.courses) {
         expect(course.categories).toEqual(expect.arrayContaining(categories));
       }
     }
@@ -81,7 +81,7 @@ describe('GET /api/courses/search', () => {
         .query(qs.stringify({ keyword, limit: 100 }))
         .expect(200);
       const result = fuse.search(keyword).map(({ item }) => item);
-      expect(res.body.items).toStrictEqual(result);
+      expect(res.body.courses).toStrictEqual(result);
     }
   });
 
@@ -93,7 +93,7 @@ describe('GET /api/courses/search', () => {
           .get('/api/courses/search')
           .query(qs.stringify({ ...param, limit, offset }))
           .expect(200);
-        expect(res.body.items).toHaveLength(Math.max(0, Math.min(100 - offset, limit)));
+        expect(res.body.courses).toHaveLength(Math.max(0, Math.min(100 - offset, limit)));
       }
     }
   });
@@ -124,7 +124,7 @@ describe('GET /api/courses/search', () => {
       const result = fuse.search(keyword).map(({ item }) => item);
       const filteredResult = result.filter(course => course.categories.every(category => categories.includes(category)));
 
-      const resCourses = ZCourseSchema.array().parse(res.body.items);
+      const resCourses = ZCourseSchema.array().parse(res.body.courses);
 
       expect(filteredResult).toEqual(expect.arrayContaining(resCourses));
     }
