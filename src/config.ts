@@ -8,6 +8,7 @@ const EnvSchema = z.object({
   PORT: z.string(),
   QUIZ_FILE_DIR: z.string(),
   ARTICLE_FILE_DIR: z.string(),
+  PWD: z.string(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

@@ -2,6 +2,7 @@ import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { type Request, Router } from 'express';
+import { env } from '@/config.ts';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
@@ -99,8 +100,7 @@ router.get('/:quizId/file', async (req, res) => {
     // Some how getting filename
     const fileName = `${quizId}.pdf`;
     const options = {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, QUIZ_FILE_DIR was checked in index.ts
-      root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR!),
+      root: path.join(env.PWD, env.QUIZ_FILE_DIR),
     };
 
     // If the quizId exists but the file does not exist
@@ -115,8 +115,7 @@ router.get('/:quizId/file', async (req, res) => {
 
 // Use the file uploader middleware for quizzes (PDF and MD)
 const quizFileUploader = fileUploader({
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- QUIZ_FILE_DIR was checked in index.ts
-  fileDir: process.env.QUIZ_FILE_DIR!,
+  fileDir: env.QUIZ_FILE_DIR,
   allowedMimeTypes: ['application/pdf'],
   getFilename: (req: Request) => {
     return `${req.params.uuid}.pdf`;

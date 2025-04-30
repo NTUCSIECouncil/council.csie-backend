@@ -1,6 +1,7 @@
 import path from 'path';
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
+import { env } from '@/config.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
@@ -31,8 +32,7 @@ const fileUploader = (options: {
 }) => {
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- fileDir is required
-      cb(null, path.join(process.env.PWD!, options.fileDir));
+      cb(null, path.join(env.PWD, options.fileDir));
     },
     filename: (req, file, cb) => {
       cb(null, options.getFilename(req));

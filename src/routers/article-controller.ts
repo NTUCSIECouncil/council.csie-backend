@@ -2,6 +2,7 @@ import { type UUID, randomUUID } from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { type Request, Router } from 'express';
+import { env } from '@/config.ts';
 import { type Article, ZArticleSchema } from '@models/article-schema.ts';
 import { models } from '@models/index.ts';
 import { type ArticleSearchQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
@@ -112,13 +113,12 @@ router.get('/:uuid/file', async (req, res) => {
   } else {
     const fileName = `${articleId}.md`;
     const options = {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- PWD must exist, ARTICLE_FILE_DIR was checked in index.ts
-      root: path.join(process.env.PWD!, process.env.ARTICLE_FILE_DIR!),
+      root: path.join(env.PWD, env.ARTICLE_FILE_DIR),
     };
 
     // If the uuid exists but the file does not exist
     if (!fs.existsSync(path.join(options.root, fileName))) {
-      res.sendStatus(500).json({ error: 'UUID exists but file not found' });
+      res.sendStatus(500);
       return;
     }
 
@@ -128,8 +128,7 @@ router.get('/:uuid/file', async (req, res) => {
 
 // Use the file uploader middleware for articles (MD only)
 const articleFileUploader = fileUploader({
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- ARTICLE_FILE_DIR was checked in index.ts
-  fileDir: process.env.ARTICLE_FILE_DIR!,
+  fileDir: env.ARTICLE_FILE_DIR,
   allowedMimeTypes: ['text/markdown'],
   getFilename: (req: Request) => {
     return `${req.params.uuid}.md`;
