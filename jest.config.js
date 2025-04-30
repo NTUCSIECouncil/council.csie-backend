@@ -9,7 +9,7 @@ const presetConfig = createDefaultEsmPreset({
 const jestConfig = {
   ...presetConfig,
 
-  setupFilesAfterEnv: ['<rootDir>/test/setupFile.ts'],
+  setupFilesAfterEnv: ['<rootDir>/test/setup-file.ts'],
   verbose: true,
   roots: ['<rootDir>'],
   moduleNameMapper: pathsToModuleNameMapper(tsconfig.compilerOptions.paths, {
