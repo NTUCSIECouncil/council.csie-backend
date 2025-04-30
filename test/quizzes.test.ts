@@ -8,7 +8,6 @@ import app from './app.ts';
 import { insertFromFile } from './utils.ts';
 
 beforeEach(async () => {
-  process.env.QUIZ_FILE_DIR = 'test/samples/quiz_file_samples';
   await insertFromFile('Course');
   await insertFromFile('Quiz');
 });

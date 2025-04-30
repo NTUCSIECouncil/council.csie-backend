@@ -36,6 +36,10 @@ beforeAll(async () => {
     path.join(env.ARTICLE_FILE_DIR, '00000002-1131-0000-0000-000000000002.md'),
     'test',
     'utf8');
+  fs.writeFileSync(
+    path.join(env.QUIZ_FILE_DIR, '00000004-1131-0000-0000-000000000000.pdf'),
+    'test',
+    'utf8');
 });
 
 afterAll(async () => {
