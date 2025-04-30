@@ -22,7 +22,7 @@ describe('GET /api/quizzes', () => {
     const res = await request(app)
       .get('/api/quizzes/')
       .expect(200);
-    expect(res.body.items).toHaveLength(10); // default limit is 10
+    expect(res.body.quizzes).toHaveLength(10); // default limit is 10
   });
 
   it('should support controlling both the offset and the limit size of page', async () => {
@@ -31,14 +31,14 @@ describe('GET /api/quizzes', () => {
       .get('/api/quizzes')
       .query({ limit: 1, offset: 1 })
       .expect(200);
-    expect(res.body.items).toHaveLength(1);
+    expect(res.body.quizzes).toHaveLength(1);
 
     // the offset is out of range (there are only 100 quizzes)
     res = await request(app)
       .get('/api/quizzes')
       .query({ limit: 1, offset: 200 })
       .expect(200);
-    expect(res.body.items).toHaveLength(0);
+    expect(res.body.quizzes).toHaveLength(0);
 
     // the limit is out of range (there are only 100 quizzes)
     // should retun the remaining quizzes(1)
@@ -46,14 +46,14 @@ describe('GET /api/quizzes', () => {
       .get('/api/quizzes')
       .query({ limit: 10, offset: 99 })
       .expect(200);
-    expect(res.body.items).toHaveLength(1);
+    expect(res.body.quizzes).toHaveLength(1);
 
     // large limit
     res = await request(app)
       .get('/api/quizzes')
       .query({ limit: 200, offset: 0 })
       .expect(200);
-    expect(res.body.items).toHaveLength(100);
+    expect(res.body.quizzes).toHaveLength(100);
   });
 });
 
@@ -63,19 +63,21 @@ describe('POST /api/quizzes', () => {
     let res = await request(app)
       .post('/api/quizzes')
       .send({
-        course: '00000003-0003-0000-0000-000000000000',
-        uploader: '00000001-0001-0000-0000-000000000000',
-        semester: '112-1',
-        session: 'midterm',
+        quiz: {
+          course: '00000003-0003-0000-0000-000000000000',
+          uploader: '00000001-0001-0000-0000-000000000000',
+          semester: '112-1',
+          session: 'midterm',
+        },
       })
       .expect(201);
 
-    const uuid = ZUuidSchema.parse(res.body.uuid);
+    const uuid = ZUuidSchema.parse(res.body.quizId);
 
     res = await request(app)
       .get(`/api/quizzes/${uuid}`)
       .expect(200);
-    expect(res.body.item).toMatchObject({
+    expect(res.body.quiz).toMatchObject({
       course: '00000003-0003-0000-0000-000000000000',
       uploader: '00000001-0001-0000-0000-000000000000',
       semester: '112-1',
@@ -87,20 +89,22 @@ describe('POST /api/quizzes', () => {
     let res = await request(app)
       .post('/api/quizzes')
       .send({
-        _id: '00000004-0006-0000-0000-000000000000',
-        course: '00000003-0003-0000-0000-000000000000',
-        uploader: '00000002-0000-0000-0000-000000000000',
-        semester: '112-1',
-        session: 'midterm',
+        quiz: {
+          _id: '00000004-0006-0000-0000-000000000000',
+          course: '00000003-0003-0000-0000-000000000000',
+          uploader: '00000002-0000-0000-0000-000000000000',
+          semester: '112-1',
+          session: 'midterm',
+        },
       })
       .expect(201);
 
-    const uuid = ZUuidSchema.parse(res.body.uuid);
+    const uuid = ZUuidSchema.parse(res.body.quizId);
 
     res = await request(app)
       .get(`/api/quizzes/${uuid}`)
       .expect(200);
-    expect(res.body.item).toMatchObject({
+    expect(res.body.quiz).toMatchObject({
       course: '00000003-0003-0000-0000-000000000000',
       uploader: '00000002-0000-0000-0000-000000000000',
       semester: '112-1',
@@ -111,8 +115,10 @@ describe('POST /api/quizzes', () => {
     res = await request(app)
       .post('/api/quizzes')
       .send({
-        _id: '00000004-0006-0000-0000-000000000000',
-        course: '00000003-0003-0000-0000-000000000000',
+        quiz: {
+          _id: '00000004-0006-0000-0000-000000000000',
+          course: '00000003-0003-0000-0000-000000000000',
+        },
       })
       .expect(400);
   });
@@ -123,7 +129,7 @@ describe('GET /api/quizzes/:uuid', () => {
     const res = await request(app)
       .get('/api/quizzes/00000004-1131-0000-0000-000000000000')
       .expect(200);
-    expect(res.body.item).toMatchObject({
+    expect(res.body.quiz).toMatchObject({
       _id: '00000004-1131-0000-0000-000000000000',
       course: '00000003-0000-0000-0000-000000000000',
       uploader: '00000001-0003-0000-0000-000000000000',
@@ -147,26 +153,30 @@ describe('PATCH /api/quizzes/:uuid', () => {
       .get('/api/quizzes')
       .query({ limit: 1 })
       .expect(200);
-    const quiz = ZQuizSchema.parse(res.body.items[0]);
+    const quiz = ZQuizSchema.parse(res.body.quizzes[0]);
 
     await request(app)
       .patch(`/api/quizzes/${quiz._id}`)
       .send({
-        semester: '110-1',
+        quiz: {
+          semester: '110-1',
+        },
       })
       .expect(204);
 
     res = await request(app)
       .get(`/api/quizzes/${quiz._id}`)
       .expect(200);
-    expect(res.body.item).toStrictEqual({ ...quiz, semester: '110-1' });
+    expect(res.body.quiz).toStrictEqual({ ...quiz, semester: '110-1' });
   });
 
   it('should reject invalid uuid', async () => {
     await request(app)
       .patch('/api/quizzes/00000002-0003-0000-0000')
       .send({
-        semester: '110-1',
+        quiz: {
+          semester: '110-1',
+        },
       })
       .expect(400);
   });
@@ -175,7 +185,9 @@ describe('PATCH /api/quizzes/:uuid', () => {
     await request(app)
       .patch(`/api/quizzes/${randomUUID()}`)
       .send({
-        semester: '110-1',
+        quiz: {
+          semester: '110-1',
+        },
       })
       .expect(400);
   });
@@ -185,12 +197,14 @@ describe('PATCH /api/quizzes/:uuid', () => {
       .get('/api/quizzes')
       .query({ limit: 1 })
       .expect(200);
-    const quiz = ZQuizSchema.parse(res.body.items[0]);
+    const quiz = ZQuizSchema.parse(res.body.quizzes[0]);
 
     await request(app)
       .patch(`/api/articles/${quiz._id}`)
       .send({
-        _id: randomUUID(),
+        quiz: {
+          _id: randomUUID(),
+        },
       })
       .expect(400);
   });

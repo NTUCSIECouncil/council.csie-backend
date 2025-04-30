@@ -17,31 +17,33 @@ router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
   const quizzes = await QuizModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
-  res.json({ items: quizzes });
+  const totalCount = await QuizModel.countDocuments().exec();
+  res.json({ quizzes, meta: { total: totalCount, offset, limit } });
 });
 
 router.post('/', async (req, res) => {
   const quizId = randomUUID();
   let quiz: Quiz;
   try {
-    quiz = ZQuizSchema.parse({ ...req.body, _id: quizId });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    quiz = ZQuizSchema.parse({ ...req.body.quiz, _id: quizId });
   } catch (err) {
-    logger.warn('Failed to parse quiz in POST /quizzes: ', err);
+    logger.warn('Failed to parse request body in POST /quizzes: ', err);
     res.sendStatus(400);
     return;
   }
 
   const quizDoc = new QuizModel(quiz);
   await quizDoc.save();
-  res.status(201).send({ uuid: quizId });
+  res.status(201).json({ quizId });
 });
 
-router.get('/:uuid', async (req, res) => {
+router.get('/:quizId', async (req, res) => {
   let quizId: UUID;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse quizId in GET /quizzes/:quizId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -50,20 +52,21 @@ router.get('/:uuid', async (req, res) => {
   if (quiz === null) {
     res.sendStatus(404);
   } else {
-    res.send({ item: quiz });
+    res.json({ quiz });
   }
 });
 
 // not actually required by API document
 // istanbul ignore next
-router.patch('/:uuid', async (req, res) => {
+router.patch('/:quizId', async (req, res) => {
   let quizId: UUID;
   let quizUpdates: Partial<Quiz>;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
-    quizUpdates = ZQuizSchema.partial().parse(req.body);
+    quizId = ZUuidSchema.parse(req.params.quizId);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
+    quizUpdates = ZQuizSchema.partial().parse(req.body.quiz);
   } catch (err) {
-    logger.warn('Failed to parse UUID or patch in PATCH /quizzes/:uuid: ', err);
+    logger.warn('Failed to parse quizId or patch in PATCH /quizzes/:quizId: ', err);
     res.sendStatus(400);
     return;
   }
@@ -78,18 +81,18 @@ router.patch('/:uuid', async (req, res) => {
   }
 });
 
-router.get('/:uuid/file', async (req, res) => {
+router.get('/:quizId/file', async (req, res) => {
   let quizId: UUID;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /quizzes/:uuid/file: ', err);
+    logger.warn('Failed to parse quizId in GET /quizzes/:quizId/file: ', err);
     res.sendStatus(400);
     return;
   }
 
   const quiz = await QuizModel.findById(quizId).lean().exec();
-  // If uuid is not found
+  // If quizId is not found
   if (quiz === null) {
     res.sendStatus(404);
   } else {
@@ -100,7 +103,7 @@ router.get('/:uuid/file', async (req, res) => {
       root: path.join(process.env.PWD!, process.env.QUIZ_FILE_DIR!),
     };
 
-    // If the uuid exists but the file does not exist
+    // If the quizId exists but the file does not exist
     if (!fs.existsSync(path.join(options.root, fileName))) {
       res.sendStatus(500);
       return;
@@ -139,7 +142,7 @@ router.put('/:uuid/file', quizFileUploader.single('file'), async (req, res) => {
 
   // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).send({ error: 'No file uploaded or invalid file format' });
+    res.status(400).json({ error: 'No file uploaded or invalid file format' });
     return;
   }
 

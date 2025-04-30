@@ -40,7 +40,8 @@ expressApp.use(async (req, res, next) => {
   if (token?.startsWith('Bearer ')) {
     try {
       const decodedToken = await auth.verifyIdToken(token.slice(7));
-      req.guser = decodedToken;
+      const userRecord = await auth.getUser(decodedToken.uid);
+      req.guser = userRecord;
     } catch (err) {
       logger.error('Error verifying Firebase token: ', err);
     }

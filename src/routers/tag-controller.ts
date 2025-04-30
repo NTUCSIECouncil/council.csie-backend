@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     { $sort: { _id: 1 } },
   ]).exec().then(tags => tags.map(tag => tag._id));
 
-  res.json({ items: tags });
+  res.json({ tags });
 });
 
 export default router;

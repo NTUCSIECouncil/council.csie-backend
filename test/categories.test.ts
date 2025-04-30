@@ -17,6 +17,6 @@ describe('GET /api/categories', () => {
     const res = await request(app)
       .get('/api/categories')
       .expect(200);
-    expect(res.body.items).not.toBeFalsy();
+    expect(res.body.categories).not.toBeFalsy();
   });
 });
