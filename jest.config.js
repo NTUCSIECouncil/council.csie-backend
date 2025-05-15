@@ -1,9 +1,7 @@
 import { createDefaultEsmPreset, pathsToModuleNameMapper } from 'ts-jest';
 import tsconfig from './tsconfig.json' with { type: 'json' };
 
-const presetConfig = createDefaultEsmPreset({
-  isolatedModules: true,
-});
+const presetConfig = createDefaultEsmPreset();
 
 /** @type {import('ts-jest').JestConfigWithTsJest} **/
 const jestConfig = {
