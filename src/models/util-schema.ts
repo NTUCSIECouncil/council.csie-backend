@@ -1,5 +1,5 @@
 import { type UUID } from 'crypto';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const ZUuidSchema = z.custom<UUID>((val) => {
   if (typeof val !== 'string') return false;

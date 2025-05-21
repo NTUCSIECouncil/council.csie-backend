@@ -1,9 +1,9 @@
 import { type Model, Schema, model } from 'mongoose';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const ZUserSchema = z.object({
   _id: z.string(),
-  email: z.string().email(),
+  email: z.email(),
   name: z.string(),
 });
 
