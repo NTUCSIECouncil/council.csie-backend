@@ -23,7 +23,7 @@ const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => 
     const doc = new models[model](obj);
     await doc.save();
   }
-  console.log(`Inserted ${objs.length.toString()} ${model} data into database ${String(dbName)}`);
+  console.log(`Inserted ${objs.length.toString()} ${model} data from ${filePath} into database ${String(dbName)}`);
 };
 
 // check env
@@ -41,11 +41,12 @@ await mongoose.connect(process.env.MONGODB_URL, {
 });
 
 console.log('Connected to MongoDB');
-console.log(`Dropping database "${String(dbName)}"`);
 if (mongoose.connection.db === undefined) throw new Error('DB is not set.');
+console.log(`Dropping database "${String(dbName)}"`);
 await mongoose.connection.db.dropDatabase();
 console.log(`Dropped database "${String(dbName)}"`);
 
+console.log('Inserting data into database');
 for (const model in ZSchema) {
   await insertFromFile(model as 'Article' | 'Course' | 'Quiz' | 'User');
 }
