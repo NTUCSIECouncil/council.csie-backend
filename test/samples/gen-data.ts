@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 import { type Quiz } from '@models/quiz-schema.ts';

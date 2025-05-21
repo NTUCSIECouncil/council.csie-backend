@@ -6,8 +6,6 @@ import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
 
-const dbName = process.env.MONGODB_DB_NAME;
-
 const ZSchema = {
   Article: ZArticleSchema,
   Course: ZCourseSchema,
@@ -31,10 +29,12 @@ if (process.env.MONGODB_URL === undefined) {
   console.log('env.MONGODB_URL not found');
   process.exit();
 }
-if (process.env.MONGODB_DB_NAME === undefined) {
-  console.log('env.MONGODB_DB_NAME not found');
+if (process.env.MONGODB_DEV_DB_NAME === undefined) {
+  console.log('env.MONGODB_DEV_DB_NAME not found');
   process.exit();
 }
+
+const dbName = process.env.MONGODB_DEV_DB_NAME;
 
 await mongoose.connect(process.env.MONGODB_URL, {
   dbName,
