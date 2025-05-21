@@ -29,13 +29,14 @@ describe('GET /api/articles', () => {
   });
 
   it('should support pagination', async () => {
+    const articleLen = (await models.Article.find().lean()).length;
     for (const offset of [0, 1, 99, 100, 101]) {
       for (const limit of [1, 5, 10, 20, 100, 105]) {
         const res = await request(app)
           .get('/api/articles')
           .query({ limit, offset })
           .expect(200);
-        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(100 - offset, limit)));
+        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(articleLen - offset, limit)));
       }
     }
 
@@ -268,13 +269,14 @@ describe('GET /api/articles/search', () => {
 
   it('should support pagination', async () => {
     const tags = ['CHIN'];
+    const articleLen = (await models.Article.find({ tags: { $in: tags } }).lean()).length;
     for (const offset of [0, 1, 99, 100, 101]) {
       for (const limit of [1, 5, 10, 20, 100, 105]) {
         const res = await request(app)
           .get('/api/articles/search')
           .query(qs.stringify({ tags, limit, offset }))
           .expect(200);
-        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(64 - offset, limit)));
+        expect(res.body.articles).toHaveLength(Math.max(0, Math.min(articleLen - offset, limit)));
       }
     }
   });
