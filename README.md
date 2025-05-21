@@ -17,6 +17,7 @@
   - 使用 `npm run lint -- --fix` 修復所有可自動修復的問題。
 - 使用 `npm run test` 來運行測試。
   - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
+- 使用 `npm run setup-db` 來初始化測試用的資料庫。
 
 ## `.env` 相關
 
