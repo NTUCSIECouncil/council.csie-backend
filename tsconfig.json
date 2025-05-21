@@ -4,7 +4,6 @@
   "compilerOptions": {
     "allowImportingTsExtensions": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
     "noEmit": true,
     "paths": {
       "@/*": [

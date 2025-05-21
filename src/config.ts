@@ -15,7 +15,7 @@ const parsed = EnvSchema.safeParse(process.env);
 
 if (!parsed.success) {
   logger.error('Environment variables validation failed:');
-  logger.error(parsed.error.format());
+  logger.error(parsed.error);
   logger.error('Exiting...');
   process.exit(1);
 }

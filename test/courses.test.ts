@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import Fuse from 'fuse.js';
 import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ZCourseSchema } from '@/models/course-schema.ts';
 import { models } from '@models/index.ts';
 import app from './app.ts';

@@ -10,11 +10,13 @@
 
 - 使用 `npm ci` 安裝 packages。
 - 使用 `npm run dev` 跑起來。
-  - 除了 `./node_modules`，所有檔案都會被監聽；當有變更時會自動重新啟動。
+  - 可以使用 `npm run dev:watch` 變種，這樣除了 `./node_modules`，所有檔案都會被監聽；當有變更時會自動重新啟動。
   - 在終端機中按下 `Enter` 來手動重新啟動。
   - 在終端機中按下 `Ctrl+C` 來關閉。
 - 使用 `npm run lint` 來在整個專案的 TypeScript 檔案上運行 ESLint。
   - 使用 `npm run lint -- --fix` 修復所有可自動修復的問題。
+- 使用 `npm run test` 來運行測試。
+  - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
 
 ## `.env` 相關
 

@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { afterAll, beforeAll } from '@jest/globals';
 import dotenv from 'dotenv';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { afterAll, beforeAll } from 'vitest';
 
 let instance: MongoMemoryServer;
 

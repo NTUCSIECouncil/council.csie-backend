@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import mongoose from 'mongoose';
 import request from 'supertest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import app from './app.ts';
 import { insertFromFile } from './utils.ts';
 
