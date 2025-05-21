@@ -11,25 +11,29 @@ async function connectDB(url: string, dbName: string): Promise<void> {
 }
 
 async function generateArticleFile(articleDir: string): Promise<void> {
+  await fs.mkdir(articleDir, { recursive: true });
+
   const articles = await models.Article.find().lean();
   console.log(`Found ${articles.length.toString()} articles to process.`);
 
   for (const article of articles) {
     const markdownContent = [
       `# ${article.title}`,
-      ``,
+      '',
       `- id: ${article._id}`,
-      `- creator: ${article.creator}`, // .toString() removed
+      `- creator: ${article.creator}`,
       `- semester: ${article.semester}`,
       `- tags: ${article.tags.join(', ')}`,
     ].join('\n');
+
     const outputFilePath = path.join(articleDir, `${article._id}.md`);
     await fs.writeFile(outputFilePath, markdownContent, 'utf8');
-    // console.log(`Generated markdown for article: ${outputFilePath}`);
   }
 }
 
 async function generateQuizFile(quizDir: string): Promise<void> {
+  await fs.mkdir(quizDir, { recursive: true });
+
   const quizzes = await models.Quiz.find().lean();
   console.log(`Found ${quizzes.length.toString()} quizzes to process.`);
 
@@ -42,7 +46,7 @@ async function generateQuizFile(quizDir: string): Promise<void> {
     const textContent = [
       `Quiz ID: ${quiz._id}`,
       `Course: ${quiz.course}`,
-      `Uploader: ${quiz.uploader}`, // .toString() removed
+      `Uploader: ${quiz.uploader}`,
       `Semester: ${quiz.semester}`,
       `Session: ${quiz.session}`,
     ].join('\n');
@@ -58,7 +62,6 @@ async function generateQuizFile(quizDir: string): Promise<void> {
     const pdfBytes = await pdfDoc.save();
     const outputFilePath = path.join(quizDir, `${quiz._id}.pdf`);
     await fs.writeFile(outputFilePath, pdfBytes);
-    // console.log(`Generated pdf for quiz: ${outputFilePath}`);
   }
 }
 
