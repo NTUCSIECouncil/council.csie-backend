@@ -3,10 +3,12 @@ import { cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import APIController from '@routers/API-controller.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
 import { env } from './config.ts';
+import { swaggerSpec } from './swagger.ts';
 
 let auth;
 try {
@@ -51,6 +53,7 @@ expressApp.use(async (req, res, next) => {
 });
 
 expressApp.use('/api', APIController);
+expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- required function signature
