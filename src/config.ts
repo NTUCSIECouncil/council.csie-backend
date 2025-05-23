@@ -3,8 +3,8 @@ import logger from '@utils/logger.ts';
 
 const EnvSchema = z.object({
   FIREBASE_CERT_PATH: z.string(),
-  MONGODB_URL: z.string(),
-  MONGODB_DB_NAME: z.string(),
+  MONGODB_URI: z.string(),
+  MONGODB_DEV_DB_NAME: z.string(),
   PORT: z.string(),
   QUIZ_FILE_DIR: z.string(),
   ARTICLE_FILE_DIR: z.string(),

@@ -74,7 +74,7 @@ function getEnvVar(name: string): string {
 }
 
 async function performSetupActions(): Promise<void> {
-  const mongoUrl = getEnvVar('MONGODB_URL');
+  const mongoUrl = getEnvVar('MONGODB_URI');
   const dbName = getEnvVar('MONGODB_DEV_DB_NAME');
   const articleDir = getEnvVar('ARTICLE_FILE_DIR');
   const quizDir = getEnvVar('QUIZ_FILE_DIR');

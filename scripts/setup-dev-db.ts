@@ -25,8 +25,8 @@ const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => 
 };
 
 // check env
-if (process.env.MONGODB_URL === undefined) {
-  console.log('env.MONGODB_URL not found');
+if (process.env.MONGODB_URI === undefined) {
+  console.log('env.MONGODB_URI not found');
   process.exit();
 }
 if (process.env.MONGODB_DEV_DB_NAME === undefined) {
@@ -36,7 +36,7 @@ if (process.env.MONGODB_DEV_DB_NAME === undefined) {
 
 const dbName = process.env.MONGODB_DEV_DB_NAME;
 
-await mongoose.connect(process.env.MONGODB_URL, {
+await mongoose.connect(process.env.MONGODB_URI, {
   dbName,
 });
 
