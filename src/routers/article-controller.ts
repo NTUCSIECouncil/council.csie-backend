@@ -16,8 +16,16 @@ const ArticleModel = models.Article;
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const articles = await ArticleModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
-  const totalCount = await ArticleModel.countDocuments().exec();
+  let param: ArticleSearchQueryParam;
+  try {
+    param = ZArticleSearchQueryParam.parse(req.query);
+  } catch (err) {
+    logger.warn('Failed to parse query in GET /articles/search: ', err);
+    res.sendStatus(400);
+    return;
+  }
+
+  const [articles, totalCount] = await ArticleModel.searchArticles(param, offset, limit);
   res.json({ articles, meta: { total: totalCount, offset, limit } });
 });
 
@@ -36,22 +44,6 @@ router.post('/', async (req, res) => {
   const articleDoc = new ArticleModel(article);
   await articleDoc.save();
   res.status(201).json({ articleId });
-});
-
-router.get('/search', paginationParser, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
-  const [offset, limit] = [req.offset!, req.limit!];
-  let param: ArticleSearchQueryParam;
-  try {
-    param = ZArticleSearchQueryParam.parse(req.query);
-  } catch (err) {
-    logger.warn('Failed to parse query in GET /articles/search: ', err);
-    res.sendStatus(400);
-    return;
-  }
-
-  const [articles, totalCount] = await ArticleModel.searchArticles(param, offset, limit);
-  res.json({ articles, meta: { total: totalCount, offset, limit } });
 });
 
 router.get('/:articleId', async (req, res) => {

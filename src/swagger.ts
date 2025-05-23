@@ -125,11 +125,33 @@ export const swaggerSpec = {
     // Article API
     '/api/articles': {
       get: {
-        summary: '獲取所有文章',
+        summary: '獲取所有或搜尋文章',
         tags: ['Article'],
         parameters: [
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
           { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
+          {
+            name: 'categories',
+            in: 'query',
+            schema: { type: 'array', items: { type: 'string' } },
+            style: 'form',
+            explode: false,
+            description: '依類別搜尋（可選）',
+          },
+          {
+            name: 'tags',
+            in: 'query',
+            schema: { type: 'array', items: { type: 'string' } },
+            style: 'form',
+            explode: false,
+            description: '依標籤搜尋（可選）',
+          },
+          {
+            name: 'keyword',
+            in: 'query',
+            schema: { type: 'string' },
+            description: '關鍵字搜尋（可選）',
+          },
         ],
         responses: {
           200: {
@@ -140,12 +162,8 @@ export const swaggerSpec = {
                   type: 'object',
                   properties: {
                     articles: {
-                      oneOf: [
-                        { type: 'array', items: { $ref: '#/components/schemas/Article' } },
-                        { type: 'string' }, // 可能是錯誤訊息
-                      ],
-                      // type: 'array',
-                      // items: { $ref: '#/components/schemas/Article' },
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/Article' },
                     },
                     meta: { $ref: '#/components/schemas/Meta' },
                   },
@@ -186,50 +204,6 @@ export const swaggerSpec = {
             },
           },
           400: { description: '格式錯誤' },
-        },
-      },
-    },
-    '/api/articles/search': {
-      get: {
-        summary: '搜尋文章',
-        tags: ['Article'],
-        parameters: [
-          {
-            name: 'categories',
-            in: 'query',
-            schema: { type: 'array', items: { type: 'string' } },
-            style: 'form',
-            explode: false,
-          },
-          { name: 'keyword', in: 'query', schema: { type: 'string' } },
-          { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
-          { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 } },
-          {
-            name: 'tags',
-            in: 'query',
-            schema: { type: 'array', items: { type: 'string' } },
-            style: 'form',
-            explode: false,
-          },
-        ],
-        responses: {
-          200: {
-            description: '成功',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    articles: {
-                      type: 'array',
-                      items: { $ref: '#/components/schemas/Article' },
-                    },
-                    meta: { $ref: '#/components/schemas/Meta' },
-                  },
-                },
-              },
-            },
-          },
         },
       },
     },
@@ -334,9 +308,9 @@ export const swaggerSpec = {
     },
 
     // Course API
-    '/api/courses/search': {
+    '/api/courses': {
       get: {
-        summary: '搜尋課程',
+        summary: '獲取所有或搜尋課程',
         tags: ['Course'],
         parameters: [
           {

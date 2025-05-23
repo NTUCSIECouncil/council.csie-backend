@@ -10,8 +10,8 @@ const router = Router();
 const CourseModel = models.Course;
 const QuizModel = models.Quiz;
 
-router.get('/search', paginationParser, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+router.get('/', paginationParser, async (req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
   let param: CourseSearchQueryParam;
   try {
