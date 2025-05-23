@@ -1,0 +1,73 @@
+users_userId:
+  get:
+    tags: [users]
+    summary: Get user by ID
+    security:
+      - bearerAuth: []
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200":
+        description: |-
+          Success. Returns the user with the specified ID.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: User response
+              properties:
+                user: { $ref: "../components/schemas.yaml#/User" }
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No user exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+  post:
+    tags: [users]
+    summary: Create or update user by Google ID
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "201":
+        description: |-
+          Created. The user was successfully created. Returns the ID of the new or updated user.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: User creation response
+              properties:
+                userId: { type: string }
+      "204":
+        description: No Content. The user was updated successfully.
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"

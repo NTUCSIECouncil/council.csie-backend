@@ -1,0 +1,18 @@
+tags:
+  get:
+    tags: [tags]
+    summary: Get all tags
+    responses:
+      "200":
+        description: |-
+          Success. Returns a list of all available tags.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/StringArrayResponse"
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"

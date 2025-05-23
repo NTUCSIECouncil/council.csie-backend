@@ -1,3 +1,4 @@
+import SwaggerParser from '@apidevtools/swagger-parser';
 import express from 'express';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -8,7 +9,6 @@ import APIController from '@routers/API-controller.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
 import { env } from './config.ts';
-import { swaggerSpec } from './swagger.ts';
 
 let auth;
 try {
@@ -53,7 +53,12 @@ expressApp.use(async (req, res, next) => {
 });
 
 expressApp.use('/api', APIController);
-expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+const api = await SwaggerParser.dereference('./openapi/openapi.yaml');
+await SwaggerParser.validate(api);
+
+// const swaggerDocument = yaml.parse(fs.readFileSync('swagger.yaml', 'utf8')) as swaggerUi.JsonObject;
+expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(api));
 
 mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- required function signature

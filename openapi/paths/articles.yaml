@@ -1,0 +1,161 @@
+articles:
+  get:
+    tags: [articles]
+    summary: Get or search articles
+    parameters:
+      - name: limit
+        in: query
+        schema: { type: integer, default: 10 }
+      - name: offset
+        in: query
+        schema: { type: integer, default: 0 }
+      - name: keyword
+        in: query
+        schema: { type: string }
+      - name: tags
+        in: query
+        schema:
+          type: array
+          items: { type: string }
+        style: form
+        explode: true
+      - name: embed
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [course, creator]
+        style: form
+        explode: true
+    responses:
+      "200":
+        description: |-
+          Success. Returns a paginated list of articles matching the query parameters. Each article may include embedded resources if requested.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: List response for articles
+              properties:
+                articles:
+                  type: array
+                  description: List of articles matching the search criteria
+                  items:
+                    oneOf:
+                      - $ref: "../components/schemas.yaml#/Article"
+                      - $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
+                meta:
+                  $ref: "../components/schemas.yaml#/Meta"
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+  post:
+    tags: [articles]
+    summary: Create an article
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              article:
+                $ref: "../components/schemas.yaml#/Article"
+    responses:
+      "201":
+        description: |-
+          Created. The article was successfully created. Returns the ID of the new article.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Article creation response
+              properties:
+                articleId: { $ref: "../components/schemas.yaml#/UUID" }
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+
+articles_articleId:
+  get:
+    tags: [articles]
+    summary: Get article by ID
+    parameters:
+      - name: articleId
+        in: path
+        required: true
+        schema: { type: string }
+      - name: embed
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [course, creator]
+        style: form
+        explode: true
+    responses:
+      "200":
+        description: |-
+          Success. Returns the article with the specified ID. May include embedded resources if requested.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Article response
+              properties:
+                article:
+                  oneOf:
+                    - $ref: "../components/schemas.yaml#/Article"
+                    - $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No article exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+  put:
+    tags: [articles]
+    summary: Update article by ID
+    parameters:
+      - name: articleId
+        in: path
+        required: true
+        schema: { type: string }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              article:
+                $ref: "../components/schemas.yaml#/Article"
+    responses:
+      "204":
+        description: No Content. The article was updated successfully.
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No article exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
