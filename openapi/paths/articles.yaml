@@ -155,3 +155,34 @@ articles_articleId:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+
+articles_articleId_file:
+  get:
+    tags: [articles]
+    summary: Get article Markdown file
+    parameters:
+      - name: articleId
+        in: path
+        required: true
+        schema: { type: string }
+    responses:
+      "200":
+        description: |-
+          Success. Returns the Markdown file for the specified article.
+        content:
+          text/markdown:
+            schema:
+              type: string
+              format: markdown
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No article exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"

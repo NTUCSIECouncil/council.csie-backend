@@ -24,6 +24,8 @@ paths:
     $ref: "./paths/articles.yaml#/articles"
   /articles/{articleId}:
     $ref: "./paths/articles.yaml#/articles_articleId"
+  /articles/{articleId}/file:
+    $ref: "./paths/articles.yaml#/articles_articleId_file"
   /courses:
     $ref: "./paths/courses.yaml#/courses"
   /courses/{courseId}:
