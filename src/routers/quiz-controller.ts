@@ -1,5 +1,5 @@
 import { type UUID, randomUUID } from 'crypto';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { type Request, Router } from 'express';
 import { env } from '@/config.ts';
@@ -120,24 +120,20 @@ router.get('/:quizId/file', async (req, res) => {
   }
 
   const quiz = await QuizModel.findById(quizId).lean().exec();
-  // If quizId is not found
   if (quiz === null) {
     res.sendStatus(404);
-  } else {
-    // Some how getting filename
-    const fileName = `${quizId}.pdf`;
-    const options = {
-      root: path.join(env.PWD, env.QUIZ_FILE_DIR),
-    };
-
-    // If the quizId exists but the file does not exist
-    if (!fs.existsSync(path.join(options.root, fileName))) {
-      res.sendStatus(500);
-      return;
-    }
-
-    res.sendFile(fileName, options);
+    return;
   }
+  const fileName = `${quizId}.pdf`;
+  const filePath = path.join(env.PWD, env.QUIZ_FILE_DIR, fileName);
+  try {
+    await fs.access(filePath);
+  } catch (err) {
+    logger.error(`File not found for quiz ${quizId}: ${filePath}`, err);
+    res.sendStatus(500);
+    return;
+  }
+  res.sendFile(filePath);
 });
 
 // Use the file uploader middleware for quizzes (PDF and MD)
