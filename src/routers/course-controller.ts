@@ -22,8 +22,11 @@ router.get('/', paginationParser, async (req, res) => {
     return;
   }
 
-  const [courses, totalCount] = await CourseModel.searchCourses(param, offset, limit);
-  res.json({ courses, meta: { total: totalCount, offset, limit } });
+  const courseDocs = await CourseModel.searchCourses(param);
+  const total = courseDocs.length;
+  const courses = courseDocs.slice(offset, offset + limit).map(course => course.toObject());
+
+  res.json({ courses, meta: { total, offset, limit } });
 });
 
 router.get('/:courseId', async (req, res) => {

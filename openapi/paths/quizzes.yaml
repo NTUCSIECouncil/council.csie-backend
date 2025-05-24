@@ -146,3 +146,42 @@ quizzes_quizId_file:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+  put:
+    tags: [quizzes]
+    summary: Upload or replace quiz PDF file
+    parameters:
+      - name: quizId
+        in: path
+        required: true
+        schema: { type: string }
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+                description: PDF file to upload or replace for the quiz
+            required: [file]
+          encoding:
+            file:
+              contentType: application/pdf
+    responses:
+      "204":
+        description: |-
+          No Content. The PDF file was successfully uploaded or replaced for the specified quiz.
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No quiz exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"

@@ -5,7 +5,7 @@ import { type Request, Router } from 'express';
 import { env } from '@/config.ts';
 import { models } from '@models/index.ts';
 import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
-import { ZUuidSchema } from '@models/util-schema.ts';
+import { type QuizEmbedQueryParam, ZQuizEmbedQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { fileUploader, paginationParser } from './middleware.ts';
 
@@ -17,9 +17,26 @@ const QuizModel = models.Quiz;
 router.get('/', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const [offset, limit] = [req.offset!, req.limit!];
-  const quizzes = await QuizModel.find().skip(offset).limit(limit).lean({ versionKey: false }).exec();
-  const totalCount = await QuizModel.countDocuments().exec();
-  res.json({ quizzes, meta: { total: totalCount, offset, limit } });
+  let embedParam: QuizEmbedQueryParam;
+  try {
+    embedParam = ZQuizEmbedQueryParam.parse(req.query);
+  } catch (err) {
+    logger.warn('Failed to parse query parameters in GET /quizzes: ', err);
+    res.sendStatus(400);
+    return;
+  }
+
+  let query = QuizModel.find().skip(offset).limit(limit);
+  if (embedParam.embed?.includes('course')) {
+    query = query.populate('course');
+  }
+  if (embedParam.embed?.includes('uploader')) {
+    query = query.populate('uploader');
+  }
+
+  const quizzes = await query.lean({ versionKey: false }).exec();
+  const total = await QuizModel.countDocuments().exec();
+  res.json({ quizzes, meta: { total, offset, limit } });
 });
 
 router.post('/', async (req, res) => {
@@ -41,15 +58,25 @@ router.post('/', async (req, res) => {
 
 router.get('/:quizId', async (req, res) => {
   let quizId: UUID;
+  let embedParam: QuizEmbedQueryParam;
   try {
     quizId = ZUuidSchema.parse(req.params.quizId);
+    embedParam = ZQuizEmbedQueryParam.parse(req.query);
   } catch (err) {
     logger.warn('Failed to parse quizId in GET /quizzes/:quizId: ', err);
     res.sendStatus(400);
     return;
   }
 
-  const quiz = await QuizModel.findById(quizId).lean({ versionKey: false }).exec();
+  let query = QuizModel.findById(quizId);
+  if (embedParam.embed?.includes('course')) {
+    query = query.populate('course');
+  }
+  if (embedParam.embed?.includes('uploader')) {
+    query = query.populate('uploader');
+  }
+
+  const quiz = await query.lean({ versionKey: false }).exec();
   if (quiz === null) {
     res.sendStatus(404);
   } else {

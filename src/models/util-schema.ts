@@ -27,21 +27,15 @@ const ZArticleEmbedQueryParam = z.object({
 interface ArticleEmbedQueryParam extends z.infer<typeof ZArticleEmbedQueryParam> {};
 
 const ZCourseSearchQueryParam = z.object({
-  categories: z.string().array().optional(),
   keyword: z.string().optional(),
 });
 
 interface CourseSearchQueryParam extends z.infer<typeof ZCourseSearchQueryParam> {};
 
-const ZQuizSearchParam = z.object({
-  course: ZUuidSchema,
-  keyword: z.string().optional(),
+const ZQuizEmbedQueryParam = z.object({
+  embed: z.array(z.enum(['course', 'uploader'])).optional(),
 });
 
-interface QuizSearchParam extends z.infer<typeof ZQuizSearchParam> {};
+interface QuizEmbedQueryParam extends z.infer<typeof ZQuizEmbedQueryParam> {};
 
-const ZCategorySchema = z.enum(['compulsory', 'elective', 'general', 'chinese', 'english', 'japanese', 'language', 'calculus', 'programming']);
-
-type Category = z.infer<typeof ZCategorySchema>;
-
-export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema, type CourseSearchQueryParam, ZCourseSearchQueryParam, type ArticleEmbedQueryParam, ZArticleEmbedQueryParam };
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type CourseSearchQueryParam, ZCourseSearchQueryParam, type ArticleEmbedQueryParam, ZArticleEmbedQueryParam, type QuizEmbedQueryParam, ZQuizEmbedQueryParam };

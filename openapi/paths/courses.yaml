@@ -76,6 +76,15 @@ courses_courseId_quizzes:
       - name: offset
         in: query
         schema: { type: integer, default: 0 }
+      - name: embed
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [course, uploader]
+        style: form
+        explode: true
     responses:
       "200":
         description: |-
