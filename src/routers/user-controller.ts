@@ -29,7 +29,7 @@ router.get('/:userId', authChecker, async (req, res) => {
   }
 });
 
-router.post('/:userId', authChecker, async (req, res) => {
+router.put('/:userId', authChecker, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
   const guser = req.guser!;
 

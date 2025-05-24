@@ -25,7 +25,7 @@ articles:
           type: array
           items:
             type: string
-            enum: [course, creator]
+            enum: [course, creator, content]
         style: form
         explode: true
     responses:
@@ -42,9 +42,7 @@ articles:
                   type: array
                   description: List of articles matching the search criteria
                   items:
-                    oneOf:
-                      - $ref: "../components/schemas.yaml#/Article"
-                      - $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
+                    $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
                 meta:
                   $ref: "../components/schemas.yaml#/Meta"
       "400":
@@ -98,7 +96,7 @@ articles_articleId:
           type: array
           items:
             type: string
-            enum: [course, creator]
+            enum: [course, creator, content]
         style: form
         explode: true
     responses:
@@ -112,9 +110,7 @@ articles_articleId:
               description: Article response
               properties:
                 article:
-                  oneOf:
-                    - $ref: "../components/schemas.yaml#/Article"
-                    - $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
+                  $ref: "../components/schemas.yaml#/ArticleWithEmbeds"
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:

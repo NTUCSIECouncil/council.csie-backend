@@ -38,14 +38,25 @@ users_userId:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
-  post:
+  put:
     tags: [users]
     summary: Create or update user by Google ID
+    security:
+      - bearerAuth: []
     parameters:
       - name: userId
         in: path
         required: true
         schema: { type: string }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: "../components/schemas.yaml#/UserWithoutId"
     responses:
       "201":
         description: |-

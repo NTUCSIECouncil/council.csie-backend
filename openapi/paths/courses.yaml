@@ -90,9 +90,7 @@ courses_courseId_quizzes:
                   type: array
                   description: List of quizzes for the course
                   items:
-                    oneOf:
-                      - $ref: "../components/schemas.yaml#/Quiz"
-                      - $ref: "../components/schemas.yaml#/QuizWithEmbeds"
+                    $ref: "../components/schemas.yaml#/QuizWithEmbeds"
                 meta:
                   $ref: "../components/schemas.yaml#/Meta"
       "400":

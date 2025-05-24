@@ -33,9 +33,7 @@ quizzes:
                   type: array
                   description: List of quizzes
                   items:
-                    oneOf:
-                      - $ref: "../components/schemas.yaml#/Quiz"
-                      - $ref: "../components/schemas.yaml#/QuizWithEmbeds"
+                    $ref: "../components/schemas.yaml#/QuizWithEmbeds"
                 meta:
                   $ref: "../components/schemas.yaml#/Meta"
       "400":
@@ -103,9 +101,7 @@ quizzes_quizId:
               description: Quiz response
               properties:
                 quiz:
-                  oneOf:
-                    - $ref: "../components/schemas.yaml#/Quiz"
-                    - $ref: "../components/schemas.yaml#/QuizWithEmbeds"
+                  $ref: "../components/schemas.yaml#/QuizWithEmbeds"
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:

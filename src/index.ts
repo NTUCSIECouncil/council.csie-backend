@@ -56,8 +56,6 @@ expressApp.use('/api', APIController);
 
 const api = await SwaggerParser.dereference('./openapi/openapi.yaml');
 await SwaggerParser.validate(api);
-
-// const swaggerDocument = yaml.parse(fs.readFileSync('swagger.yaml', 'utf8')) as swaggerUi.JsonObject;
 expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(api));
 
 mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {

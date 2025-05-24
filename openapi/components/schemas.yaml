@@ -1,158 +1,205 @@
 UUID:
   type: string
   format: uuid
-  description: Universally unique identifier
+  description: A universally unique identifier.
 
-Article:
+ArticleBase:
   type: object
-  description: Article resource object
+  description: Base attributes for an Article resource.
   properties:
-    _id: { $ref: "#/UUID" }
     title:
-      type: string,
-      description: "Article title"
+      type: string
+      description: Title of the article.
       example: "I'm totally obsessed with DSA"
     tags:
       type: array,
       items: { type: string }
-      description: "Tags for the article"
+      description: Tags associated with the article.
       example: ["DSA", "GOAT", "cool"]
     ratings:
       type: object
-      description: Ratings for the course
+      description: Ratings given to the course.
       properties:
         sweetness:
           type: integer
-          description: "Sweetness rating"
+          description: Sweetness rating (1-5).
           minimum: 1
           maximum: 5
           example: 4
         coolness:
           type: integer
-          description: "Coolness rating"
+          description: Coolness rating (1-5).
           minimum: 1
           maximum: 5
           example: 5
         usefulness:
           type: integer
-          description: "Usefulness rating"
+          description: Usefulness rating (1-5).
           minimum: 1
           maximum: 5
           example: 3
-    course: { $ref: "#/UUID" }
-    creator: { $ref: "#/UUID" }
-  required: [_id, course, creator, title, tags, ratings]
+  required: [_id, title, tags, ratings]
+
+Article:
+  type: object
+  description: An Article resource object without _id.
+  allOf:
+    - $ref: "#/ArticleBase"
+    - type: object
+      properties:
+        course: { $ref: "#/UUID" }
+        creator: { $ref: "#/UUID" }
+      required: [course, creator]
 
 Course:
   type: object
-  description: Course resource object
+  description: A course resource object.
   properties:
     _id: { $ref: "#/UUID" }
     curriculum:
       type: string
-      description: "Course code"
+      description: Course code.
       example: "CSIE1212"
-    lecturer: { type: string, description: "Lecturer name", example: "HT Lin" }
+    lecturer: { type: string, description: Lecturer's name., example: "HT Lin" }
     class:
       type: [string, "null"]
-      description: "Class name or number"
+      description: Class name or number.
       example: "1"
     names:
       type: array,
       items: { type: string }
-      description: "Course names"
+      description: Course names.
       example: ["Data Structures and Algorithms"]
-    credit: { type: integer, description: "Course credit", example: 3 }
-    semester: { type: string, description: "Semester code", example: "113-2" }
+    credit:
+      { type: integer, description: Number of course credits., example: 3 }
+    semester: { type: string, description: Semester code., example: "113-2" }
   required: [_id, curriculum, lecturer, names, credit]
 
-Quiz:
+QuizBase:
   type: object
-  description: Quiz resource object
+  description: Base attributes for a Quiz resource.
   properties:
-    _id: { $ref: "#/UUID" }
     session:
       type: string
       enum: [midterm, final, first, second]
-      description: Quiz session type
+      description: Quiz session type.
       example: "midterm"
-    course: { $ref: "#/UUID" }
-    uploader: { $ref: "#/UUID" }
-  required: [_id, course, uploader, session]
+  required: [_id, session]
+
+Quiz:
+  type: object
+  description: A quiz resource object.
+  allOf:
+    - $ref: "#/QuizBase"
+    - type: object
+      properties:
+        course: { $ref: "#/UUID" }
+        uploader: { $ref: "#/UUID" }
+      required: [course, uploader]
+
+UserWithoutId:
+  type: object
+  description: A user resource object without _id.
+  properties:
+    email:
+      type: string
+      description: User's email address.
+      example: "boss-wang@example.com"
+    name:
+      { type: string, description: User's full name., example: "Claud Wang" }
+    nickname:
+      { type: string, description: User's nickname., example: "Boss Wang" }
 
 User:
   type: object
-  description: User resource object
-  properties:
-    _id: { type: string, description: "User ID", example: "1234567890" }
-    email:
-      type: string
-      description: "User email"
-      example: "boss-wang@example.com"
-    name: { type: string, description: "User name", example: "Claud Wang" }
-    nickname:
-      { type: string, description: "User nickname", example: "Boss Wang" }
-  required: [_id, email, name, nickname]
+  description: A user resource object.
+  allOf:
+    - $ref: "#/UUID"
+    - $ref: "#/UserWithoutId"
 
 Meta:
   type: object
-  description: Metadata for paginated responses
+  description: Metadata for paginated API responses.
   properties:
-    total: { type: integer, description: "Total number of items" }
-    offset: { type: integer, description: "Offset for pagination" }
-    limit: { type: integer, description: "Limit for pagination" }
+    total: { type: integer, description: Total number of items available. }
+    offset: { type: integer, description: Pagination offset. }
+    limit: { type: integer, description: Maximum number of items per page. }
   required: [total, offset, limit]
 
 ArticleWithEmbeds:
+  type: object
+  description: Article resource with optional embedded related resources.
   allOf:
-    - $ref: "#/Article"
     - type: object
       properties:
-        course: { $ref: "#/Course" }
-        creator: { $ref: "#/User" }
+        _id: { $ref: "#/UUID" }
+    - $ref: "#/ArticleBase"
+    - type: object
+      properties:
+        course:
+          oneOf:
+            - { $ref: "#/Course" }
+            - { $ref: "#/UUID" }
+        creator:
+          oneOf:
+            - { $ref: "#/User" }
+            - { $ref: "#/UUID" }
         content:
           type: string
-          description: "First 50 characters of the article"
+          description: First 50 characters of the article content.
           example: "This is a sample article content that is very long and goes on and on..."
+      required: [course, creator]
 
 QuizWithEmbeds:
+  type: object
+  description: Quiz resource with optional embedded related resources.
   allOf:
-    - $ref: "#/Quiz"
     - type: object
       properties:
-        course: { $ref: "#/Course" }
-        uploader: { $ref: "#/User" }
+        _id: { $ref: "#/UUID" }
+    - $ref: "#/QuizBase"
+    - type: object
+      properties:
+        course:
+          oneOf:
+            - { $ref: "#/Course" }
+            - { $ref: "#/UUID" }
+        uploader:
+          oneOf:
+            - { $ref: "#/User" }
+            - { $ref: "#/UUID" }
+      required: [course, uploader]
 
 CourseListResponse:
   type: object
-  description: List response for courses
+  description: Response object containing a list of courses.
   properties:
     courses:
       type: array
       items: { $ref: "#/Course" }
-      description: List of courses
+      description: Array of course objects.
     meta: { $ref: "#/Meta" }
   required: [courses, meta]
 
 QuizListResponse:
   type: object
-  description: List response for quizzes
+  description: Response object containing a list of quizzes.
   properties:
     quizzes:
       type: array
       items: { $ref: "#/Quiz" }
-      description: List of quizzes
+      description: Array of quiz objects.
     meta: { $ref: "#/Meta" }
   required: [quizzes, meta]
 
 StringArrayResponse:
   type: object
-  description: List response for tags
+  description: Response object containing a list of tags.
   properties:
     tags:
       type: array
       items: { type: string }
-      description: List of tags
+      description: Array of tag strings.
   required: [tags]
 
 Error:
@@ -161,7 +208,7 @@ Error:
   properties:
     message:
       type: string
-      description: Human-readable error message describing what went wrong.
+      description: Human-readable error message.
       example: "Validation failed: 'title' is required."
     code:
       type: string
@@ -169,7 +216,7 @@ Error:
       example: validation_failed
     details:
       type: object
-      description: Optional additional information about the error.
+      description: Additional information about the error.
       example:
         field: title
         reason: "This field is required."
