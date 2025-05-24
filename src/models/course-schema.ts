@@ -7,11 +7,11 @@ import { type CourseSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 const ZCourseSchema = z.object({
   _id: ZUuidSchema,
   curriculum: z.string(), // 課號, e.g. 'CSIE1212'
-  lecturer: z.string(),
+  lecturer: z.string(), // 授課教師, e.g. 'HT Lin'
   class: z.string().optional(), // 班次, e.g. '01'
   names: z.string().array(), // 課程名稱, e.g. ['資料結構與演算法', 'Data Structures and Algorithms', 'DSA']
   credit: z.number().nonnegative(), // 學分數, e.g. 3
-  categories: z.string().array(), // 課程類別, e.g. ['compulsory', 'programming']
+  semester: z.string(), // 學期, e.g. '113-2'
 });
 
 interface Course extends z.infer<typeof ZCourseSchema> {};
@@ -29,7 +29,7 @@ const courseSchema = new Schema<CourseWithOptionalId, CourseModel>({
   class: { type: String },
   names: { type: [String], required: true },
   credit: { type: Number, required: true },
-  categories: { type: [String], default: [] },
+  semester: { type: String, required: true },
 }, {
   toObject: { versionKey: false },
 });

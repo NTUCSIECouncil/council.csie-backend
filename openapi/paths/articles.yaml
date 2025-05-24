@@ -186,3 +186,48 @@ articles_articleId_file:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+  put:
+    tags: [articles]
+    summary: Upload or replace article Markdown file
+    description: |-
+      Uploads a Markdown file for the specified article. The file must be sent as multipart/form-data with the field name 'file' and content type 'text/markdown'.
+    parameters:
+      - name: articleId
+        in: path
+        required: true
+        schema: { type: string }
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+                description: Markdown file to upload
+          encoding:
+            file:
+              contentType: text/markdown
+    responses:
+      "204":
+        description: No Content. The file was uploaded successfully.
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or file parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No article exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "415":
+        description: Unsupported Media Type. Only text/markdown files are accepted.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"

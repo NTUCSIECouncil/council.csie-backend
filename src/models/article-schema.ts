@@ -1,65 +1,65 @@
 import { randomUUID } from 'crypto';
 import Fuse from 'fuse.js';
-import { type FilterQuery, type Model, Schema, model } from 'mongoose';
+import { type FilterQuery, type HydratedDocument, type Model, Schema, model } from 'mongoose';
 import { z } from 'zod/v4';
 import { type Course } from './course-schema.ts';
+import { type User } from './user-schema.ts';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
-  course: ZUuidSchema, // foreign key to Course
-  creator: ZUuidSchema, // foreign key to User
-  semester: z.string(), // 學期, e.g. '113-2'
   title: z.string(),
   tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
+  ratings: z.object({
+    sweetness: z.number().int().min(0).max(5), // 甜度
+    coolness: z.number().int().min(0).max(5), // 酷度
+    usefulness: z.number().int().min(0).max(5), // 有用度
+  }),
+  course: ZUuidSchema, // foreign key to Course
+  creator: ZUuidSchema, // foreign key to User
 });
 
 interface Article extends z.infer<typeof ZArticleSchema> {};
 
 interface ArticleWithOptionalId extends Omit<Article, '_id'>, Partial<Pick<Article, '_id'>> {};
 
+interface PopulatedArticle extends Omit<Omit<Article, 'course'>, 'creator'> {
+  course: Course;
+  creator: User;
+}
+
 interface ArticleModel extends Model<ArticleWithOptionalId> {
   /**
-   * Search articles by query parameters.
-   * @param params - Query parameters. No additional parsing is needed.
-   * @param offset - The offset of the first article to return.
-   * @param limit - The maximum number of articles to return.
+   * Search articles.
+   * @param params - Search parameters. No additional parsing is needed.
    * @returns The articles that match the query parameters.
    */
-  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam, offset: number, limit: number) => Promise<[Article[], number]>;
+  searchArticles: (this: ArticleModel, params: ArticleSearchQueryParam) => Promise<HydratedDocument<PopulatedArticle>[]>;
 }
 
 const articleSchema = new Schema<ArticleWithOptionalId, ArticleModel>({
   _id: { type: String, default: () => randomUUID() },
-  course: { type: String, ref: 'Course', required: true },
-  creator: { type: String, ref: 'User', required: true },
-  semester: { type: String, required: true },
   title: { type: String, required: true },
   tags: { type: [String], default: [] },
+  ratings: {
+    sweetness: { type: Number, min: 0, max: 5, required: true, validate: { validator: Number.isInteger } },
+    coolness: { type: Number, min: 0, max: 5, required: true, validate: { validator: Number.isInteger } },
+    usefulness: { type: Number, min: 0, max: 5, required: true, validate: { validator: Number.isInteger } },
+  },
+  course: { type: String, ref: 'Course', required: true },
+  creator: { type: String, ref: 'User', required: true },
 }, {
   toObject: { versionKey: false },
 });
 
-const staticSearchArticles: ArticleModel['searchArticles'] = async function (params, offset, limit) {
+const staticSearchArticles: ArticleModel['searchArticles'] = async function (params) {
   const query: FilterQuery<Article> = {};
 
   if (params.tags) {
     query.tags = { $all: params.tags };
   }
 
-  let articles = await this.find(query).populate<{ course: Course }>('course').exec();
-
-  if (params.categories) {
-    const categories = params.categories;
-    articles = articles.filter((article) => {
-      // If the article has fewer categories than the query, it cannot match.
-      if (article.course.categories.length < categories.length) return false;
-
-      // If all categories in the query are in the article, it matches.
-      return article.course.categories.every(category => categories.includes(category));
-    },
-    );
-  }
+  let articles = await this.find(query).populate<{ course: Course; creator: User }>(['course', 'creator']);
 
   if (params.keyword) {
     const fuseOptions = {
@@ -77,15 +77,11 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
     articles = result.map(result => result.item);
   }
 
-  const totalCount = articles.length;
-
-  articles = articles.slice(offset, offset + limit);
-
-  return [articles.map(article => article.depopulate().toObject<Article>()), totalCount];
+  return articles;
 };
 
 articleSchema.static('searchArticles', staticSearchArticles);
 
 const ArticleModel = model<ArticleWithOptionalId, ArticleModel>('Article', articleSchema);
 
-export { type Article, ArticleModel, ZArticleSchema };
+export { type Article, ArticleModel, ZArticleSchema, type PopulatedArticle };

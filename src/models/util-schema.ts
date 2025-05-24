@@ -15,11 +15,16 @@ interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {};
 
 const ZArticleSearchQueryParam = z.object({
   tags: z.string().array().optional(),
-  categories: z.string().array().optional(),
   keyword: z.string().optional(),
 });
 
 interface ArticleSearchQueryParam extends z.infer<typeof ZArticleSearchQueryParam> {};
+
+const ZArticleEmbedQueryParam = z.object({
+  embed: z.array(z.enum(['course', 'creator', 'content'])).optional(),
+});
+
+interface ArticleEmbedQueryParam extends z.infer<typeof ZArticleEmbedQueryParam> {};
 
 const ZCourseSearchQueryParam = z.object({
   categories: z.string().array().optional(),
@@ -39,4 +44,4 @@ const ZCategorySchema = z.enum(['compulsory', 'elective', 'general', 'chinese', 
 
 type Category = z.infer<typeof ZCategorySchema>;
 
-export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema, type CourseSearchQueryParam, ZCourseSearchQueryParam };
+export { ZUuidSchema, type PaginationQueryParam, ZPaginationQueryParam, type ArticleSearchQueryParam, ZArticleSearchQueryParam, type QuizSearchParam, ZQuizSearchParam, type Category, ZCategorySchema, type CourseSearchQueryParam, ZCourseSearchQueryParam, type ArticleEmbedQueryParam, ZArticleEmbedQueryParam };
