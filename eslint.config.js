@@ -1,15 +1,19 @@
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
-import importx from 'eslint-plugin-import-x'
+import importX from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 
-// The eslint-import-plugin has been replaced with eslint-import-plugin-x
-// Need to be reconsidered when appropriate
 
 export default tseslint.config(
   {
     files: ['src/**/*.ts', 'test/**/*.ts', 'scripts/**/*.ts'],
     languageOptions: {
+      // For import-x support
+      parser: tsParser,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      // For typescript-eslint support
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
@@ -18,21 +22,11 @@ export default tseslint.config(
     plugins: {
       '@stylistic': stylistic,
     },
-    settings: {
-      'import-x/parsers': {
-        '@typescript-eslint/parser': ['.ts', '.tsx'],
-      },
-      'import-x/resolver': {
-        // Load <rootdir>/tsconfig.json
-        typescript: true,
-        node: true,
-      },
-    },
     extends: [
       eslint.configs.recommended,
       ...tseslint.configs.strictTypeChecked,
       ...tseslint.configs.stylisticTypeChecked,
-      importx.flatConfigs.typescript,
+      importX.flatConfigs.typescript,
       stylistic.configs.customize({
         semi: true,
         braceStyle: '1tbs'
