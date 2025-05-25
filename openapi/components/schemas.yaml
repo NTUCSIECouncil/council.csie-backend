@@ -73,7 +73,7 @@ Course:
     credit:
       { type: integer, description: Number of course credits., example: 3 }
     semester: { type: string, description: Semester code., example: "113-2" }
-  required: [_id, curriculum, lecturer, names, credit]
+  required: [_id, curriculum, lecturer, names, credit, semester]
 
 QuizBase:
   type: object
