@@ -136,39 +136,36 @@ router.get('/:quizId/file', async (req, res) => {
   res.sendFile(filePath);
 });
 
-// Use the file uploader middleware for quizzes (PDF and MD)
-const quizFileUploader = fileUploader({
-  fileDir: env.QUIZ_FILE_DIR,
-  allowedMimeTypes: ['application/pdf'],
-  getFilename: (req: Request) => {
-    return `${req.params.uuid}.pdf`;
+const quizFileUploader = fileUploader(
+  env.QUIZ_FILE_DIR,
+  ['application/pdf'],
+  (req: Request) => {
+    return `${req.params.quizId}.pdf`;
   },
-});
+);
 
-router.put('/:uuid/file', quizFileUploader.single('file'), async (req, res) => {
+router.put('/:quizId/file', quizFileUploader, async (req, res) => {
   let quizId: UUID;
   try {
-    quizId = ZUuidSchema.parse(req.params.uuid);
+    quizId = ZUuidSchema.parse(req.params.quizId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in PUT /quizzes/:uuid/file: ', err);
+    logger.warn('Failed to parse quizId in PUT /quizzes/:quizId/file: ', err);
     res.sendStatus(400);
     return;
   }
 
   const quiz = await QuizModel.findById(quizId).lean().exec();
-  // If uuid is not found
   if (quiz === null) {
     res.sendStatus(404);
     return;
   }
 
-  // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).json({ error: 'No file uploaded or invalid file format' });
+    res.status(500).json({ error: 'No file uploaded or invalid file format' });
     return;
   }
 
-  res.sendStatus(204); // Successfully updated
+  res.sendStatus(204);
 });
 
 export default router;

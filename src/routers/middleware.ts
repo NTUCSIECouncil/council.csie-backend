@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
@@ -25,31 +26,56 @@ const paginationParser: RequestHandler = (req, res, next) => {
   next();
 };
 
-const fileUploader = (options: {
-  fileDir: string; // Directory where files will be saved
-  allowedMimeTypes: string[]; // List of allowed file types (e.g., 'application/pdf')
-  getFilename: (req: Request) => string; // Function to generate filename
-}) => {
+const fileUploader = (
+  fileDir: string,
+  allowedMimeTypes: string[],
+  getFilename: (req: Request) => string,
+): RequestHandler => {
+  const uploadDir = path.join(env.PWD, fileDir);
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, path.join(env.PWD, options.fileDir));
+      cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-      cb(null, options.getFilename(req));
+      cb(null, getFilename(req));
     },
   });
 
-  return multer({
+  const upload = multer({
     storage,
     fileFilter: (req, file, cb) => {
-      if (options.allowedMimeTypes.includes(file.mimetype)) {
+      if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(null, false);
+        cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Invalid file type'));
       }
     },
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
   });
+
+  const handler: RequestHandler = async (req, res, next) => {
+    try {
+      await upload.single('file')(req, res, next);
+    } catch (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          res.status(413).json({ error: 'File too large. Max size is 10MB.' });
+        }
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+          res.status(400).json({ error: 'Invalid file type.' });
+        }
+        res.status(400).json({ error: err.message });
+      } else if (err) {
+        console.error('File upload error:', err);
+        res.status(500).json({ error: 'File upload failed' });
+      }
+    }
+  };
+  return handler;
 };
 
 export { authChecker, paginationParser, fileUploader };

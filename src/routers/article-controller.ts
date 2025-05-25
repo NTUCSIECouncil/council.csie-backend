@@ -140,12 +140,12 @@ router.patch('/:articleId', async (req, res) => {
   }
 });
 
-router.get('/:uuid/file', async (req, res) => {
+router.get('/:articleId/file', async (req, res) => {
   let articleId: UUID;
   try {
-    articleId = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in GET /articles/:uuid/file: ', err);
+    logger.warn('Failed to parse articleId in GET /articles/:articleId/file: ', err);
     res.sendStatus(400);
     return;
   }
@@ -167,40 +167,36 @@ router.get('/:uuid/file', async (req, res) => {
   res.sendFile(filePath);
 });
 
-// Use the file uploader middleware for articles (MD only)
-const articleFileUploader = fileUploader({
-  fileDir: env.ARTICLE_FILE_DIR,
-  allowedMimeTypes: ['text/markdown'],
-  getFilename: (req: Request) => {
-    return `${req.params.uuid}.md`;
+const articleFileUploader = fileUploader(
+  env.ARTICLE_FILE_DIR,
+  ['text/markdown'],
+  (req: Request) => {
+    return `${req.params.articleId}.md`;
   },
-});
+);
 
-// Add file upload endpoint
-router.put('/:uuid/file', articleFileUploader.single('file'), async (req, res) => {
+router.put('/:articleId/file', articleFileUploader, async (req, res) => {
   let articleId: UUID;
   try {
-    articleId = ZUuidSchema.parse(req.params.uuid);
+    articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
-    logger.warn('Failed to parse UUID in PUT /articles/:uuid/file: ', err);
+    logger.warn('Failed to parse articleId in PUT /articles/:articleId/file: ', err);
     res.sendStatus(400);
     return;
   }
 
   const article = await ArticleModel.findById(articleId).lean().exec();
-  // If uuid is not found
   if (article === null) {
     res.sendStatus(404);
     return;
   }
 
-  // Check if file was uploaded successfully
   if (!req.file) {
-    res.status(400).json({ error: 'No file uploaded or invalid file format' });
+    res.status(500).json({ error: 'No file uploaded or invalid file format' });
     return;
   }
 
-  res.sendStatus(204); // Successfully updated
+  res.sendStatus(204);
 });
 
 export default router;
