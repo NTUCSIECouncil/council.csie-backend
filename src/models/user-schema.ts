@@ -5,6 +5,7 @@ const ZUserSchema = z.object({
   _id: z.string(),
   email: z.email(),
   name: z.string(),
+  nickname: z.string(),
 });
 
 interface User extends z.infer<typeof ZUserSchema> {};
@@ -15,6 +16,7 @@ const userSchema = new Schema<User, UserModel>({
   _id: { type: String },
   email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
+  nickname: { type: String, required: true, unique: true },
 });
 
 const UserModel = model<User>('User', userSchema);

@@ -12,7 +12,7 @@ const ZArticleSchema = z.object({
   tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
   ratings: z.object({
     sweetness: z.number().int().min(0).max(5), // 甜度
-    coolness: z.number().int().min(0).max(5), // 酷度
+    coolness: z.number().int().min(0).max(5), // 涼度
     usefulness: z.number().int().min(0).max(5), // 有用度
   }),
   course: ZUuidSchema, // foreign key to Course

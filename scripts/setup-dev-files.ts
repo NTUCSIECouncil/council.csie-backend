@@ -22,7 +22,6 @@ async function generateArticleFile(articleDir: string): Promise<void> {
       '',
       `- id: ${article._id}`,
       `- creator: ${article.creator}`,
-      `- semester: ${article.semester}`,
       `- tags: ${article.tags.join(', ')}`,
     ].join('\n');
 
@@ -47,7 +46,6 @@ async function generateQuizFile(quizDir: string): Promise<void> {
       `Quiz ID: ${quiz._id}`,
       `Course: ${quiz.course}`,
       `Uploader: ${quiz.uploader}`,
-      `Semester: ${quiz.semester}`,
       `Session: ${quiz.session}`,
     ].join('\n');
 
