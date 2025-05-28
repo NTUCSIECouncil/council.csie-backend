@@ -1,4 +1,4 @@
-import { type UUID, randomUUID } from 'crypto';
+import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { type Request, Router } from 'express';
@@ -64,11 +64,10 @@ router.get('/', paginationParser, async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const articleId = randomUUID();
-  let article: Article;
+  let article: Omit<Article, '_id'>;
   try {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
-    article = ZArticleSchema.parse({ ...req.body.article, _id: articleId });
+    article = ZArticleSchema.omit({ _id: true }).parse(req.body.article);
   } catch (err) {
     logger.warn('Failed to parse request body in POST /articles: ', err);
     res.sendStatus(400);
@@ -77,6 +76,7 @@ router.post('/', async (req, res) => {
 
   const articleDoc = new ArticleModel(article);
   await articleDoc.save();
+  const articleId = articleDoc._id;
   res.status(201).json({ articleId });
 });
 
