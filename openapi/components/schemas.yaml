@@ -1,222 +1,218 @@
 UUID:
   type: string
   format: uuid
-  description: A universally unique identifier.
+  description: Unique identifier in UUID format.
+
+Meta:
+  type: object
+  description: Metadata for paginated responses.
+  properties:
+    total: { type: integer, description: Total number of items. }
+    offset: { type: integer, description: Pagination offset. }
+    limit: { type: integer, description: Maximum items per page. }
+  required: [total, offset, limit]
 
 ArticleBase:
   type: object
-  description: Base attributes for an Article resource.
+  description: Base attributes of an article.
   properties:
     title:
       type: string
-      description: Title of the article.
+      description: Article title.
       example: "I'm totally obsessed with DSA"
     tags:
-      type: array,
+      type: array
       items: { type: string }
       description: Tags associated with the article.
       example: ["DSA", "GOAT", "cool"]
     ratings:
       type: object
-      description: Ratings given to the course.
+      description: Ratings for the related course.
       properties:
         sweetness:
           type: integer
-          description: Sweetness rating (1-5).
+          description: Sweetness rating.
           minimum: 1
           maximum: 5
           example: 4
-        coolness:
+        chill:
           type: integer
-          description: Coolness rating (1-5).
+          description: Chill rating.
           minimum: 1
           maximum: 5
           example: 5
-        usefulness:
+        teaching:
           type: integer
-          description: Usefulness rating (1-5).
+          description: Teaching quality rating.
           minimum: 1
           maximum: 5
           example: 3
-  required: [_id, title, tags, ratings]
+        gain:
+          type: integer
+          description: Gain rating.
+          minimum: 1
+          maximum: 5
+          example: 4
+        recommend:
+          type: integer
+          description: Recommendation rating.
+          minimum: 1
+          maximum: 5
+          example: 5
 
-Article:
+ArticleCreate:
   type: object
-  description: An Article resource object without _id.
+  description: Payload to create a new article.
   allOf:
     - $ref: "#/ArticleBase"
     - type: object
       properties:
         course: { $ref: "#/UUID" }
-        creator: { $ref: "#/UUID" }
-      required: [course, creator]
+  required: [title, tags, ratings, course]
 
-Course:
+ArticleUpdate:
   type: object
-  description: A course resource object.
+  description: Payload to update an article.
+  allOf:
+    $ref: "#/ArticleBase"
+
+ArticleResponse:
+  type: object
+  description: Article information with optional embedding related data.
+  allOf:
+    - type: object
+      properties:
+        _id: { $ref: "#/UUID" }
+    - $ref: "#/ArticleBase"
+    - type: object
+      properties:
+        course:
+          oneOf:
+            - { $ref: "#/UUID" }
+            - { $ref: "#/CourseResponse" }
+        creator:
+          oneOf:
+            - { $ref: "#/UUID" }
+            - { $ref: "#/UserResponse" }
+        content:
+          type: string
+          description: First 50 characters of the article content, truncated with an ellipsis if longer.
+          example: "This is a sample article content that is very long and goes on and on..."
+  required: [_id, title, tags, ratings, course, creator]
+
+CourseResponse:
+  type: object
+  description: Course information.
   properties:
     _id: { $ref: "#/UUID" }
     curriculum:
       type: string
       description: Course code.
       example: "CSIE1212"
-    lecturer: { type: string, description: Lecturer's name., example: "HT Lin" }
+    lecturer:
+      type: string
+      description: Course lecturer name.
+      example: "HT Lin"
     class:
       type: [string, "null"]
-      description: Class name or number.
+      description: Class name or number, or null if not applicable.
       example: "1"
     names:
-      type: array,
+      type: array
       items: { type: string }
       description: Course names.
       example: ["Data Structures and Algorithms"]
     credit:
-      { type: integer, description: Number of course credits., example: 3 }
-    semester: { type: string, description: Semester code., example: "113-2" }
+      type: integer
+      description: Course credit count.
+      example: 3
+    semester:
+      type: string
+      description: Semester code.
+      example: "113-2"
   required: [_id, curriculum, lecturer, names, credit, semester]
 
-QuizBase:
+QuizResponse:
   type: object
-  description: Base attributes for a Quiz resource.
+  description: Quiz information.
   properties:
     session:
       type: string
-      enum: [midterm, final, first, second]
+      enum: [midterm, final, first, second, other]
       description: Quiz session type.
       example: "midterm"
-  required: [_id, session]
+    course:
+      allOf:
+        - { $ref: "#/UUID" }
+        - { $ref: "#/CourseResponse" }
+    uploader:
+      allOf:
+        - { $ref: "#/UUID" }
+        - { $ref: "#/UserResponse" }
+  required: [session, course, uploader]
 
-Quiz:
+UserBase:
   type: object
-  description: A quiz resource object.
-  allOf:
-    - $ref: "#/QuizBase"
-    - type: object
-      properties:
-        course: { $ref: "#/UUID" }
-        uploader: { $ref: "#/UUID" }
-      required: [course, uploader]
-
-UserWithoutId:
-  type: object
-  description: A user resource object without _id.
+  description: Base user attributes.
   properties:
-    email:
-      type: string
-      description: User's email address.
-      example: "boss-wang@example.com"
-    name:
-      { type: string, description: User's full name., example: "Claud Wang" }
     nickname:
-      { type: string, description: User's nickname., example: "Boss Wang" }
+      type: string
+      description: User nickname.
+      example: "Boss Wang"
 
-User:
+UserCreate:
   type: object
-  description: A user resource object.
+  description: Payload to create a user.
   allOf:
-    - $ref: "#/UUID"
-    - $ref: "#/UserWithoutId"
+    - $ref: "#/UserBase"
+  required: [nickname]
 
-Meta:
+UserResponse:
   type: object
-  description: Metadata for paginated API responses.
-  properties:
-    total: { type: integer, description: Total number of items available. }
-    offset: { type: integer, description: Pagination offset. }
-    limit: { type: integer, description: Maximum number of items per page. }
-  required: [total, offset, limit]
-
-ArticleWithEmbeds:
-  type: object
-  description: Article resource with optional embedded related resources.
+  description: Public user information.
   allOf:
     - type: object
       properties:
         _id: { $ref: "#/UUID" }
-    - $ref: "#/ArticleBase"
+    - $ref: "#/UserBase"
+    - type: object
+  required: [_id, nickname]
+
+PrivateUserResponse:
+  type: object
+  description: User information with private details.
+  allOf:
     - type: object
       properties:
-        course:
-          oneOf:
-            - { $ref: "#/Course" }
-            - { $ref: "#/UUID" }
-        creator:
-          oneOf:
-            - { $ref: "#/User" }
-            - { $ref: "#/UUID" }
-        content:
+        _id: { $ref: "#/UUID" }
+    - $ref: "#/UserBase"
+    - type: object
+      properties:
+        email:
           type: string
-          description: First 50 characters of the article content.
-          example: "This is a sample article content that is very long and goes on and on..."
-      required: [course, creator]
-
-QuizWithEmbeds:
-  type: object
-  description: Quiz resource with optional embedded related resources.
-  allOf:
-    - type: object
-      properties:
-        _id: { $ref: "#/UUID" }
-    - $ref: "#/QuizBase"
-    - type: object
-      properties:
-        course:
-          oneOf:
-            - { $ref: "#/Course" }
-            - { $ref: "#/UUID" }
-        uploader:
-          oneOf:
-            - { $ref: "#/User" }
-            - { $ref: "#/UUID" }
-      required: [course, uploader]
-
-CourseListResponse:
-  type: object
-  description: Response object containing a list of courses.
-  properties:
-    courses:
-      type: array
-      items: { $ref: "#/Course" }
-      description: Array of course objects.
-    meta: { $ref: "#/Meta" }
-  required: [courses, meta]
-
-QuizListResponse:
-  type: object
-  description: Response object containing a list of quizzes.
-  properties:
-    quizzes:
-      type: array
-      items: { $ref: "#/Quiz" }
-      description: Array of quiz objects.
-    meta: { $ref: "#/Meta" }
-  required: [quizzes, meta]
-
-StringArrayResponse:
-  type: object
-  description: Response object containing a list of tags.
-  properties:
-    tags:
-      type: array
-      items: { type: string }
-      description: Array of tag strings.
-  required: [tags]
+          description: User email address.
+          example: "boss-wang@example.com"
+        name:
+          type: string
+          description: User full name.
+          example: "Claud Wang"
+        gid:
+          type: string
+          description: User Google ID.
+          example: "1234567890"
+  required: [_id, nickname, email, name, gid]
 
 Error:
   type: object
-  description: Standard error response object.
+  description: Standard error response.
   properties:
     message:
       type: string
       description: Human-readable error message.
       example: "Validation failed: 'title' is required."
-    code:
-      type: string
-      description: Machine-readable error code.
-      example: validation_failed
     details:
       type: object
-      description: Additional information about the error.
+      description: Additional error information.
       example:
         field: title
         reason: "This field is required."

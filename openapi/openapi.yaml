@@ -32,6 +32,8 @@ paths:
     $ref: "./paths/courses.yaml#/courses_courseId"
   /courses/{courseId}/quizzes:
     $ref: "./paths/courses.yaml#/courses_courseId_quizzes"
+  /courses/{curriculum}/quizzes:
+    $ref: "./paths/courses.yaml#/courses_curriculum_quizzes"
   /quizzes:
     $ref: "./paths/quizzes.yaml#/quizzes"
   /quizzes/{quizId}:
@@ -42,6 +44,8 @@ paths:
     $ref: "./paths/tags.yaml#/tags"
   /users/{userId}:
     $ref: "./paths/users.yaml#/users_userId"
+  /users/me:
+    $ref: "./paths/users.yaml#/users_me"
 
 components:
   schemas:

@@ -2,12 +2,15 @@ users_userId:
   get:
     tags: [users]
     summary: Get user by ID
+    description: |
+      Retrieves a user by their unique ID.
     security:
       - bearerAuth: []
     parameters:
       - name: userId
         in: path
         required: true
+        description: The unique identifier of the user to retrieve.
         schema: { type: string }
     responses:
       "200":
@@ -19,7 +22,7 @@ users_userId:
               type: object
               description: User response
               properties:
-                user: { $ref: "../components/schemas.yaml#/User" }
+                user: { $ref: "../components/schemas.yaml#/UserResponse" }
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
@@ -41,12 +44,15 @@ users_userId:
   put:
     tags: [users]
     summary: Create or update user by Google ID
+    description: |
+      Creates a new user or updates an existing user by their Google ID.
     security:
       - bearerAuth: []
     parameters:
       - name: userId
         in: path
         required: true
+        description: The unique Google ID of the user to create or update.
         schema: { type: string }
     requestBody:
       required: true
@@ -54,9 +60,89 @@ users_userId:
         application/json:
           schema:
             type: object
+            description: User creation or update payload
             properties:
               user:
-                $ref: "../components/schemas.yaml#/UserWithoutId"
+                $ref: "../components/schemas.yaml#/UserCreate"
+    responses:
+      "201":
+        description: |-
+          Created. The user was successfully created. Returns the ID of the new or updated user.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: User creation response
+              properties:
+                userId: { type: string }
+      "204":
+        description: No Content. The user was updated successfully.
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+users_me:
+  get:
+    tags: [users]
+    summary: Get current login user (alias of /users/{userId})
+    description: |
+      Retrieves the currently authenticated user. This is an alias of GET /users/{userId}.
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: |-
+          Success. Returns the current login user.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: User response
+              properties:
+                user: { $ref: "../components/schemas.yaml#/UserResponse" }
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No user exists with the specified ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+  put:
+    tags: [users]
+    summary: Create or update current login user (alias of /users/{userId})
+    description: |
+      Creates a new user or updates the currently authenticated user. This is an alias of PUT /users/{userId}.
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            description: User creation or update payload
+            properties:
+              user:
+                $ref: "../components/schemas.yaml#/UserCreate"
     responses:
       "201":
         description: |-
