@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { type Model, Schema, model } from 'mongoose';
 import { z } from 'zod/v4';
 import { ZUuidSchema } from './util-schema.ts';
@@ -15,7 +16,7 @@ interface User extends z.infer<typeof ZUserSchema> {};
 interface UserModel extends Model<User> {};
 
 const userSchema = new Schema<User, UserModel>({
-  _id: { type: String, immutable: true },
+  _id: { type: String, default: randomUUID },
   gid: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   name: { type: String, required: true },

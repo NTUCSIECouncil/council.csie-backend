@@ -21,7 +21,7 @@ interface CourseModel extends Model<Course> {
 };
 
 const courseSchema = new Schema<Course, CourseModel>({
-  _id: { type: String, immutable: true },
+  _id: { type: String, default: randomUUID },
   curriculum: { type: String, required: true },
   lecturer: { type: String, required: true },
   class: { type: String },
@@ -30,11 +30,6 @@ const courseSchema = new Schema<Course, CourseModel>({
   semester: { type: String, required: true },
 }, {
   toObject: { versionKey: false },
-});
-
-courseSchema.pre('validate', function (next) {
-  if (this.isNew) this._id = randomUUID();
-  next();
 });
 
 const staticSearchCourses: CourseModel['searchCourses'] = async function (params) {

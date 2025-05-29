@@ -38,7 +38,7 @@ interface ArticleModel extends Model<Article> {
 }
 
 const articleSchema = new Schema<Article, ArticleModel>({
-  _id: { type: String, immutable: true },
+  _id: { type: String, default: randomUUID },
   title: { type: String, required: true },
   tags: { type: [String], default: [] },
   ratings: {
@@ -52,11 +52,6 @@ const articleSchema = new Schema<Article, ArticleModel>({
   creator: { type: String, ref: 'User', required: true, immutable: true },
 }, {
   toObject: { versionKey: false },
-});
-
-articleSchema.pre('validate', function (next) {
-  if (this.isNew) this._id = randomUUID();
-  next();
 });
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (params) {

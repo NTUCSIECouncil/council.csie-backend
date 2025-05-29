@@ -15,15 +15,10 @@ interface Quiz extends z.infer<typeof ZQuizSchema> {};
 interface QuizModel extends Model<Quiz> {}
 
 const quizSchema = new Schema<Quiz, QuizModel>({
-  _id: { type: String, immutable: true },
+  _id: { type: String, default: randomUUID },
   session: { type: String, required: true, immutable: true, enum: ['midterm', 'final', 'first', 'second', 'other'] },
   course: { type: String, ref: 'Course', required: true, immutable: true },
   uploader: { type: String, ref: 'User', required: true, immutable: true },
-});
-
-quizSchema.pre('validate', function (next) {
-  if (this.isNew) this._id = randomUUID();
-  next();
 });
 
 const QuizModel = model<Quiz, QuizModel>('Quiz', quizSchema);
