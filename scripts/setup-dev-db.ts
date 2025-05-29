@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import mongoose from 'mongoose';
 import { ZArticleSchema } from '@models/article-schema.ts';
@@ -16,7 +16,8 @@ const ZSchema = {
 
 const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
   const filePath = path.join(import.meta.dirname, '..', 'samples', `${model.toLowerCase()}-samples.json`);
-  const objs = ZSchema[model].array().parse(JSON.parse(readFileSync(filePath, 'utf-8')));
+  const data = await fs.readFile(filePath, 'utf-8');
+  const objs = ZSchema[model].array().parse(JSON.parse(data));
 
   for (const obj of objs) {
     const doc = new models[model](obj);
@@ -49,4 +50,23 @@ console.log('Inserting data into database');
 for (const model in ZSchema) {
   await insertFromFile(model as 'Article' | 'Course' | 'Quiz' | 'User');
 }
+
+console.log('Inserted data into database');
+
+console.log('Copying article files and quiz files to uploads/');
+
+const uploadsPath = path.join(import.meta.dirname, '..', 'uploads');
+await fs.rm(uploadsPath, { recursive: true, force: true });
+await fs.mkdir(uploadsPath, { recursive: true });
+
+const articleFilesSrcPath = path.join(import.meta.dirname, '..', 'samples', 'article-file-samples');
+const articleFilesDestPath = path.join(uploadsPath, 'articles');
+await fs.cp(articleFilesSrcPath, articleFilesDestPath, { recursive: true });
+
+const quizFilesSrcPath = path.join(import.meta.dirname, '..', 'samples', 'quiz-file-samples');
+const quizFilesDestPath = path.join(uploadsPath, 'quizzes');
+await fs.cp(quizFilesSrcPath, quizFilesDestPath, { recursive: true });
+
+console.log('Copied article files and quiz files to uploads/');
+
 await mongoose.disconnect();
