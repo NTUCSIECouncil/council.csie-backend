@@ -55,6 +55,7 @@ export default tseslint.config(
     files: ['test/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unsafe-member-access': ['off'],
+      '@typescript-eslint/no-non-null-assertion': ['off'],
     },
   },
 )
