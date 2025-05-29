@@ -17,7 +17,11 @@
   - 使用 `npm run lint -- --fix` 修復所有可自動修復的問題。
 - 使用 `npm run test` 來運行測試。
   - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
-- 使用 `npm run setup-db` 來初始化測試用的資料庫。
+- 為了初始化開發用資料庫：
+  - 使用 `npm run fetch-courses` 來從課程系統抓取課程資料，並儲存在 `samples/course-original.json`。
+  - 使用 `npm run generate-samples` 來產生開發用的資料，並儲存在 `samples/`。
+  - 使用 `npm run setup-dev-db` 來建立開發用資料庫，並將測試用考古題與評價文放置在 `uploads/`。
+  - 以上步驟需要按照順序執行。
 
 ## `.env` 相關
 
