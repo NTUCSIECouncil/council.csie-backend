@@ -1,16 +1,17 @@
 import express from 'express';
 import { type UserRecord } from 'firebase-admin/auth';
+import { UserModel } from '@/models/user-schema.ts';
 import APIController from '@routers/API-controller.ts';
 
 const expressApp = express();
 
 expressApp.set('query parser', 'extended');
 
-expressApp.use((req, res, next) => {
-  const uidHeader = req.headers.uid;
-  if (typeof uidHeader == 'string') {
+expressApp.use(async (req, res, next) => {
+  const gidHeader = req.headers.gid;
+  if (typeof gidHeader == 'string') {
     const guser: UserRecord = {
-      uid: uidHeader,
+      uid: gidHeader,
       email: 'mock@gmail.com',
       emailVerified: true,
       displayName: 'Mock Person',
@@ -41,6 +42,8 @@ expressApp.use((req, res, next) => {
       toJSON: () => ({}),
     };
     req.guser = guser;
+    const userId = (await UserModel.findOne({ gid: gidHeader }).exec())?._id;
+    req.userId = userId;
   }
 
   next();
