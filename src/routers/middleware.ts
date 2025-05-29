@@ -2,16 +2,20 @@ import fs from 'fs';
 import path from 'path';
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
+import { z } from 'zod/v4';
 import { env } from '@/config.ts';
+import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
   const userId = req.params.userId;
 
-  if (req.guser?.uid === undefined || req.guser.uid !== userId) {
-    res.sendStatus(403);
+  if (req.userId === undefined || req.userId !== userId) {
+    res.sendStatus(400);
+    logger.warn(`User ID mismatch in ${req.method} ${req.baseUrl}: expected ${userId}, got ${req.userId ?? 'undefined'}`);
     return;
   }
+
   next();
 };
 
@@ -19,9 +23,15 @@ const paginationParser: RequestHandler = (req, res, next) => {
   req.limit = 10;
   req.offset = 0;
 
-  const param = ZPaginationQueryParam.parse(req.query);
-  if (param.limit !== undefined) req.limit = param.limit;
-  if (param.offset !== undefined) req.offset = param.offset;
+  const result = ZPaginationQueryParam.safeParse(req.query);
+  if (!result.success) {
+    logger.warn(`Failed to parse pagination query parameters in ${req.method} ${req.baseUrl}:\n${z.prettifyError(result.error)}`);
+    res.sendStatus(400);
+    return;
+  }
+
+  if (result.data.limit !== undefined) req.limit = result.data.limit;
+  if (result.data.offset !== undefined) req.offset = result.data.offset;
 
   next();
 };
