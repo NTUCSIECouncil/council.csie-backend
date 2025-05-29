@@ -4,8 +4,6 @@ users_userId:
     summary: Get user by ID
     description: |
       Retrieves a user by their unique ID.
-    security:
-      - bearerAuth: []
     parameters:
       - name: userId
         in: path
@@ -59,11 +57,7 @@ users_userId:
       content:
         application/json:
           schema:
-            type: object
-            description: User creation or update payload
-            properties:
-              user:
-                $ref: "../components/schemas.yaml#/UserCreate"
+            $ref: "../components/schemas.yaml#/UserCreate"
     responses:
       "201":
         description: |-
@@ -94,7 +88,7 @@ users_me:
     tags: [users]
     summary: Get current login user (alias of /users/{userId})
     description: |
-      Retrieves the currently authenticated user. This is an alias of GET /users/{userId}.
+      Retrieves the currently authenticated user. This is an alias of GET /users/{userId}
     security:
       - bearerAuth: []
     responses:
@@ -138,11 +132,7 @@ users_me:
       content:
         application/json:
           schema:
-            type: object
-            description: User creation or update payload
-            properties:
-              user:
-                $ref: "../components/schemas.yaml#/UserCreate"
+            $ref: "../components/schemas.yaml#/UserCreate"
     responses:
       "201":
         description: |-
@@ -164,6 +154,45 @@ users_me:
               $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+
+users_me_private:
+  get:
+    tags: [users]
+    summary: Get current login user with private details
+    description: |
+      Retrieves the currently authenticated user with private details such as email and Google ID.
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: |-
+          Success. Returns the current login user with private details.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Private user response
+              properties:
+                user:
+                  { $ref: "../components/schemas.yaml#/PrivateUserResponse" }
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:

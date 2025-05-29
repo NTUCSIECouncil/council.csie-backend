@@ -74,7 +74,7 @@ ArticleUpdate:
   type: object
   description: Payload to update an article.
   allOf:
-    $ref: "#/ArticleBase"
+    - $ref: "#/ArticleBase"
 
 ArticleResponse:
   type: object
@@ -185,9 +185,10 @@ PrivateUserResponse:
     - type: object
       properties:
         _id: { $ref: "#/UUID" }
-    - $ref: "#/UserBase"
-    - type: object
-      properties:
+        gid:
+          type: string
+          description: User Google ID.
+          example: "1234567890"
         email:
           type: string
           description: User email address.
@@ -196,10 +197,7 @@ PrivateUserResponse:
           type: string
           description: User full name.
           example: "Claud Wang"
-        gid:
-          type: string
-          description: User Google ID.
-          example: "1234567890"
+    - $ref: "#/UserBase"
   required: [_id, nickname, email, name, gid]
 
 Error:

@@ -7,11 +7,11 @@ tags:
     parameters:
       - name: limit
         in: query
-        schema: { type: integer, default: 10 }
+        schema: { type: integer, default: 10, minimum: 1 }
         description: Maximum number of tags to return
       - name: offset
         in: query
-        schema: { type: integer, default: 0 }
+        schema: { type: integer, default: 0, minimum: 0 }
         description: Number of tags to skip before starting to collect the result set
     responses:
       "200":

@@ -46,6 +46,8 @@ paths:
     $ref: "./paths/users.yaml#/users_userId"
   /users/me:
     $ref: "./paths/users.yaml#/users_me"
+  /users/me/private:
+    $ref: "./paths/users.yaml#/users_me_private"
 
 components:
   schemas:

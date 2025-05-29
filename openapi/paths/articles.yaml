@@ -11,12 +11,14 @@ articles:
         schema:
           type: integer
           default: 10
+          minimum: 1
       - name: offset
         in: query
         description: Number of articles to skip before starting to collect the result set.
         schema:
           type: integer
           default: 0
+          minimum: 0
       - name: keyword
         in: query
         description: Fuzzy search term applied to article title, content, course name, lecturer, and course curriculum.
@@ -33,7 +35,7 @@ articles:
         explode: true
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. Set any of course, creator, content.
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         style: form
         explode: true
         schema:
@@ -110,7 +112,7 @@ articles_articleId:
           $ref: "../components/schemas.yaml#/UUID"
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. Set any of course, creator, content.
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         style: form
         explode: true
         schema:

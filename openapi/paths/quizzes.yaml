@@ -7,12 +7,13 @@ quizzes:
     parameters:
       - name: limit
         in: query
-        schema: { type: integer, default: 10 }
+        schema: { type: integer, default: 10, minimum: 1 }
       - name: offset
         in: query
-        schema: { type: integer, default: 0 }
+        schema: { type: integer, default: 0, minimum: 0 }
       - name: embed
         in: query
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         schema:
           type: array
           items:
@@ -57,6 +58,7 @@ quizzes_quizId:
         schema: { type: string }
       - name: embed
         in: query
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         schema:
           type: array
           items:

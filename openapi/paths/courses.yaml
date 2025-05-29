@@ -8,11 +8,11 @@ courses:
       - name: limit
         in: query
         description: Maximum number of courses to return per page.
-        schema: { type: integer, default: 10 }
+        schema: { type: integer, default: 10, minimum: 1 }
       - name: offset
         in: query
         description: Number of courses to skip before starting to collect the result set.
-        schema: { type: integer, default: 0 }
+        schema: { type: integer, default: 0, minimum: 0 }
       - name: keyword
         in: query
         description: Fuzzy search term applied to course name or lecturer.
@@ -91,14 +91,14 @@ courses_courseId_quizzes:
       - name: limit
         in: query
         description: Maximum number of quizzes to return per page.
-        schema: { type: integer, default: 10 }
+        schema: { type: integer, default: 10, minimum: 1 }
       - name: offset
         in: query
         description: Number of quizzes to skip before starting to collect the result set.
-        schema: { type: integer, default: 0 }
+        schema: { type: integer, default: 0, minimum: 0 }
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. Set any of course, uploader.
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         schema:
           type: array
           items:
@@ -151,14 +151,14 @@ courses_curriculum_quizzes:
       - name: limit
         in: query
         description: Maximum number of quizzes to return per page.
-        schema: { type: integer, default: 10 }
+        schema: { type: integer, default: 10, minimum: 1 }
       - name: offset
         in: query
         description: Number of quizzes to skip before starting to collect the result set.
-        schema: { type: integer, default: 0 }
+        schema: { type: integer, default: 0, minimum: 0 }
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. Set any of course, uploader.
+        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
         schema:
           type: array
           items:
