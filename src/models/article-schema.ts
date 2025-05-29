@@ -12,8 +12,10 @@ const ZArticleSchema = z.object({
   tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
   ratings: z.object({
     sweetness: z.number().int().min(1).max(5), // 甜度
-    coolness: z.number().int().min(1).max(5), // 涼度
-    usefulness: z.number().int().min(1).max(5), // 有用度
+    chill: z.number().int().min(1).max(5), // 涼度
+    teaching: z.number().int().min(1).max(5), // 教學品質
+    gain: z.number().int().min(1).max(5), // 獲益程度
+    recommend: z.number().int().min(1).max(5), // 推薦程度
   }),
   course: ZUuidSchema, // foreign key to Course
   creator: ZUuidSchema, // foreign key to User
@@ -21,7 +23,7 @@ const ZArticleSchema = z.object({
 
 interface Article extends z.infer<typeof ZArticleSchema> {};
 
-interface PopulatedArticle extends Omit<Omit<Article, 'course'>, 'creator'> {
+interface PopulatedArticle extends Omit<Article, 'course' | 'creator'> {
   course: Course;
   creator: User;
 }
@@ -41,8 +43,10 @@ const articleSchema = new Schema<Article, ArticleModel>({
   tags: { type: [String], default: [] },
   ratings: {
     sweetness: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
-    coolness: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
-    usefulness: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
+    chill: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
+    teaching: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
+    gain: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
+    recommend: { type: Number, min: 1, max: 5, required: true, validate: { validator: Number.isInteger } },
   },
   course: { type: String, ref: 'Course', required: true, immutable: true },
   creator: { type: String, ref: 'User', required: true, immutable: true },
