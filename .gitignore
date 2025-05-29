@@ -109,3 +109,6 @@ uploads/
 
 # VS code
 .vscode/
+
+# Sample data for developing and testing
+samples/
