@@ -5,6 +5,7 @@ import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import { UserModel } from '@models/user-schema.ts';
 import APIController from '@routers/API-controller.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
@@ -44,6 +45,8 @@ expressApp.use(async (req, res, next) => {
       const decodedToken = await auth.verifyIdToken(token.slice(7));
       const userRecord = await auth.getUser(decodedToken.uid);
       req.guser = userRecord;
+      const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())?._id;
+      req.userId = userId;
     } catch (err) {
       logger.error('Error verifying Firebase token: ', err);
     }
