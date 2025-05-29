@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -27,22 +27,17 @@ beforeAll(async () => {
   const conn = await mongoose.connect(uri);
   if (conn.connection.db !== undefined) await conn.connection.db.dropDatabase();
 
-  fs.mkdirSync(env.QUIZ_FILE_DIR, { recursive: true });
-  fs.mkdirSync(env.ARTICLE_FILE_DIR, { recursive: true });
-  fs.writeFileSync(
-    path.join(env.ARTICLE_FILE_DIR, '00000002-1131-0000-0000-000000000002.md'),
-    'test',
-    'utf8');
-  fs.writeFileSync(
-    path.join(env.QUIZ_FILE_DIR, '00000004-1131-0000-0000-000000000000.pdf'),
-    'test',
-    'utf8');
+  await fs.rm(path.join(import.meta.dirname, 'uploads'), { recursive: true, force: true });
+  await fs.mkdir(path.join(import.meta.dirname, 'uploads'), { recursive: true });
+
+  const samplesDir = path.join(import.meta.dirname, '..', 'samples');
+  await fs.cp(path.join(samplesDir, 'article-file-samples'), env.ARTICLE_FILE_DIR, { recursive: true });
+  await fs.cp(path.join(samplesDir, 'quiz-file-samples'), env.QUIZ_FILE_DIR, { recursive: true });
 });
 
 afterAll(async () => {
   await mongoose.disconnect();
   await instance.stop();
 
-  fs.rmSync(env.QUIZ_FILE_DIR, { recursive: true, force: true });
-  fs.rmSync(env.ARTICLE_FILE_DIR, { recursive: true, force: true });
+  await fs.rm(path.join(import.meta.dirname, 'uploads'), { recursive: true, force: true });
 });

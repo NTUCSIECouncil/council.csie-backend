@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import path from 'path';
 import { ZArticleSchema } from '@models/article-schema.ts';
 import { ZCourseSchema } from '@models/course-schema.ts';
 import { models } from '@models/index.ts';
@@ -13,7 +14,7 @@ const ZSchema = {
 };
 
 const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
-  const filePath = `test/samples/${model.charAt(0).toLowerCase() + model.slice(1)}_samples.json`;
+  const filePath = path.join(import.meta.dirname, '..', 'samples', `${model.toLowerCase()}-samples.json`);
   const objs = ZSchema[model].array().parse((JSON.parse(readFileSync(filePath, 'utf-8')) as unknown[]).slice(0, 100));
 
   for (const obj of objs) {
