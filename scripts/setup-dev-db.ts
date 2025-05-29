@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+import path from 'path';
 import mongoose from 'mongoose';
 import { ZArticleSchema } from '@models/article-schema.ts';
 import { ZCourseSchema } from '@models/course-schema.ts';
@@ -14,7 +15,7 @@ const ZSchema = {
 };
 
 const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
-  const filePath = `test/samples/${model.charAt(0).toLowerCase() + model.slice(1)}_samples.json`;
+  const filePath = path.join(import.meta.dirname, '..', 'samples', `${model.toLowerCase()}-samples.json`);
   const objs = ZSchema[model].array().parse(JSON.parse(readFileSync(filePath, 'utf-8')));
 
   for (const obj of objs) {
@@ -36,9 +37,7 @@ if (process.env.MONGODB_DEV_DB_NAME === undefined) {
 
 const dbName = process.env.MONGODB_DEV_DB_NAME;
 
-await mongoose.connect(process.env.MONGODB_URI, {
-  dbName,
-});
+await mongoose.connect(process.env.MONGODB_URI, { dbName });
 
 console.log('Connected to MongoDB');
 if (mongoose.connection.db === undefined) throw new Error('DB is not set.');
