@@ -139,7 +139,7 @@ function generateQuiz(
   return quizList;
 }
 
-const jsonDirPath = path.join(import.meta.dirname, '..', 'test', 'samples');
+const jsonDirPath = path.join(import.meta.dirname, '..', 'samples');
 const originalCourseJsonPath = path.join(jsonDirPath, 'course-original.json');
 const courseJsonPath = path.join(jsonDirPath, 'course-samples.json');
 const articleJsonPath = path.join(jsonDirPath, 'article-samples.json');

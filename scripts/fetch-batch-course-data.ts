@@ -1,4 +1,6 @@
 import { type UUID } from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
 import { type Course } from '@models/course-schema.ts';
 
 interface ApiCourse {
@@ -147,4 +149,9 @@ const getBatchCourseData = async (keyword: string, semester: string): Promise<Co
   return allProcessedCourses;
 };
 
-export { getBatchCourseData, fetchCoursePage, transformApiCourseToCourse };
+const jsonDirPath = path.join(import.meta.dirname, '..', 'samples');
+const originalCourseJsonPath = path.join(jsonDirPath, 'course-original.json');
+
+await fs.mkdir(jsonDirPath, { recursive: true });
+const courseList = await getBatchCourseData('', '113-2');
+await fs.writeFile(originalCourseJsonPath, JSON.stringify(courseList, null, 2));
