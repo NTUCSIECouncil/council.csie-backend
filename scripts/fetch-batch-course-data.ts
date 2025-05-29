@@ -1,25 +1,28 @@
-import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+import { z } from 'zod/v4';
+import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
-interface ApiCourse {
-  id: UUID;
-  identifier: string;
-  name: string;
-  class: string | null;
-  credits: number;
-  teacher: {
-    name: string;
-  };
-  semester: string;
-  // Add other fields from the full API response if needed for transformation
-}
+const ZCourseFromApiSchema = z.object({
+  id: ZUuidSchema,
+  identifier: z.string(),
+  name: z.string(),
+  class: z.string().nullable(),
+  credits: z.number().nonnegative(),
+  teacher: z.object({ name: z.string() }).partial(),
+  semester: z.string(),
+  // Additional fields can be added as needed
+});
 
-interface CourseSearchResponse {
-  totalCount: number;
-  courses: ApiCourse[];
-}
+interface CourseFromApi extends z.infer<typeof ZCourseFromApiSchema> {};
+
+const ZCourseSearchResponseSchema = z.object({
+  totalCount: z.number().int().nonnegative(),
+  courses: z.array(ZCourseFromApiSchema),
+});
+
+interface CourseSearchResponse extends z.infer<typeof ZCourseSearchResponseSchema> {};
 
 const DEFAULT_BATCH_SIZE = 30;
 const API_URL = 'https://course.ntu.edu.tw/api/v1/courses/search/quick?lang=zh_TW';
@@ -70,19 +73,24 @@ const fetchCoursePage = async (
     );
   }
 
-  const courseSearchResponse = (await response.json()) as CourseSearchResponse;
+  let courseSearchResponse;
+  try {
+    courseSearchResponse = ZCourseSearchResponseSchema.parse(await response.json());
+  } catch (error) {
+    throw new Error(`Failed to parse course search response with keyword "${keyword}", batch size ${batchSize.toString()}, page index ${pageIndex.toString()}, semester ${semester}: ${error instanceof Error ? error.message : String(error)}`);
+  }
   if (pageIndex % 10 === 0) {
     console.log(`Fetched page ${pageIndex.toString()} for keyword "${keyword}" (Semester: ${semester})`);
   }
   return courseSearchResponse;
 };
 
-const transformApiCourseToCourse = (apiCourse: ApiCourse): Course => {
+const transformApiCourseToCourse = (apiCourse: CourseFromApi): Course => {
   return {
     _id: apiCourse.id,
     curriculum: apiCourse.identifier,
-    lecturer: apiCourse.teacher.name,
-    class: apiCourse.class ?? '', // Handle null class from API
+    lecturer: apiCourse.teacher.name ?? 'Unknown Lecturer',
+    class: apiCourse.class ?? undefined,
     names: [apiCourse.name],
     credit: apiCourse.credits,
     semester: apiCourse.semester,
@@ -130,9 +138,6 @@ const getBatchCourseData = async (keyword: string, semester: string): Promise<Co
         allProcessedCourses.push(transformApiCourseToCourse(apiCourse));
       }
 
-      // console.log(
-      //   `Processed ${allProcessedCourses.length.toString()} / ${totalCount.toString()} courses so far for keyword "${keyword}", Semester: ${semester}.`,
-      // );
       currentPageIndex++;
     } catch (error) {
       console.error(
