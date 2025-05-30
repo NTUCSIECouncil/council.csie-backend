@@ -69,6 +69,7 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (par
         'title',
         'course.names',
         'course.lecturer',
+        'course.curriculum',
       ],
       threshold: 0.6,
     };

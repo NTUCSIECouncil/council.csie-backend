@@ -8,11 +8,14 @@ import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
-  const userId = req.params.userId;
-
-  if (req.userId === undefined || req.userId !== userId) {
-    res.sendStatus(400);
-    logger.warn(`User ID mismatch in ${req.method} ${req.baseUrl}: expected ${userId}, got ${req.userId ?? 'undefined'}`);
+  if (!req.userId) {
+    res.sendStatus(401);
+    logger.warn(`Unauthorized access in ${req.method} ${req.baseUrl}: userId is undefined`);
+    return;
+  }
+  if (req.userId !== req.params.userId) {
+    res.sendStatus(403);
+    logger.warn(`Forbidden access in ${req.method} ${req.baseUrl}: userId mismatch`);
     return;
   }
 
