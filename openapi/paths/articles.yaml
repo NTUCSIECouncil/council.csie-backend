@@ -72,6 +72,8 @@ articles:
     summary: Create an article
     description: |
       Creates a new article with the provided data.
+    security:
+      - bearerAuth: []
     requestBody:
       required: true
       content:
@@ -92,6 +94,12 @@ articles:
               required: [articleId]
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires user authentication. Returns a standard error object.
         content:
           application/json:
             schema:
@@ -150,6 +158,8 @@ articles_articleId:
     summary: Update article by ID
     description: |
       Updates an existing article by its unique ID with the provided data.
+    security:
+      - bearerAuth: []
     parameters:
       - name: articleId
         in: path
@@ -167,6 +177,18 @@ articles_articleId:
         description: No Content. The article was updated successfully.
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires user authentication. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. The authenticated user is required to be the creator of the article to update it. Returns a standard error object.
         content:
           application/json:
             schema:
@@ -222,6 +244,8 @@ articles_articleId_file:
     summary: Upload or replace article Markdown file
     description: |
       Uploads or replaces the Markdown file for the specified article.
+    security:
+      - bearerAuth: []
     parameters:
       - name: articleId
         in: path
@@ -246,6 +270,18 @@ articles_articleId_file:
         description: No Content. The file was uploaded successfully.
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing path or file parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires user authentication. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "403":
+        description: Forbidden. The authenticated user is required to be the creator of the article to upload a file. Returns a standard error object.
         content:
           application/json:
             schema:
