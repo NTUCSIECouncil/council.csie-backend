@@ -1,3 +1,48 @@
+users:
+  post:
+    tags: [users]
+    operationId: createUser
+    summary: Create a new user
+    description: |
+      Creates a new user with the provided data and information from Firebase. User authentication is required. If a user with the provided Google ID in the header already exists, the request will fail with a 409 Conflict error.
+    security:
+      - bearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas.yaml#/UserCreate"
+    responses:
+      "201":
+        description: |-
+          Created. The user was successfully created. Returns the ID of the new user.
+        content:
+          application/json:
+            schema:
+              type: object
+              description: User creation response
+              properties:
+                userId: { type: string }
+      "400":
+        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires authentication.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "409":
+        description: Conflict. The user already exists with the provided Google ID.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+
 users_userId:
   get:
     tags: [users]
@@ -9,7 +54,7 @@ users_userId:
         in: path
         required: true
         description: The unique identifier of the user to retrieve.
-        schema: { type: string }
+        schema: { $ref: "../components/schemas.yaml#/UUID" }
     responses:
       "200":
         description: |-
@@ -39,19 +84,19 @@ users_userId:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
-  put:
+  patch:
     tags: [users]
-    summary: Create or update user by Google ID
+    summary: Update user by ID
     description: |
-      Creates a new user or updates an existing user by their Google ID.
+      Updates an existing user with the specified ID.
     security:
       - bearerAuth: []
     parameters:
       - name: userId
         in: path
         required: true
-        description: The unique Google ID of the user to create or update.
-        schema: { type: string }
+        description: The unique identifier of the user to update.
+        schema: { $ref: "../components/schemas.yaml#/UUID" }
     requestBody:
       required: true
       content:
@@ -59,16 +104,6 @@ users_userId:
           schema:
             $ref: "../components/schemas.yaml#/UserCreate"
     responses:
-      "201":
-        description: |-
-          Created. The user was successfully created. Returns the ID of the new or updated user.
-        content:
-          application/json:
-            schema:
-              type: object
-              description: User creation response
-              properties:
-                userId: { type: string }
       "204":
         description: No Content. The user was updated successfully.
       "400":
@@ -77,8 +112,20 @@ users_userId:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires authentication.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
@@ -108,6 +155,12 @@ users_me:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires authentication.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
         content:
@@ -120,11 +173,11 @@ users_me:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
-  put:
+  patch:
     tags: [users]
-    summary: Create or update current login user (alias of /users/{userId})
+    summary: Update current login user (alias of /users/{userId})
     description: |
-      Creates a new user or updates the currently authenticated user. This is an alias of PUT /users/{userId}.
+      Updates the currently authenticated user. This is an alias of PATCH /users/{userId}.
     security:
       - bearerAuth: []
     requestBody:
@@ -134,16 +187,6 @@ users_me:
           schema:
             $ref: "../components/schemas.yaml#/UserCreate"
     responses:
-      "201":
-        description: |-
-          Created. The user was successfully created. Returns the ID of the new or updated user.
-        content:
-          application/json:
-            schema:
-              type: object
-              description: User creation response
-              properties:
-                userId: { type: string }
       "204":
         description: No Content. The user was updated successfully.
       "400":
@@ -152,8 +195,20 @@ users_me:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires authentication.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "404":
+        description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
@@ -181,6 +236,12 @@ users_me_private:
                   { $ref: "../components/schemas.yaml#/PrivateUserResponse" }
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        content:
+          application/json:
+            schema:
+              $ref: "../components/schemas.yaml#/Error"
+      "401":
+        description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:

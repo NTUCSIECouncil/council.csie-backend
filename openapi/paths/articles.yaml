@@ -71,7 +71,7 @@ articles:
     tags: [articles]
     summary: Create an article
     description: |
-      Creates a new article with the provided data.
+      Creates a new article with the provided data. User authentication is required, and the authenticated user will be set as the creator of the article.
     security:
       - bearerAuth: []
     requestBody:
@@ -157,7 +157,7 @@ articles_articleId:
     tags: [articles]
     summary: Update article by ID
     description: |
-      Updates an existing article by its unique ID with the provided data.
+      Updates an existing article by its unique ID with the provided data. User authentication is required, and the authenticated user must be the creator of the article to update it.
     security:
       - bearerAuth: []
     parameters:
@@ -243,7 +243,7 @@ articles_articleId_file:
     tags: [articles]
     summary: Upload or replace article Markdown file
     description: |
-      Uploads or replaces the Markdown file for the specified article.
+      Uploads or replaces the Markdown file for the specified article. User authentication is required, and the authenticated user must be the creator of the article to upload a file.
     security:
       - bearerAuth: []
     parameters:

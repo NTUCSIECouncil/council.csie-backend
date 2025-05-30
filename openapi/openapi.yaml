@@ -42,6 +42,8 @@ paths:
     $ref: "./paths/quizzes.yaml#/quizzes_quizId_file"
   /tags:
     $ref: "./paths/tags.yaml#/tags"
+  /users:
+    $ref: "./paths/users.yaml#/users"
   /users/{userId}:
     $ref: "./paths/users.yaml#/users_userId"
   /users/me:
