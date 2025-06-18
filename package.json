@@ -13,7 +13,7 @@
     "cleanup-dev-db": "tsx --env-file=.default.env --env-file=.env scripts/cleanup-dev-db.ts"
   },
   "dependencies": {
-    "@apidevtools/swagger-parser": "^11.0.1",
+    "@apidevtools/swagger-parser": "^12.0.0",
     "express": "^5.0.1",
     "firebase-admin": "^13.1.0",
     "fuse.js": "^7.1.0",
