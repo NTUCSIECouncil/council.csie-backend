@@ -351,7 +351,10 @@ describe('PATCH /api/articles/:articleId', () => {
 
   it('should reject unauthorized client', async () => {
     const article = await ArticleModel.findOne().lean({ versionKey: false }).exec();
-    const randomUser = await UserModel.findOne().exec();
+    let randomUser;
+    while (!randomUser || randomUser.gid === article!.creator) {
+      randomUser = await UserModel.findOne().exec();
+    }
     await request(app)
       .patch(`/api/articles/${article!._id}`)
       .send({ title: '不普通物理學' })
@@ -360,7 +363,7 @@ describe('PATCH /api/articles/:articleId', () => {
     await request(app)
       .patch(`/api/articles/${article!._id}`)
       .send({ title: '不普通物理學' })
-      .set('gid', randomUser!.gid)
+      .set('gid', randomUser.gid)
       .expect(403);
   });
 
