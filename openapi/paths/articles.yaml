@@ -78,7 +78,8 @@ articles:
       required: true
       content:
         application/json:
-          schema: { $ref: "../components/schemas.yaml#/ArticleCreate" }
+          schema:
+            $ref: "../components/schemas.yaml#/ArticleCreate"
 
     responses:
       "201":
@@ -90,7 +91,8 @@ articles:
               type: object
               description: Article creation response
               properties:
-                articleId: { $ref: "../components/schemas.yaml#/UUID" }
+                articleId:
+                  $ref: "../components/schemas.yaml#/UUID"
               required: [articleId]
       "400":
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
@@ -171,7 +173,8 @@ articles_articleId:
       required: true
       content:
         application/json:
-          schema: { $ref: "../components/schemas.yaml#/ArticleUpdate" }
+          schema:
+            $ref: "../components/schemas.yaml#/ArticleUpdate"
     responses:
       "204":
         description: No Content. The article was updated successfully.

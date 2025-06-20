@@ -88,12 +88,12 @@ ArticleResponse:
       properties:
         course:
           oneOf:
-            - { $ref: "#/UUID" }
-            - { $ref: "#/CourseResponse" }
+            - $ref: "#/UUID"
+            - $ref: "#/CourseResponse"
         creator:
           oneOf:
-            - { $ref: "#/UUID" }
-            - { $ref: "#/UserResponse" }
+            - $ref: "#/UUID"
+            - $ref: "#/UserResponse"
         content:
           type: string
           description: First 50 characters of the article content, truncated with an ellipsis if longer.
@@ -143,12 +143,12 @@ QuizResponse:
       example: "midterm"
     course:
       allOf:
-        - { $ref: "#/UUID" }
-        - { $ref: "#/CourseResponse" }
+        - $ref: "#/UUID"
+        - $ref: "#/CourseResponse"
     uploader:
       allOf:
-        - { $ref: "#/UUID" }
-        - { $ref: "#/UserResponse" }
+        - $ref: "#/UUID"
+        - $ref: "#/UserResponse"
   required: [session, course, uploader]
 
 UserBase:
@@ -191,6 +191,7 @@ PrivateUserResponse:
           example: "1234567890"
         email:
           type: string
+          format: email
           description: User email address.
           example: "boss-wang@example.com"
         name:
