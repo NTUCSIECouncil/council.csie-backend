@@ -4,6 +4,7 @@
     "prepare": "husky",
     "dev": "tsx --env-file=.default.env --env-file=.env src/index.ts",
     "dev:watch": "tsx watch --include openapi --clear-screen=false --env-file=.default.env --env-file=.env src/index.ts",
+    "type-check": "tsc --noEmit",
     "lint": "eslint 'src/**/*.ts' 'scripts/**/*.ts' 'test/**/*.ts'",
     "test": "vitest run",
     "test:watch": "vitest watch",
