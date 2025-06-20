@@ -4,13 +4,12 @@ import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { ZCourseSchema } from '@/models/course-schema.ts';
-import { models } from '@models/index.ts';
+import { CourseModel, ZCourseSchema } from '@/models/course-schema.ts';
 import app from './app.ts';
-import { insertFromFile } from './utils.ts';
+import { seedModelFromSamples } from './utils.ts';
 
 beforeEach(async () => {
-  await insertFromFile('Course');
+  await seedModelFromSamples('Course');
 });
 
 afterEach(async () => {
@@ -72,7 +71,7 @@ describe('GET /api/courses/search', () => {
       ],
       threshold: 0.6,
     };
-    const courses = await models.Course.find().lean({ versionKey: false }).exec();
+    const courses = await CourseModel.find().lean({ versionKey: false }).exec();
     const fuse = new Fuse(courses, fuseOptions);
 
     for (const keyword of ['大學國文', '汪詩珮', '文學']) {
@@ -113,7 +112,7 @@ describe('GET /api/courses/search', () => {
         ],
         threshold: 0.6,
       };
-      const courses = await models.Course.find().lean({ versionKey: false }).exec();
+      const courses = await CourseModel.find().lean({ versionKey: false }).exec();
       const fuse = new Fuse(courses, fuseOptions);
 
       const res = await request(app)
@@ -122,11 +121,10 @@ describe('GET /api/courses/search', () => {
         .expect(200);
 
       const result = fuse.search(keyword).map(({ item }) => item);
-      const filteredResult = result.filter(course => course.categories.every(category => categories.includes(category)));
 
       const resCourses = ZCourseSchema.array().parse(res.body.courses);
 
-      expect(filteredResult).toEqual(expect.arrayContaining(resCourses));
+      expect(result).toEqual(expect.arrayContaining(resCourses));
     }
   });
 });

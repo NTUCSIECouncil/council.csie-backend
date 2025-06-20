@@ -13,9 +13,11 @@ const ZSchema = {
   User: ZUserSchema,
 };
 
-const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
+const seedModelFromSamples = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
   const filePath = path.join(import.meta.dirname, '..', 'samples', `${model.toLowerCase()}-samples.json`);
-  const objs = ZSchema[model].array().parse((JSON.parse(readFileSync(filePath, 'utf-8')) as unknown[]).slice(0, 100));
+  const data = readFileSync(filePath, 'utf-8');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Safe to use in schema validation
+  const objs = ZSchema[model].array().parse(JSON.parse(data).slice(0, 100));
 
   for (const obj of objs) {
     const doc = new models[model](obj);
@@ -23,4 +25,4 @@ const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => 
   }
 };
 
-export { insertFromFile };
+export { seedModelFromSamples };

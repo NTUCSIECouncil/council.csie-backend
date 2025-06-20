@@ -13,12 +13,12 @@ import { CourseModel, ZCourseSchema } from '@models/course-schema.ts';
 import { UserModel, ZUserSchema } from '@models/user-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
 import app from './app.ts';
-import { insertFromFile } from './utils.ts';
+import { seedModelFromSamples } from './utils.ts';
 
 beforeEach(async () => {
-  await insertFromFile('Article');
-  await insertFromFile('User');
-  await insertFromFile('Course');
+  await seedModelFromSamples('Article');
+  await seedModelFromSamples('User');
+  await seedModelFromSamples('Course');
 });
 
 afterEach(async () => {
