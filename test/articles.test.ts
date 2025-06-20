@@ -351,10 +351,7 @@ describe('PATCH /api/articles/:articleId', () => {
 
   it('should reject unauthorized client', async () => {
     const article = await ArticleModel.findOne().lean({ versionKey: false }).exec();
-    let randomUser;
-    while (!randomUser || randomUser.gid === article!.creator) {
-      randomUser = await UserModel.findOne().exec();
-    }
+    const nonCreator = await UserModel.findOne({ _id: { $ne: article!.creator } }).exec();
     await request(app)
       .patch(`/api/articles/${article!._id}`)
       .send({ title: '不普通物理學' })
@@ -363,7 +360,7 @@ describe('PATCH /api/articles/:articleId', () => {
     await request(app)
       .patch(`/api/articles/${article!._id}`)
       .send({ title: '不普通物理學' })
-      .set('gid', randomUser.gid)
+      .set('gid', nonCreator!.gid)
       .expect(403);
   });
 
@@ -450,7 +447,7 @@ describe('PUT /api/articles/:uuid/file', () => {
 
   it('should reject unauthorized client', async () => {
     const article = await ArticleModel.findOne().lean({ versionKey: false }).exec();
-    const randomUser = await UserModel.findOne().exec();
+    const nonCreator = await UserModel.findOne({ _id: { $ne: article!.creator } }).exec();
     await request(app)
       .put(`/api/articles/${article!._id}/file`)
       .send({ file: '這是測試內容' })
@@ -459,7 +456,7 @@ describe('PUT /api/articles/:uuid/file', () => {
     await request(app)
       .put(`/api/articles/${article!._id}/file`)
       .send({ file: '這是測試內容' })
-      .set('gid', randomUser!.gid)
+      .set('gid', nonCreator!.gid)
       .expect(403);
   });
 
