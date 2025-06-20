@@ -26,5 +26,11 @@ jobs:
       - name: Lint code
         run: npm run lint
 
+      - name: Populate sample files and database
+        run: npm run fetch-courses
+
+      - name: Generate samples
+        run: npm run generate-samples
+
       - name: Run tests
         run: npm run test
