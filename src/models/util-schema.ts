@@ -1,5 +1,5 @@
 import { type UUID } from 'crypto';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 const ZUuidSchema = z.custom<UUID>((val) => {
   return z.uuid().safeParse(val).success;

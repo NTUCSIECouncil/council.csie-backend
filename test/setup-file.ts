@@ -5,9 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { afterAll, beforeAll } from 'vitest';
 
-dotenv.config({ path: 'test/.test.env' });
-dotenv.config({ path: '.default.env' });
-dotenv.config({ path: '.env' });
+dotenv.config({ path: ['test/.test.env', '.default.env', '.env'] });
 
 if (!process.env.QUIZ_FILE_DIR || !process.env.ARTICLE_FILE_DIR || !process.env.VITEST_POOL_ID) {
   throw new Error('Missing environment variables: QUIZ_FILE_DIR, ARTICLE_FILE_DIR, VITEST_POOL_ID');

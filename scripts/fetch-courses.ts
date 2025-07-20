@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 

@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { env } from '@/config.ts';
 import { ArticleModel, ZArticleSchema } from '@models/article-schema.ts';
 import { CourseModel, ZCourseSchema } from '@models/course-schema.ts';

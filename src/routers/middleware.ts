@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { env } from '@/config.ts';
 import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';

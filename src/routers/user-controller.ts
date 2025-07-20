@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { models } from '@models/index.ts';
 import { authChecker } from './middleware.ts';

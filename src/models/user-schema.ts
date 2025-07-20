@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { type Model, Schema, model } from 'mongoose';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { ZUuidSchema } from './util-schema.ts';
 
 const ZUserSchema = z.object({

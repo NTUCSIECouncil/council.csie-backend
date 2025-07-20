@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import Fuse from 'fuse.js';
 import { type FilterQuery, type HydratedDocument, type Model, Schema, model } from 'mongoose';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { type Course } from './course-schema.ts';
 import { type User } from './user-schema.ts';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';

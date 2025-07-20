@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { Router } from 'express';
 import { type HydratedDocument } from 'mongoose';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { env } from '@/config.ts';
 import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema } from '@models/article-schema.ts';
 import { type ArticleEmbedQueryParam, type ArticleSearchQueryParam, ZArticleEmbedQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
