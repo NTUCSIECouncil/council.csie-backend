@@ -45,6 +45,8 @@ jobs:
         with:
           path: ./samples/
           key: samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
+          restore-keys: |
+            samples-
 
       - name: Populate sample files and database
         if: steps.samples-cache.outputs.cache-hit != 'true'
@@ -64,11 +66,14 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
       - run: npm ci
+
       - name: Restore cached samples
         uses: actions/cache@v4
         id: samples-cache
         with:
           path: ./samples/
           key: samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
+          restore-keys: |
+            samples-
 
       - run: npm run test
