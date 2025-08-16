@@ -9,12 +9,12 @@ import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const authChecker: RequestHandler = (req, res, next) => {
   if (!req.userId) {
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Unauthorized' });
     logger.warn(`Unauthorized access in ${req.method} ${req.baseUrl}: userId is undefined`);
     return;
   }
   if (req.userId !== req.params.userId) {
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Forbidden' });
     logger.warn(`Forbidden access in ${req.method} ${req.baseUrl}: userId mismatch`);
     return;
   }
@@ -29,7 +29,7 @@ const paginationParser: RequestHandler = (req, res, next) => {
   const result = ZPaginationQueryParam.safeParse(req.query);
   if (!result.success) {
     logger.warn(`Failed to parse pagination query parameters in ${req.method} ${req.baseUrl}:\n${z.prettifyError(result.error)}`);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
 

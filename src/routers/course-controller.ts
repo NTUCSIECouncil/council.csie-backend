@@ -18,7 +18,7 @@ router.get('/', paginationParser, async (req, res) => {
     param = ZCourseSearchQueryParam.parse(req.query);
   } catch (err) {
     logger.warn('Failed to parse query in GET /courses/search: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
 
@@ -35,13 +35,13 @@ router.get('/:courseId', async (req, res) => {
     courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
     logger.warn('Failed to parse courseId in GET /courses/:courseId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid course ID' });
     return;
   }
 
   const course = await CourseModel.findById(courseId).lean({ versionKey: false }).exec();
   if (course === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Course not found' });
   } else {
     res.json({ course });
   }
@@ -55,13 +55,13 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
     courseId = ZUuidSchema.parse(req.params.courseId);
   } catch (err) {
     logger.warn('Failed to parse courseId in GET /courses/:courseId/quizzes: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid course ID' });
     return;
   }
 
   const course = await CourseModel.findById(courseId).lean().exec();
   if (course === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Course not found' });
     return;
   }
 

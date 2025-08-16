@@ -10,7 +10,7 @@ const UserModel = models.User;
 
 router.all('/me{/*splat}', (req, res, next) => {
   if (req.guser === undefined) {
-    res.sendStatus(400);
+    res.status(400).json({ message: 'User not authenticated' });
     return;
   }
   req.url = req.url.replace(/^\/me/, `/${req.guser.uid}`);
@@ -23,12 +23,12 @@ router.get('/:userId', async (req, res) => {
     userId = ZUuidSchema.parse(req.params.userId);
   } catch (err) {
     console.warn('Failed to parse userId in GET /users/:userId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid user ID' });
     return;
   }
   const user = await UserModel.findById(userId).exec();
   if (user === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'User not found' });
   } else {
     res.json({ user: { _id: user._id, nickname: user.nickname } });
   }
@@ -43,7 +43,7 @@ router.put('/:userId', authChecker, async (req, res) => {
     nickname = z.object({ nickname: z.string() }).parse(req.body).nickname;
   } catch (err) {
     console.warn('Failed to parse request body in PUT /users/:userId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request body' });
     return;
   }
 
@@ -63,7 +63,7 @@ router.put('/:userId', authChecker, async (req, res) => {
 router.get('/:userId/private', authChecker, async (req, res) => {
   const user = await UserModel.findById({ _id: req.params.userId }).exec();
   if (user === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'User not found' });
   } else {
     res.json({ user });
   }

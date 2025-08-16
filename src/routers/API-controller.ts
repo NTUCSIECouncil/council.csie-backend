@@ -15,7 +15,7 @@ const uncaughtErrorHandler: ErrorRequestHandler = (err: unknown, req, res, next)
     next(err);
     return;
   }
-  res.sendStatus(500);
+  res.status(500).json({ message: 'Internal server error' });
 };
 
 router.use('/articles', articleController);

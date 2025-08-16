@@ -32,8 +32,8 @@ router.get('/', paginationParser, async (req, res) => {
     searchParam = ZArticleSearchQueryParam.parse(req.query);
     embedParam = ZArticleEmbedQueryParam.parse(req.query);
   } catch (err) {
-    logger.warn('Failed to parse query parameters in GET /articles/search: ', err);
-    res.sendStatus(400);
+    logger.warn('Failed to parse query parameters in GET /articles: ', err);
+    res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
 
@@ -64,7 +64,7 @@ router.get('/', paginationParser, async (req, res) => {
 router.post('/', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to POST /articles');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Authentication required' });
     return;
   }
 
@@ -73,7 +73,7 @@ router.post('/', async (req, res) => {
     articleCreate = ZArticleSchema.omit({ _id: true, creator: true }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in POST /articles: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request body' });
     return;
   }
 
@@ -91,7 +91,7 @@ router.get('/:articleId', async (req, res) => {
     embedParam = ZArticleEmbedQueryParam.parse(req.query);
   } catch (err) {
     logger.warn('Failed to parse path parameter or query parameters in GET /articles/:articleId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request parameters' });
     return;
   }
 
@@ -104,7 +104,7 @@ router.get('/:articleId', async (req, res) => {
   }
   const article = await query.lean({ versionKey: false }).exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
 
@@ -113,7 +113,7 @@ router.get('/:articleId', async (req, res) => {
   } else {
     const content = await getArticleContent(articleId);
     if (content === null) {
-      res.sendStatus(500);
+      res.status(500).json({ message: 'Failed to read article content' });
       return;
     }
     res.json({ article: { ...article, content } });
@@ -123,7 +123,7 @@ router.get('/:articleId', async (req, res) => {
 router.patch('/:articleId', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to PATCH /articles/:articleId');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -134,16 +134,16 @@ router.patch('/:articleId', async (req, res) => {
     articleUpdates = ZArticleSchema.omit({ _id: true, course: true, creator: true }).partial().parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse articleId or request body in PATCH /articles/:articleId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
   const articleDoc = await ArticleModel.findById(articleId).exec();
   if (articleDoc === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
   } else if (articleDoc.creator !== req.userId) {
     logger.warn(`Unauthorized access to PATCH /articles/${articleId} by user ${req.userId}`);
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Forbidden' });
   } else {
     articleDoc.set(articleUpdates);
     await articleDoc.save();
@@ -157,13 +157,13 @@ router.get('/:articleId/file', async (req, res) => {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
     logger.warn('Failed to parse articleId in GET /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
   const article = await ArticleModel.findById(articleId).lean().exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
   const fileName = `${articleId}.md`;
@@ -173,7 +173,7 @@ router.get('/:articleId/file', async (req, res) => {
     content = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
     logger.error(`File not found for article ${articleId}: ${filePath}`, err);
-    res.sendStatus(500);
+    res.status(500).json({ message: 'Failed to read article file' });
     return;
   }
   res.json({ file: content });
@@ -182,7 +182,7 @@ router.get('/:articleId/file', async (req, res) => {
 router.put('/:articleId/file', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to PUT /articles/:articleId/file');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -191,7 +191,7 @@ router.put('/:articleId/file', async (req, res) => {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
     logger.warn('Failed to parse articleId in PUT /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
@@ -200,18 +200,18 @@ router.put('/:articleId/file', async (req, res) => {
     content = z.object({ file: z.string() }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in PUT /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request body' });
     return;
   }
 
   const article = await ArticleModel.findById(articleId).lean().exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
   if (article.creator !== req.userId) {
     logger.warn(`Unauthorized access to PUT /articles/${articleId}/file by user ${req.userId}`);
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Forbidden' });
     return;
   }
   const fileName = `${articleId}.md`;
@@ -220,7 +220,7 @@ router.put('/:articleId/file', async (req, res) => {
     await fs.writeFile(filePath, content.file, 'utf-8');
   } catch (err) {
     logger.error(`Failed to write file for article ${articleId}: ${filePath}`, err);
-    res.sendStatus(500);
+    res.status(500).json({ message: 'Failed to write article file' });
     return;
   }
   res.sendStatus(204);
