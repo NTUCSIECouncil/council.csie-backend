@@ -5,21 +5,25 @@ import { Router } from 'express';
 import { type HydratedDocument } from 'mongoose';
 import { z } from 'zod';
 import { env } from '@/config.ts';
-import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema } from '@models/article-schema.ts';
+import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema, ZRatingSchema } from '@models/article-schema.ts';
 import { type ArticleEmbedQueryParam, type ArticleSearchQueryParam, ZArticleEmbedQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
 
-const getArticleContent = async (articleId: UUID, sliceLength = 50): Promise<string | null> => {
+const getArticleContent = async (articleId: UUID, sliceLength = 50): Promise<string> => {
   const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, `${articleId}.md`);
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return data.length <= sliceLength ? data : data.slice(0, sliceLength) + '...';
   } catch (err) {
-    logger.error(`File not found for article ${articleId}: ${filePath}`, err);
-    return null;
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      return '';
+    }
+    logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+    throw err;
   }
 };
 
@@ -77,6 +81,13 @@ router.post('/', async (req, res) => {
     return;
   }
 
+  const courseExists = await ArticleModel.exists({ course: articleCreate.course });
+  if (!courseExists) {
+    logger.warn(`Course not found for article creation: ${articleCreate.course}`);
+    res.status(400).json({ message: 'Invalid course ID' });
+    return;
+  }
+
   const articleDoc = new ArticleModel({ ...articleCreate, creator: req.userId });
   await articleDoc.save();
   const articleId = articleDoc._id;
@@ -111,12 +122,14 @@ router.get('/:articleId', async (req, res) => {
   if (!embedParam.embed?.includes('content')) {
     res.json({ article });
   } else {
-    const content = await getArticleContent(articleId);
-    if (content === null) {
+    try {
+      const content = await getArticleContent(articleId);
+      res.json({ article: { ...article, content } });
+    } catch (err) {
+      logger.error(`Failed to read article content for ${articleId}`, err);
       res.status(500).json({ message: 'Failed to read article content' });
       return;
     }
-    res.json({ article: { ...article, content } });
   }
 });
 
@@ -131,7 +144,11 @@ router.patch('/:articleId', async (req, res) => {
   let articleUpdates;
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
-    articleUpdates = ZArticleSchema.omit({ _id: true, course: true, creator: true }).partial().parse(req.body);
+    articleUpdates = ZArticleSchema
+      .omit({ _id: true, course: true, creator: true })
+      .extend({ ratings: ZRatingSchema.partial() })
+      .partial()
+      .parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse articleId or request body in PATCH /articles/:articleId: ', err);
     res.status(400).json({ message: 'Invalid request' });
@@ -145,7 +162,7 @@ router.patch('/:articleId', async (req, res) => {
     logger.warn(`Unauthorized access to PATCH /articles/${articleId} by user ${req.userId}`);
     res.status(403).json({ message: 'Forbidden' });
   } else {
-    articleDoc.set(articleUpdates);
+    articleDoc.set(articleUpdates, null, { merge: true });
     await articleDoc.save();
     res.sendStatus(204);
   }
@@ -172,9 +189,14 @@ router.get('/:articleId/file', async (req, res) => {
   try {
     content = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
-    logger.error(`File not found for article ${articleId}: ${filePath}`, err);
-    res.status(500).json({ message: 'Failed to read article file' });
-    return;
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      content = '';
+    } else {
+      logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+      res.status(500).json({ message: 'Failed to read article file' });
+      return;
+    }
   }
   res.json({ file: content });
 });

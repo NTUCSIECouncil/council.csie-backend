@@ -6,17 +6,19 @@ import { type Course } from './course-schema.ts';
 import { type User } from './user-schema.ts';
 import { type ArticleSearchQueryParam, ZUuidSchema } from './util-schema.ts';
 
+const ZRatingSchema = z.object({
+  sweetness: z.int().min(1).max(5), // 甜度
+  chill: z.int().min(1).max(5), // 涼度
+  teaching: z.int().min(1).max(5), // 教學品質
+  gain: z.int().min(1).max(5), // 獲益程度
+  recommend: z.int().min(1).max(5), // 推薦程度
+});
+
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
   title: z.string(),
   tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
-  ratings: z.object({
-    sweetness: z.number().int().min(1).max(5), // 甜度
-    chill: z.number().int().min(1).max(5), // 涼度
-    teaching: z.number().int().min(1).max(5), // 教學品質
-    gain: z.number().int().min(1).max(5), // 獲益程度
-    recommend: z.number().int().min(1).max(5), // 推薦程度
-  }),
+  ratings: ZRatingSchema,
   course: ZUuidSchema, // foreign key to Course
   creator: ZUuidSchema, // foreign key to User
 });
@@ -87,4 +89,4 @@ articleSchema.static('searchArticles', staticSearchArticles);
 
 const ArticleModel = model<Article, ArticleModel>('Article', articleSchema);
 
-export { type Article, ArticleModel, ZArticleSchema, type PopulatedArticle };
+export { type Article, ArticleModel, ZArticleSchema, type PopulatedArticle, ZRatingSchema };
