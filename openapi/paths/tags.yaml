@@ -3,7 +3,7 @@ tags:
     tags: [tags]
     summary: Get all tags
     description: |
-      Retrieves a paginated list of all available tags. Supports pagination via limit and offset query parameters. Includes pagination metadata.
+      Retrieves a paginated list of all available tags sorted. Includes pagination metadata.
     parameters:
       - name: limit
         in: query

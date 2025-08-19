@@ -137,6 +137,7 @@ QuizResponse:
   type: object
   description: Quiz information.
   properties:
+    _id: { $ref: "#/UUID" }
     session:
       type: string
       enum: [midterm, final, first, second, other]
@@ -150,7 +151,7 @@ QuizResponse:
       oneOf:
         - $ref: "#/UUID"
         - $ref: "#/UserResponse"
-  required: [session, course, uploader]
+  required: [_id, session, course, uploader]
 
 UserBase:
   type: object
