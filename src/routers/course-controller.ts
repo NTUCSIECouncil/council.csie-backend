@@ -1,7 +1,7 @@
 import { type UUID } from 'crypto';
 import { Router } from 'express';
 import { models } from '@models/index.ts';
-import { type CourseSearchQueryParam, ZCourseSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import { type CourseSearchQueryParam, type QuizEmbedQueryParam, ZCourseSearchQueryParam, ZQuizEmbedQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
@@ -51,11 +51,13 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
   let courseId: UUID;
+  let embedParam: QuizEmbedQueryParam;
   try {
     courseId = ZUuidSchema.parse(req.params.courseId);
+    embedParam = ZQuizEmbedQueryParam.parse(req.query);
   } catch (err) {
-    logger.warn('Failed to parse courseId in GET /courses/:courseId/quizzes: ', err);
-    res.status(400).json({ message: 'Invalid course ID' });
+    logger.warn('Failed to parse courseId or query parameters in GET /courses/:courseId/quizzes: ', err);
+    res.status(400).json({ message: 'Invalid course ID or query parameters' });
     return;
   }
 
@@ -67,8 +69,15 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
 
   const totalCount = await QuizModel.countDocuments({ course: courseId }).exec();
 
-  const quizzes = await QuizModel.find({ course: courseId }).skip(offset).limit(limit)
-    .lean({ versionKey: false }).exec();
+  let query = QuizModel.find({ course: courseId }).skip(offset).limit(limit);
+  if (embedParam.embed?.includes('course')) {
+    query = query.populate('course');
+  }
+  if (embedParam.embed?.includes('uploader')) {
+    query = query.populate('uploader');
+  }
+
+  const quizzes = await query.lean({ versionKey: false }).exec();
   res.json({ quizzes, meta: { total: totalCount, offset, limit } });
 });
 
