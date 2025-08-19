@@ -143,11 +143,11 @@ QuizResponse:
       description: Quiz session type.
       example: "midterm"
     course:
-      allOf:
+      oneOf:
         - $ref: "#/UUID"
         - $ref: "#/CourseResponse"
     uploader:
-      allOf:
+      oneOf:
         - $ref: "#/UUID"
         - $ref: "#/UserResponse"
   required: [session, course, uploader]
