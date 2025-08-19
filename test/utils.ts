@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import path from 'path';
+import type mongoose from 'mongoose';
 import { expect } from 'vitest';
 import z from 'zod';
 import { type Article, ArticleModel, ZArticleSchema } from '@models/article-schema.ts';
@@ -40,28 +41,28 @@ const parseAndExpectValid = <T extends z.ZodRawShape>
   return result.data!;
 };
 
+const getTestDoc = async <T>(model: mongoose.Model<T>): Promise<T> => {
+  const count = await model.countDocuments().exec();
+  const random = Math.floor(Math.random() * count);
+  const doc = await model.findOne().skip(random).lean({ versionKey: false }).exec();
+  if (!doc) throw new Error(`No test ${model.modelName.toLowerCase()} found`);
+  return doc as T;
+};
+
 const getTestArticle = async (): Promise<Article> => {
-  const article = await ArticleModel.findOne().lean({ versionKey: false }).exec();
-  if (!article) throw new Error('No test article found');
-  return article;
+  return getTestDoc(ArticleModel);
 };
 
 const getTestUser = async (): Promise<User> => {
-  const user = await UserModel.findOne().lean({ versionKey: false }).exec();
-  if (!user) throw new Error('No test user found');
-  return user;
+  return getTestDoc(UserModel);
 };
 
 const getTestQuiz = async (): Promise<Quiz> => {
-  const quiz = await QuizModel.findOne().lean({ versionKey: false }).exec();
-  if (!quiz) throw new Error('No test quiz found');
-  return quiz;
+  return getTestDoc(QuizModel);
 };
 
 const getTestCourse = async (): Promise<Course> => {
-  const course = await CourseModel.findOne().lean({ versionKey: false }).exec();
-  if (!course) throw new Error('No test course found');
-  return course;
+  return getTestDoc(CourseModel);
 };
 
 export { expectValidErrorResponse, parseAndExpectValid, seedModelFromSamples, getTestArticle, getTestUser, getTestQuiz, getTestCourse };
