@@ -8,7 +8,6 @@ import userInfoController from './user-controller.ts';
 
 const router = Router();
 
-/* istanbul ignore next */
 const uncaughtErrorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
   logger.error('Uncaught error: ', err);
   if (res.headersSent) {
