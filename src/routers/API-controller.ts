@@ -1,4 +1,5 @@
-import { type ErrorRequestHandler, Router } from 'express';
+import { Router, type ErrorRequestHandler } from 'express';
+
 import logger from '@utils/logger.ts';
 import articleController from './article-controller.ts';
 import courseController from './course-controller.ts';
@@ -8,7 +9,12 @@ import userInfoController from './user-controller.ts';
 
 const router = Router();
 
-const uncaughtErrorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
+const uncaughtErrorHandler: ErrorRequestHandler = (
+  err: unknown,
+  req,
+  res,
+  next,
+) => {
   logger.error('Uncaught error: ', err);
   if (res.headersSent) {
     next(err);

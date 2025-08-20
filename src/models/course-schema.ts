@@ -1,8 +1,10 @@
 import { randomUUID } from 'crypto';
+
 import Fuse from 'fuse.js';
-import { type HydratedDocument, type Model, Schema, model } from 'mongoose';
+import { model, Schema, type HydratedDocument, type Model } from 'mongoose';
 import { z } from 'zod';
-import { type CourseSearchQueryParam, ZUuidSchema } from './util-schema.ts';
+
+import { ZUuidSchema, type CourseSearchQueryParam } from './util-schema.ts';
 
 const ZCourseSchema = z.object({
   _id: ZUuidSchema,
@@ -14,33 +16,38 @@ const ZCourseSchema = z.object({
   semester: z.string(), // 學期, e.g. '113-2'
 });
 
-interface Course extends z.infer<typeof ZCourseSchema> {};
+interface Course extends z.infer<typeof ZCourseSchema> {}
 
 interface CourseModel extends Model<Course> {
-  searchCourses: (this: CourseModel, params: CourseSearchQueryParam) => Promise<HydratedDocument<Course>[]>;
-};
+  searchCourses: (
+    this: CourseModel,
+    params: CourseSearchQueryParam,
+  ) => Promise<HydratedDocument<Course>[]>;
+}
 
-const courseSchema = new Schema<Course, CourseModel>({
-  _id: { type: String, default: randomUUID },
-  curriculum: { type: String, required: true },
-  lecturer: { type: String, required: true },
-  class: { type: String },
-  names: { type: [String], required: true },
-  credit: { type: Number, required: true },
-  semester: { type: String, required: true },
-}, {
-  toObject: { versionKey: false },
-});
+const courseSchema = new Schema<Course, CourseModel>(
+  {
+    _id: { type: String, default: randomUUID },
+    curriculum: { type: String, required: true },
+    lecturer: { type: String, required: true },
+    class: { type: String },
+    names: { type: [String], required: true },
+    credit: { type: Number, required: true },
+    semester: { type: String, required: true },
+  },
+  {
+    toObject: { versionKey: false },
+  },
+);
 
-const staticSearchCourses: CourseModel['searchCourses'] = async function (params) {
+const staticSearchCourses: CourseModel['searchCourses'] = async function (
+  params,
+) {
   let courses = await this.find().exec();
 
   if (params.keyword) {
     const fuseOptions = {
-      keys: [
-        'lecturer',
-        'names',
-      ],
+      keys: ['lecturer', 'names'],
       threshold: 0.6,
     };
 

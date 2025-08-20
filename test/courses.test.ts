@@ -1,15 +1,26 @@
 import { randomUUID } from 'crypto';
+
 import Fuse from 'fuse.js';
 import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
 import { CourseModel } from '@/models/course-schema.ts';
 import { QuizModel } from '@/models/quiz-schema.ts';
 import app from './app.ts';
-import { ZCourseResponseSchema, ZMetaSchema, ZQuizResponseSchema } from './response-schemas.ts';
-import { expectValidErrorResponse, getTestCourse, parseAndExpectValid, seedModelFromSamples } from './utils.ts';
+import {
+  ZCourseResponseSchema,
+  ZMetaSchema,
+  ZQuizResponseSchema,
+} from './response-schemas.ts';
+import {
+  expectValidErrorResponse,
+  getTestCourse,
+  parseAndExpectValid,
+  seedModelFromSamples,
+} from './utils.ts';
 
 const ZCourseListResponse = z.object({
   courses: ZCourseResponseSchema.array(),
@@ -48,9 +59,7 @@ describe('GET /api/courses', () => {
     });
 
     it('should use default pagination values (limit: 10, offset: 0)', async () => {
-      const res = await request(app)
-        .get('/api/courses')
-        .expect(200);
+      const res = await request(app).get('/api/courses').expect(200);
 
       const body = parseAndExpectValid(ZCourseListResponse, res.body);
       expect(body.meta.limit).toBe(10);
@@ -73,15 +82,19 @@ describe('GET /api/courses', () => {
 
     it('should return courses in consistent order', async () => {
       // Make multiple identical requests and verify consistent ordering
-      const requests = Array(3).fill(null).map(() =>
-        request(app)
-          .get('/api/courses')
-          .query(qs.stringify({ limit: 10 }))
-          .expect(200),
-      );
+      const requests = Array(3)
+        .fill(null)
+        .map(() =>
+          request(app)
+            .get('/api/courses')
+            .query(qs.stringify({ limit: 10 }))
+            .expect(200),
+        );
 
       const responses = await Promise.all(requests);
-      const bodies = responses.map(res => parseAndExpectValid(ZCourseListResponse, res.body));
+      const bodies = responses.map(res =>
+        parseAndExpectValid(ZCourseListResponse, res.body),
+      );
 
       // All responses should have the same courses in the same order
       for (let i = 1; i < bodies.length; i++) {
@@ -114,14 +127,19 @@ describe('GET /api/courses', () => {
           .query(qs.stringify({ limit: 5, offset: 5 }))
           .expect(200);
 
-        const secondPageBody = parseAndExpectValid(ZCourseListResponse, res.body);
+        const secondPageBody = parseAndExpectValid(
+          ZCourseListResponse,
+          res.body,
+        );
         expect(secondPageBody.meta).toEqual({ total, limit: 5, offset: 5 });
         expect(secondPageBody.courses.length).toBeLessThanOrEqual(5);
 
         // Ensure pages don't overlap
         const firstPageIds = body.courses.map(c => c._id);
         const secondPageIds = secondPageBody.courses.map(c => c._id);
-        const intersection = firstPageIds.filter(id => secondPageIds.includes(id));
+        const intersection = firstPageIds.filter(id =>
+          secondPageIds.includes(id),
+        );
         expect(intersection).toHaveLength(0);
       }
     });
@@ -129,9 +147,7 @@ describe('GET /api/courses', () => {
     it('should match default pagination with explicit values', async () => {
       let defaultPagBody;
       {
-        const res = await request(app)
-          .get('/api/courses')
-          .expect(200);
+        const res = await request(app).get('/api/courses').expect(200);
         defaultPagBody = parseAndExpectValid(ZCourseListResponse, res.body);
       }
       {
@@ -139,7 +155,9 @@ describe('GET /api/courses', () => {
           .get('/api/courses')
           .query(qs.stringify({ limit: 10, offset: 0 }))
           .expect(200);
-        expect(parseAndExpectValid(ZCourseListResponse, res.body)).toEqual(defaultPagBody);
+        expect(parseAndExpectValid(ZCourseListResponse, res.body)).toEqual(
+          defaultPagBody,
+        );
       }
     });
 
@@ -158,7 +176,9 @@ describe('GET /api/courses', () => {
 
   describe('Search and filtering', () => {
     it('should support fuzzy keyword search across course names and lecturer', async () => {
-      const courses = await CourseModel.find().lean({ versionKey: false }).exec();
+      const courses = await CourseModel.find()
+        .lean({ versionKey: false })
+        .exec();
       const fuse = new Fuse(courses, {
         keys: ['names', 'lecturer'],
         threshold: 0.6,
@@ -185,15 +205,23 @@ describe('GET /api/courses', () => {
           .get('/api/courses')
           .query(qs.stringify({ limit: 1000 }))
           .expect(200);
-        const allCourses = parseAndExpectValid(ZCourseListResponse, allCoursesRes.body);
+        const allCourses = parseAndExpectValid(
+          ZCourseListResponse,
+          allCoursesRes.body,
+        );
 
         const emptyKeywordRes = await request(app)
           .get('/api/courses')
           .query(qs.stringify({ keyword: '', limit: 1000 }))
           .expect(200);
-        const emptyKeywordCourses = parseAndExpectValid(ZCourseListResponse, emptyKeywordRes.body);
+        const emptyKeywordCourses = parseAndExpectValid(
+          ZCourseListResponse,
+          emptyKeywordRes.body,
+        );
 
-        expect(emptyKeywordCourses.courses.length).toBe(allCourses.courses.length);
+        expect(emptyKeywordCourses.courses.length).toBe(
+          allCourses.courses.length,
+        );
         expect(emptyKeywordCourses.meta.total).toBe(allCourses.meta.total);
       }
 
@@ -214,15 +242,23 @@ describe('GET /api/courses', () => {
           .get('/api/courses')
           .query(qs.stringify({ limit: 1000 }))
           .expect(200);
-        const allCourses = parseAndExpectValid(ZCourseListResponse, allCoursesRes.body);
+        const allCourses = parseAndExpectValid(
+          ZCourseListResponse,
+          allCoursesRes.body,
+        );
 
         const whitespaceKeywordRes = await request(app)
           .get('/api/courses')
           .query(qs.stringify({ keyword: '   ', limit: 1000 }))
           .expect(200);
-        const whitespaceKeywordCourses = parseAndExpectValid(ZCourseListResponse, whitespaceKeywordRes.body);
+        const whitespaceKeywordCourses = parseAndExpectValid(
+          ZCourseListResponse,
+          whitespaceKeywordRes.body,
+        );
 
-        expect(whitespaceKeywordCourses.courses.length).toBe(allCourses.courses.length);
+        expect(whitespaceKeywordCourses.courses.length).toBe(
+          allCourses.courses.length,
+        );
       }
     });
 
@@ -236,7 +272,9 @@ describe('GET /api/courses', () => {
 
         const body = parseAndExpectValid(ZCourseListResponse, res.body);
         for (const course of body.courses) {
-          const hasKeywordInNames = course.names.some(name => name.includes('資料結構'));
+          const hasKeywordInNames = course.names.some(name =>
+            name.includes('資料結構'),
+          );
           const hasKeywordInLecturer = course.lecturer.includes('資料結構');
           expect(hasKeywordInNames || hasKeywordInLecturer).toBe(true);
         }
@@ -251,7 +289,9 @@ describe('GET /api/courses', () => {
 
         const body = parseAndExpectValid(ZCourseListResponse, res.body);
         for (const course of body.courses) {
-          const hasKeywordInNames = course.names.some(name => name.includes('林'));
+          const hasKeywordInNames = course.names.some(name =>
+            name.includes('林'),
+          );
           const hasKeywordInLecturer = course.lecturer.includes('林');
           expect(hasKeywordInNames || hasKeywordInLecturer).toBe(true);
         }
@@ -366,7 +406,9 @@ describe('GET /api/courses/:courseId', () => {
         .expect(200);
       const listBody = parseAndExpectValid(ZCourseListResponse, listRes.body);
 
-      const courseFromList = listBody.courses.find(c => c._id === testCourse._id);
+      const courseFromList = listBody.courses.find(
+        c => c._id === testCourse._id,
+      );
       expect(courseFromList).toBeDefined();
       expect(singleBody.course).toEqual(courseFromList);
     });
@@ -410,7 +452,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
     it('should support pagination correctly', async () => {
       const course = await getTestCourse();
-      const totalQuizzes = await QuizModel.countDocuments({ course: course._id }).exec();
+      const totalQuizzes = await QuizModel.countDocuments({
+        course: course._id,
+      }).exec();
 
       const res = await request(app)
         .get(`/api/courses/${course._id}/quizzes`)
@@ -425,7 +469,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
     it('should handle pagination with proper page separation', async () => {
       const course = await getTestCourse();
-      const totalQuizzes = await QuizModel.countDocuments({ course: course._id }).exec();
+      const totalQuizzes = await QuizModel.countDocuments({
+        course: course._id,
+      }).exec();
 
       if (totalQuizzes > 3) {
         // Test first page
@@ -434,8 +480,15 @@ describe('GET /api/courses/:courseId/quizzes', () => {
           .query(qs.stringify({ limit: 2, offset: 0 }))
           .expect(200);
 
-        const firstPageBody = parseAndExpectValid(ZQuizListResponse, firstPageRes.body);
-        expect(firstPageBody.meta).toEqual({ total: totalQuizzes, limit: 2, offset: 0 });
+        const firstPageBody = parseAndExpectValid(
+          ZQuizListResponse,
+          firstPageRes.body,
+        );
+        expect(firstPageBody.meta).toEqual({
+          total: totalQuizzes,
+          limit: 2,
+          offset: 0,
+        });
         expect(firstPageBody.quizzes.length).toBeLessThanOrEqual(2);
 
         // Test second page
@@ -444,13 +497,22 @@ describe('GET /api/courses/:courseId/quizzes', () => {
           .query(qs.stringify({ limit: 2, offset: 2 }))
           .expect(200);
 
-        const secondPageBody = parseAndExpectValid(ZQuizListResponse, secondPageRes.body);
-        expect(secondPageBody.meta).toEqual({ total: totalQuizzes, limit: 2, offset: 2 });
+        const secondPageBody = parseAndExpectValid(
+          ZQuizListResponse,
+          secondPageRes.body,
+        );
+        expect(secondPageBody.meta).toEqual({
+          total: totalQuizzes,
+          limit: 2,
+          offset: 2,
+        });
 
         // Ensure pages don't overlap
         const firstPageIds = firstPageBody.quizzes.map(q => q._id);
         const secondPageIds = secondPageBody.quizzes.map(q => q._id);
-        const intersection = firstPageIds.filter(id => secondPageIds.includes(id));
+        const intersection = firstPageIds.filter(id =>
+          secondPageIds.includes(id),
+        );
         expect(intersection).toHaveLength(0);
       }
     });
@@ -498,7 +560,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
           .get(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify({ limit: 10, offset: 0 }))
           .expect(200);
-        expect(parseAndExpectValid(ZQuizListResponse, res.body)).toEqual(defaultPagBody);
+        expect(parseAndExpectValid(ZQuizListResponse, res.body)).toEqual(
+          defaultPagBody,
+        );
       }
     });
   });

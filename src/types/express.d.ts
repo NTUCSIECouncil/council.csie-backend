@@ -1,4 +1,5 @@
 import { type UUID } from 'crypto';
+
 import { type UserRecord } from 'firebase-admin/auth';
 
 declare global {

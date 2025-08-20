@@ -1,11 +1,17 @@
-import { type UUID, randomUUID } from 'crypto';
+import { randomUUID, type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import { type Request, Router } from 'express';
+
+import { Router, type Request } from 'express';
+
 import { env } from '@/config.ts';
 import { models } from '@models/index.ts';
-import { type Quiz, ZQuizSchema } from '@models/quiz-schema.ts';
-import { type QuizEmbedQueryParam, ZQuizEmbedQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import { ZQuizSchema, type Quiz } from '@models/quiz-schema.ts';
+import {
+  ZQuizEmbedQueryParam,
+  ZUuidSchema,
+  type QuizEmbedQueryParam,
+} from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { fileUploader, paginationParser } from './middleware.ts';
 
@@ -94,13 +100,19 @@ router.patch('/:quizId', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
     quizUpdates = ZQuizSchema.partial().parse(req.body.quiz);
   } catch (err) {
-    logger.warn('Failed to parse quizId or patch in PATCH /quizzes/:quizId: ', err);
+    logger.warn(
+      'Failed to parse quizId or patch in PATCH /quizzes/:quizId: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid quiz ID or request body' });
     return;
   }
 
   const target = await QuizModel.findById(quizId).exec();
-  if ((quizUpdates._id !== undefined && quizUpdates._id !== quizId) || target === null) {
+  if (
+    (quizUpdates._id !== undefined && quizUpdates._id !== quizId) ||
+    target === null
+  ) {
     res.status(400).json({ message: 'Invalid request or quiz not found' });
   } else {
     target.set(quizUpdates);
@@ -161,7 +173,9 @@ router.put('/:quizId/file', quizFileUploader, async (req, res) => {
   }
 
   if (!req.file) {
-    res.status(400).json({ message: 'No file uploaded or invalid file format' });
+    res
+      .status(400)
+      .json({ message: 'No file uploaded or invalid file format' });
     return;
   }
 

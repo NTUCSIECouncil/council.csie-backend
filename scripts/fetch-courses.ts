@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
+
 import { z } from 'zod';
+
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
@@ -15,17 +17,19 @@ const ZCourseFromApiSchema = z.object({
   // Additional fields can be added as needed
 });
 
-interface CourseFromApi extends z.infer<typeof ZCourseFromApiSchema> {};
+interface CourseFromApi extends z.infer<typeof ZCourseFromApiSchema> {}
 
 const ZCourseSearchResponseSchema = z.object({
   totalCount: z.number().int().nonnegative(),
   courses: z.array(ZCourseFromApiSchema),
 });
 
-interface CourseSearchResponse extends z.infer<typeof ZCourseSearchResponseSchema> {};
+interface CourseSearchResponse
+  extends z.infer<typeof ZCourseSearchResponseSchema> {}
 
 const DEFAULT_BATCH_SIZE = 30;
-const API_URL = 'https://course.ntu.edu.tw/api/v1/courses/search/quick?lang=zh_TW';
+const API_URL =
+  'https://course.ntu.edu.tw/api/v1/courses/search/quick?lang=zh_TW';
 
 const fetchCoursePage = async (
   keyword: string,
@@ -75,12 +79,18 @@ const fetchCoursePage = async (
 
   let courseSearchResponse;
   try {
-    courseSearchResponse = ZCourseSearchResponseSchema.parse(await response.json());
+    courseSearchResponse = ZCourseSearchResponseSchema.parse(
+      await response.json(),
+    );
   } catch (error) {
-    throw new Error(`Failed to parse course search response with keyword "${keyword}", batch size ${batchSize.toString()}, page index ${pageIndex.toString()}, semester ${semester}: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to parse course search response with keyword "${keyword}", batch size ${batchSize.toString()}, page index ${pageIndex.toString()}, semester ${semester}: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
   if (pageIndex % 10 === 0) {
-    console.log(`Fetched page ${pageIndex.toString()} for keyword "${keyword}" (Semester: ${semester})`);
+    console.log(
+      `Fetched page ${pageIndex.toString()} for keyword "${keyword}" (Semester: ${semester})`,
+    );
   }
   return courseSearchResponse;
 };
@@ -97,13 +107,18 @@ const transformApiCourseToCourse = (apiCourse: CourseFromApi): Course => {
   };
 };
 
-const getBatchCourseData = async (keyword: string, semester: string): Promise<Course[]> => {
+const getBatchCourseData = async (
+  keyword: string,
+  semester: string,
+): Promise<Course[]> => {
   const allProcessedCourses: Course[] = [];
   let currentPageIndex = 0;
   let totalCount = 0;
   let fetchedCoursesOnPage = 0;
 
-  console.log(`Starting to fetch all courses for keyword: "${keyword}", Semester: ${semester}`);
+  console.log(
+    `Starting to fetch all courses for keyword: "${keyword}", Semester: ${semester}`,
+  );
 
   do {
     try {
@@ -117,7 +132,9 @@ const getBatchCourseData = async (keyword: string, semester: string): Promise<Co
       if (currentPageIndex === 0) {
         totalCount = pageResponse.totalCount;
         if (totalCount === 0) {
-          console.log(`No courses found for keyword "${keyword}", Semester: ${semester}.`);
+          console.log(
+            `No courses found for keyword "${keyword}", Semester: ${semester}.`,
+          );
           break;
         }
         console.log(
@@ -127,7 +144,11 @@ const getBatchCourseData = async (keyword: string, semester: string): Promise<Co
 
       fetchedCoursesOnPage = pageResponse.courses.length;
 
-      if (fetchedCoursesOnPage === 0 && totalCount > 0 && currentPageIndex * DEFAULT_BATCH_SIZE < totalCount) {
+      if (
+        fetchedCoursesOnPage === 0 &&
+        totalCount > 0 &&
+        currentPageIndex * DEFAULT_BATCH_SIZE < totalCount
+      ) {
         console.warn(
           `Warning: API returned no courses on page ${currentPageIndex.toString()} for keyword "${keyword}", Semester: ${semester}, even though more were expected. Stopping.`,
         );

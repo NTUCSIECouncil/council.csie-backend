@@ -1,6 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
+
 import mongoose from 'mongoose';
+
 import { ZArticleSchema } from '@models/article-schema.ts';
 import { ZCourseSchema } from '@models/course-schema.ts';
 import { models } from '@models/index.ts';
@@ -14,8 +16,15 @@ const ZSchema = {
   User: ZUserSchema,
 };
 
-const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => {
-  const filePath = path.join(import.meta.dirname, '..', 'samples', `${model.toLowerCase()}-samples.json`);
+const insertFromFile = async (
+  model: 'Article' | 'Course' | 'Quiz' | 'User',
+) => {
+  const filePath = path.join(
+    import.meta.dirname,
+    '..',
+    'samples',
+    `${model.toLowerCase()}-samples.json`,
+  );
   const data = await fs.readFile(filePath, 'utf-8');
   const objs = ZSchema[model].array().parse(JSON.parse(data));
 
@@ -23,7 +32,9 @@ const insertFromFile = async (model: 'Article' | 'Course' | 'Quiz' | 'User') => 
     const doc = new models[model](obj);
     await doc.save();
   }
-  console.log(`Inserted ${objs.length.toString()} ${model} data from ${filePath} into database ${dbName}`);
+  console.log(
+    `Inserted ${objs.length.toString()} ${model} data from ${filePath} into database ${dbName}`,
+  );
 };
 
 // check env
@@ -59,11 +70,21 @@ const uploadsPath = path.join(import.meta.dirname, '..', 'uploads');
 await fs.rm(uploadsPath, { recursive: true, force: true });
 await fs.mkdir(uploadsPath, { recursive: true });
 
-const articleFilesSrcPath = path.join(import.meta.dirname, '..', 'samples', 'article-file-samples');
+const articleFilesSrcPath = path.join(
+  import.meta.dirname,
+  '..',
+  'samples',
+  'article-file-samples',
+);
 const articleFilesDestPath = path.join(uploadsPath, 'articles');
 await fs.cp(articleFilesSrcPath, articleFilesDestPath, { recursive: true });
 
-const quizFilesSrcPath = path.join(import.meta.dirname, '..', 'samples', 'quiz-file-samples');
+const quizFilesSrcPath = path.join(
+  import.meta.dirname,
+  '..',
+  'samples',
+  'quiz-file-samples',
+);
 const quizFilesDestPath = path.join(uploadsPath, 'quizzes');
 await fs.cp(quizFilesSrcPath, quizFilesDestPath, { recursive: true });
 

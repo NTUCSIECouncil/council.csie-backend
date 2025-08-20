@@ -4,8 +4,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import z from 'zod';
 
 import app from './app.ts';
-import { ZPrivateUserResponseSchema, ZUserResponseSchema } from './response-schemas.ts';
-import { expectValidErrorResponse, getTestUser, parseAndExpectValid, seedModelFromSamples } from './utils.ts';
+import {
+  ZPrivateUserResponseSchema,
+  ZUserResponseSchema,
+} from './response-schemas.ts';
+import {
+  expectValidErrorResponse,
+  getTestUser,
+  parseAndExpectValid,
+  seedModelFromSamples,
+} from './utils.ts';
 
 const ZUserCreateResponse = z.object({
   userId: z.string(),
@@ -147,18 +155,14 @@ describe('GET /api/users/:userId', () => {
 
   describe('Input validation', () => {
     it('should validate UUID format', async () => {
-      const res = await request(app)
-        .get('/api/users/invalid-uuid')
-        .expect(400);
+      const res = await request(app).get('/api/users/invalid-uuid').expect(400);
       expectValidErrorResponse(res.body);
     });
   });
 
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
-      const res = await request(app)
-        .get('/api/users/invalid-uuid')
-        .expect(400);
+      const res = await request(app).get('/api/users/invalid-uuid').expect(400);
 
       expectValidErrorResponse(res.body);
     });
@@ -328,9 +332,7 @@ describe('GET /api/users/me', () => {
 
   describe('Authentication', () => {
     it('should require valid authentication', async () => {
-      const res = await request(app)
-        .get('/api/users/me')
-        .expect(401);
+      const res = await request(app).get('/api/users/me').expect(401);
 
       expectValidErrorResponse(res.body);
     });
@@ -441,7 +443,10 @@ describe('GET /api/users/me/private', () => {
         .expect(200);
 
       const publicBody = parseAndExpectValid(ZUserResponse, publicRes.body);
-      const privateBody = parseAndExpectValid(ZPrivateUserResponse, privateRes.body);
+      const privateBody = parseAndExpectValid(
+        ZPrivateUserResponse,
+        privateRes.body,
+      );
 
       // Public response should not have private fields
       expect(publicBody.user).not.toHaveProperty('email');
@@ -458,9 +463,7 @@ describe('GET /api/users/me/private', () => {
   describe('Authentication', () => {
     it('should require valid authentication', async () => {
       {
-        const res = await request(app)
-          .get('/api/users/me/private')
-          .expect(401);
+        const res = await request(app).get('/api/users/me/private').expect(401);
         expectValidErrorResponse(res.body);
       }
 

@@ -57,4 +57,12 @@ const ZQuizResponseSchema = z.object({
   uploader: z.union([ZUuidSchema, ZUserResponseSchema]),
 });
 
-export { ZErrorSchema, ZMetaSchema, ZCourseResponseSchema, ZUserResponseSchema, ZPrivateUserResponseSchema, ZArticleResponseSchema, ZQuizResponseSchema };
+export {
+  ZErrorSchema,
+  ZMetaSchema,
+  ZCourseResponseSchema,
+  ZUserResponseSchema,
+  ZPrivateUserResponseSchema,
+  ZArticleResponseSchema,
+  ZQuizResponseSchema,
+};

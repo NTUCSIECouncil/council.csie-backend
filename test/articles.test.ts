@@ -1,19 +1,32 @@
 import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+
 import Fuse from 'fuse.js';
 import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
 import { env } from '@/config.ts';
 import { ArticleModel } from '@models/article-schema.ts';
 import { UserModel } from '@models/user-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
 import app from './app.ts';
-import { ZArticleResponseSchema, ZCourseResponseSchema, ZMetaSchema } from './response-schemas.ts';
-import { expectValidErrorResponse, getTestArticle, getTestCourse, getTestUser, parseAndExpectValid, seedModelFromSamples } from './utils.ts';
+import {
+  ZArticleResponseSchema,
+  ZCourseResponseSchema,
+  ZMetaSchema,
+} from './response-schemas.ts';
+import {
+  expectValidErrorResponse,
+  getTestArticle,
+  getTestCourse,
+  getTestUser,
+  parseAndExpectValid,
+  seedModelFromSamples,
+} from './utils.ts';
 
 const ZArticleListResponse = z.object({
   articles: ZArticleResponseSchema.array(),
@@ -68,9 +81,7 @@ describe('GET /api/articles', () => {
     });
 
     it('should use default pagination values (limit: 10, offset: 0)', async () => {
-      const res = await request(app)
-        .get('/api/articles')
-        .expect(200);
+      const res = await request(app).get('/api/articles').expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
       expect(body.meta.limit).toBe(10);
@@ -115,22 +126,25 @@ describe('GET /api/articles', () => {
           .query(qs.stringify({ limit: 5, offset: 5 }))
           .expect(200);
 
-        const secondPageBody = parseAndExpectValid(ZArticleListResponse, res.body);
+        const secondPageBody = parseAndExpectValid(
+          ZArticleListResponse,
+          res.body,
+        );
         expect(secondPageBody.meta).toEqual({ total, limit: 5, offset: 5 });
 
         // Ensure no overlap between pages
         const firstPageIds = body.articles.map(a => a._id);
         const secondPageIds = secondPageBody.articles.map(a => a._id);
-        expect(firstPageIds.filter(id => secondPageIds.includes(id))).toEqual([]);
+        expect(firstPageIds.filter(id => secondPageIds.includes(id))).toEqual(
+          [],
+        );
       }
     });
 
     it('should match default pagination with explicit values', async () => {
       let defaultPagBody;
       {
-        const res = await request(app)
-          .get('/api/articles')
-          .expect(200);
+        const res = await request(app).get('/api/articles').expect(200);
         defaultPagBody = parseAndExpectValid(ZArticleListResponse, res.body);
       }
       {
@@ -138,7 +152,9 @@ describe('GET /api/articles', () => {
           .get('/api/articles')
           .query(qs.stringify({ limit: 10, offset: 0 }))
           .expect(200);
-        expect(parseAndExpectValid(ZArticleListResponse, res.body)).toEqual(defaultPagBody);
+        expect(parseAndExpectValid(ZArticleListResponse, res.body)).toEqual(
+          defaultPagBody,
+        );
       }
     });
 
@@ -157,7 +173,10 @@ describe('GET /api/articles', () => {
 
   describe('Search and filtering', () => {
     it('should support fuzzy keyword search across multiple fields', async () => {
-      const populatedArticles = await ArticleModel.find().populate('course').lean({ versionKey: false }).exec();
+      const populatedArticles = await ArticleModel.find()
+        .populate('course')
+        .lean({ versionKey: false })
+        .exec();
       const fuse = new Fuse(populatedArticles, {
         keys: ['title', 'course.names', 'course.lecturer', 'course.curriculum'],
         threshold: 0.6,
@@ -186,15 +205,23 @@ describe('GET /api/articles', () => {
           .get('/api/articles')
           .query(qs.stringify({ limit: 1000 }))
           .expect(200);
-        const allArticles = parseAndExpectValid(ZArticleListResponse, allArticlesRes.body);
+        const allArticles = parseAndExpectValid(
+          ZArticleListResponse,
+          allArticlesRes.body,
+        );
 
         const emptyKeywordRes = await request(app)
           .get('/api/articles')
           .query(qs.stringify({ keyword: '', limit: 1000 }))
           .expect(200);
-        const emptyKeywordArticles = parseAndExpectValid(ZArticleListResponse, emptyKeywordRes.body);
+        const emptyKeywordArticles = parseAndExpectValid(
+          ZArticleListResponse,
+          emptyKeywordRes.body,
+        );
 
-        expect(emptyKeywordArticles.articles.length).toBe(allArticles.articles.length);
+        expect(emptyKeywordArticles.articles.length).toBe(
+          allArticles.articles.length,
+        );
       }
 
       // Non-existent keyword should return empty results
@@ -263,26 +290,36 @@ describe('GET /api/articles', () => {
           .get('/api/articles')
           .query(qs.stringify({ limit: 1000 }))
           .expect(200);
-        const allArticles = parseAndExpectValid(ZArticleListResponse, allArticlesRes.body);
+        const allArticles = parseAndExpectValid(
+          ZArticleListResponse,
+          allArticlesRes.body,
+        );
 
         const emptyTagsRes = await request(app)
           .get('/api/articles')
           .query(qs.stringify({ tags: [], limit: 1000 }))
           .expect(200);
-        const emptyTagsArticles = parseAndExpectValid(ZArticleListResponse, emptyTagsRes.body);
+        const emptyTagsArticles = parseAndExpectValid(
+          ZArticleListResponse,
+          emptyTagsRes.body,
+        );
 
-        expect(emptyTagsArticles.articles.length).toBe(allArticles.articles.length);
+        expect(emptyTagsArticles.articles.length).toBe(
+          allArticles.articles.length,
+        );
       }
     });
 
     it('should combine keyword and tag filtering correctly', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({
-          keyword: '物理',
-          tags: ['賴喜美'],
-          limit: 50,
-        }))
+        .query(
+          qs.stringify({
+            keyword: '物理',
+            tags: ['賴喜美'],
+            limit: 50,
+          }),
+        )
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -357,7 +394,8 @@ describe('GET /api/articles', () => {
       }
 
       // Upload long content (>50 chars) - should be truncated with ellipsis
-      const longContent = 'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
+      const longContent =
+        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
       await request(app)
         .put(`/api/articles/${articleId}/file`)
         .send({ file: longContent })
@@ -558,7 +596,7 @@ describe('POST /api/articles', () => {
     it('should handle Unicode content correctly', async () => {
       const creator = await getTestUser();
       const unicodeContent = {
-        ...await genArticleCreate(),
+        ...(await genArticleCreate()),
         title: '测试文章 🚀 العربية 日本語 한국어',
         tags: ['测试', 'العربية', '日本語', '한국어', '🏷️'],
       };
@@ -600,7 +638,10 @@ describe('POST /api/articles', () => {
       const articleRes = await request(app)
         .get(`/api/articles/${body.articleId}`)
         .expect(200);
-      const articleBody = parseAndExpectValid(ZArticleResponse, articleRes.body);
+      const articleBody = parseAndExpectValid(
+        ZArticleResponse,
+        articleRes.body,
+      );
       expect(articleBody.article.creator).toBe(creator._id);
     });
   });
@@ -674,8 +715,26 @@ describe('POST /api/articles', () => {
       const validRatings = genRatings();
 
       // Test invalid rating values - must be integers between 1 and 5
-      const invalidValues = [0, 6, -1, 10, 1.5, 4.2, 'invalid', null, undefined, true, []];
-      const ratingFields = ['sweetness', 'chill', 'teaching', 'gain', 'recommend'] as const;
+      const invalidValues = [
+        0,
+        6,
+        -1,
+        10,
+        1.5,
+        4.2,
+        'invalid',
+        null,
+        undefined,
+        true,
+        [],
+      ];
+      const ratingFields = [
+        'sweetness',
+        'chill',
+        'teaching',
+        'gain',
+        'recommend',
+      ] as const;
 
       for (const field of ratingFields) {
         for (const invalidValue of invalidValues) {
@@ -856,7 +915,8 @@ describe('GET /api/articles/:articleId', () => {
       }
 
       // Upload long content and verify truncation
-      const longContent = 'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
+      const longContent =
+        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
       await request(app)
         .put(`/api/articles/${articleId}/file`)
         .send({ file: longContent })
@@ -925,7 +985,12 @@ describe('GET /api/articles/:articleId', () => {
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
       // Invalid UUID formats
-      const invalidUuids = ['not-a-uuid', '123', 'invalid-uuid-format', 'abcd-efgh-ijkl'];
+      const invalidUuids = [
+        'not-a-uuid',
+        '123',
+        'invalid-uuid-format',
+        'abcd-efgh-ijkl',
+      ];
       for (const invalidUuid of invalidUuids) {
         const res = await request(app)
           .get(`/api/articles/${invalidUuid}`)
@@ -948,7 +1013,9 @@ describe('PATCH /api/articles/:articleId', () => {
   describe('Article updates', () => {
     it('should support partial updates for individual fields', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Test title update
       await request(app)
@@ -1000,7 +1067,9 @@ describe('PATCH /api/articles/:articleId', () => {
 
     it('should support multiple field updates in single request', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       await request(app)
         .patch(`/api/articles/${article._id}`)
@@ -1023,7 +1092,9 @@ describe('PATCH /api/articles/:articleId', () => {
 
     it('should handle empty updates as no-op', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Empty body should be allowed (no-op)
       await request(app)
@@ -1037,7 +1108,9 @@ describe('PATCH /api/articles/:articleId', () => {
   describe('Input validation', () => {
     it('should validate data type constraints', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Invalid title type
       {
@@ -1062,7 +1135,9 @@ describe('PATCH /api/articles/:articleId', () => {
 
     it('should validate ratings constraints', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Invalid rating values (should be 1-5)
       {
@@ -1122,7 +1197,11 @@ describe('PATCH /api/articles/:articleId', () => {
 
     it('should enforce creator-only authorization', async () => {
       const article = await getTestArticle();
-      const nonCreator = await UserModel.findOne({ _id: { $ne: article.creator } }).lean({ versionKey: false }).exec();
+      const nonCreator = await UserModel.findOne({
+        _id: { $ne: article.creator },
+      })
+        .lean({ versionKey: false })
+        .exec();
 
       if (nonCreator) {
         const res = await request(app)
@@ -1136,7 +1215,9 @@ describe('PATCH /api/articles/:articleId', () => {
 
     it('should allow creator to update their own article', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       await request(app)
         .patch(`/api/articles/${article._id}`)
@@ -1161,7 +1242,10 @@ describe('GET /api/articles/:articleId/file', () => {
 
       // Verify file content matches what's on disk if file exists
       try {
-        const diskData = await fs.readFile(path.join(env.PWD, env.ARTICLE_FILE_DIR, `${article._id}.md`), 'utf-8');
+        const diskData = await fs.readFile(
+          path.join(env.PWD, env.ARTICLE_FILE_DIR, `${article._id}.md`),
+          'utf-8',
+        );
         expect(body.file).toBe(diskData);
       } catch {
         // File doesn't exist, should return empty string
@@ -1219,7 +1303,9 @@ describe('PUT /api/articles/:articleId/file', () => {
   describe('File upload and updates', () => {
     it('should upload and update file content successfully', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Upload initial content
       const content = '這是測試內容';
@@ -1258,7 +1344,9 @@ describe('PUT /api/articles/:articleId/file', () => {
 
     it('should handle various content types and encodings', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       const contentTests = [
         {
@@ -1273,8 +1361,10 @@ describe('PUT /api/articles/:articleId/file', () => {
         },
         {
           name: 'Markdown content',
-          content: '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
-          expected: '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
+          content:
+            '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
+          expected:
+            '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
         },
         {
           name: 'Large content',
@@ -1283,8 +1373,10 @@ describe('PUT /api/articles/:articleId/file', () => {
         },
         {
           name: 'Content with newlines and special characters',
-          content: 'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
-          expected: 'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
+          content:
+            'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
+          expected:
+            'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
         },
       ];
 
@@ -1308,9 +1400,12 @@ describe('PUT /api/articles/:articleId/file', () => {
 
     it('should integrate correctly with content embedding', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
-      const fileContent = '# Test Article\n\nThis is a test article with some content that should be truncated.';
+      const fileContent =
+        '# Test Article\n\nThis is a test article with some content that should be truncated.';
       await request(app)
         .put(`/api/articles/${article._id}/file`)
         .send({ file: fileContent })
@@ -1331,7 +1426,9 @@ describe('PUT /api/articles/:articleId/file', () => {
   describe('Input validation', () => {
     it('should validate request body structure', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       // Missing file property
       {
@@ -1423,7 +1520,11 @@ describe('PUT /api/articles/:articleId/file', () => {
 
     it('should enforce creator-only authorization', async () => {
       const article = await getTestArticle();
-      const nonCreator = await UserModel.findOne({ _id: { $ne: article.creator } }).lean({ versionKey: false }).exec();
+      const nonCreator = await UserModel.findOne({
+        _id: { $ne: article.creator },
+      })
+        .lean({ versionKey: false })
+        .exec();
 
       if (nonCreator) {
         const res = await request(app)
@@ -1437,7 +1538,9 @@ describe('PUT /api/articles/:articleId/file', () => {
 
     it('should allow creator to upload files', async () => {
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator).lean({ versionKey: false }).exec();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
 
       await request(app)
         .put(`/api/articles/${article._id}/file`)

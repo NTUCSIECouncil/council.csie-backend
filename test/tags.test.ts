@@ -3,10 +3,15 @@ import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
 import { ArticleModel } from '@models/article-schema.ts';
 import app from './app.ts';
 import { ZMetaSchema } from './response-schemas.ts';
-import { expectValidErrorResponse, parseAndExpectValid, seedModelFromSamples } from './utils.ts';
+import {
+  expectValidErrorResponse,
+  parseAndExpectValid,
+  seedModelFromSamples,
+} from './utils.ts';
 
 const ZTagsListResponse = z.object({
   tags: z.string().array(),
@@ -34,9 +39,7 @@ describe('GET /api/tags', () => {
     });
 
     it('should use default pagination values (limit: 10, offset: 0)', async () => {
-      const res = await request(app)
-        .get('/api/tags')
-        .expect(200);
+      const res = await request(app).get('/api/tags').expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
       expect(body.meta.limit).toBe(10);
@@ -61,9 +64,7 @@ describe('GET /api/tags', () => {
       // Clear all articles
       await ArticleModel.deleteMany({}).exec();
 
-      const res = await request(app)
-        .get('/api/tags')
-        .expect(200);
+      const res = await request(app).get('/api/tags').expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
       expect(body.tags).toHaveLength(0);
@@ -80,7 +81,10 @@ describe('GET /api/tags', () => {
         .get('/api/tags')
         .query(qs.stringify({ limit: 1000 }))
         .expect(200);
-      const allTagsBody = parseAndExpectValid(ZTagsListResponse, allTagsRes.body);
+      const allTagsBody = parseAndExpectValid(
+        ZTagsListResponse,
+        allTagsRes.body,
+      );
       const total = allTagsBody.meta.total;
 
       if (total > 5) {
@@ -104,13 +108,18 @@ describe('GET /api/tags', () => {
             .query(qs.stringify({ limit: 5, offset: 5 }))
             .expect(200);
 
-          const secondPageBody = parseAndExpectValid(ZTagsListResponse, res.body);
+          const secondPageBody = parseAndExpectValid(
+            ZTagsListResponse,
+            res.body,
+          );
           expect(secondPageBody.meta).toEqual({ total, limit: 5, offset: 5 });
 
           // Verify no overlap between pages (since tags are sorted)
           const firstPageTags = new Set(body.tags);
           const secondPageTags = new Set(secondPageBody.tags);
-          const intersection = new Set([...firstPageTags].filter(tag => secondPageTags.has(tag)));
+          const intersection = new Set(
+            [...firstPageTags].filter(tag => secondPageTags.has(tag)),
+          );
           expect(intersection.size).toBe(0);
         }
       }
@@ -119,9 +128,7 @@ describe('GET /api/tags', () => {
     it('should match default pagination with explicit values', async () => {
       let defaultPagBody;
       {
-        const res = await request(app)
-          .get('/api/tags')
-          .expect(200);
+        const res = await request(app).get('/api/tags').expect(200);
         defaultPagBody = parseAndExpectValid(ZTagsListResponse, res.body);
       }
       {
@@ -129,7 +136,9 @@ describe('GET /api/tags', () => {
           .get('/api/tags')
           .query(qs.stringify({ limit: 10, offset: 0 }))
           .expect(200);
-        expect(parseAndExpectValid(ZTagsListResponse, res.body)).toEqual(defaultPagBody);
+        expect(parseAndExpectValid(ZTagsListResponse, res.body)).toEqual(
+          defaultPagBody,
+        );
       }
     });
 
@@ -151,7 +160,8 @@ describe('GET /api/tags', () => {
         .get('/api/tags')
         .query(qs.stringify({ limit: 1000 }))
         .expect(200);
-      const total = parseAndExpectValid(ZTagsListResponse, allTagsRes.body).meta.total;
+      const total = parseAndExpectValid(ZTagsListResponse, allTagsRes.body).meta
+        .total;
 
       const res = await request(app)
         .get('/api/tags')
@@ -170,7 +180,9 @@ describe('GET /api/tags', () => {
     it('should reflect all unique tags from existing articles', async () => {
       // Get all articles and extract unique tags manually
       const articles = await ArticleModel.find({}, { tags: 1 }).lean().exec();
-      const expectedTags = [...new Set(articles.flatMap(article => article.tags))].sort();
+      const expectedTags = [
+        ...new Set(articles.flatMap(article => article.tags)),
+      ].sort();
 
       const res = await request(app)
         .get('/api/tags')
@@ -189,7 +201,8 @@ describe('GET /api/tags', () => {
         .get('/api/tags')
         .query(qs.stringify({ limit: 5 }))
         .expect(200);
-      const total = parseAndExpectValid(ZTagsListResponse, firstPageRes.body).meta.total;
+      const total = parseAndExpectValid(ZTagsListResponse, firstPageRes.body)
+        .meta.total;
 
       // Collect all tags across all pages
       const allCollectedTags: string[] = [];
@@ -271,12 +284,14 @@ describe('GET /api/tags', () => {
     it('should ignore unknown query parameters', async () => {
       const res = await request(app)
         .get('/api/tags')
-        .query(qs.stringify({
-          limit: 5,
-          offset: 0,
-          unknownParam: 'should-be-ignored',
-          anotherParam: 123,
-        }))
+        .query(
+          qs.stringify({
+            limit: 5,
+            offset: 0,
+            unknownParam: 'should-be-ignored',
+            anotherParam: 123,
+          }),
+        )
         .expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
@@ -314,15 +329,9 @@ describe('GET /api/tags', () => {
     it('should return consistent results on repeated requests', async () => {
       const query = qs.stringify({ limit: 10, offset: 0 });
 
-      const res1 = await request(app)
-        .get('/api/tags')
-        .query(query)
-        .expect(200);
+      const res1 = await request(app).get('/api/tags').query(query).expect(200);
 
-      const res2 = await request(app)
-        .get('/api/tags')
-        .query(query)
-        .expect(200);
+      const res2 = await request(app).get('/api/tags').query(query).expect(200);
 
       const body1 = parseAndExpectValid(ZTagsListResponse, res1.body);
       const body2 = parseAndExpectValid(ZTagsListResponse, res2.body);

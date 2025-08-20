@@ -18,7 +18,7 @@ courses:
         description: Fuzzy search term applied to course name or lecturer.
         schema: { type: string }
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns a paginated list of courses matching the query parameters. Each course includes basic information.
         content:
@@ -30,15 +30,15 @@ courses:
                 courses:
                   type: array
                   items:
-                    $ref: "../components/schemas.yaml#/CourseResponse"
+                    $ref: '../components/schemas.yaml#/CourseResponse'
                 meta:
-                  $ref: "../components/schemas.yaml#/Meta"
-      "400":
+                  $ref: '../components/schemas.yaml#/Meta'
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 courses_courseId:
   get:
@@ -53,7 +53,7 @@ courses_courseId:
         description: The unique identifier of the course to retrieve.
         schema: { type: string }
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the course with the specified ID.
         content:
@@ -62,19 +62,19 @@ courses_courseId:
               type: object
               description: Course response
               properties:
-                course: { $ref: "../components/schemas.yaml#/CourseResponse" }
-      "400":
+                course: { $ref: '../components/schemas.yaml#/CourseResponse' }
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No course exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 courses_courseId_quizzes:
   get:
@@ -107,7 +107,7 @@ courses_courseId_quizzes:
         style: form
         explode: true
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns a paginated list of quizzes for the specified course. Each quiz may include embedded resources if requested.
         content:
@@ -120,18 +120,18 @@ courses_courseId_quizzes:
                   type: array
                   description: List of quizzes for the course
                   items:
-                    $ref: "../components/schemas.yaml#/QuizResponse"
+                    $ref: '../components/schemas.yaml#/QuizResponse'
                 meta:
-                  $ref: "../components/schemas.yaml#/Meta"
-      "400":
+                  $ref: '../components/schemas.yaml#/Meta'
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No course exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'

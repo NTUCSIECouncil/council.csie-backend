@@ -1,28 +1,52 @@
 import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+
 import { Router } from 'express';
 import { type HydratedDocument } from 'mongoose';
 import { z } from 'zod';
+
 import { env } from '@/config.ts';
-import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema, ZRatingSchema } from '@models/article-schema.ts';
-import { type ArticleEmbedQueryParam, type ArticleSearchQueryParam, ZArticleEmbedQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import {
+  ArticleModel,
+  ZArticleSchema,
+  ZRatingSchema,
+  type Article,
+  type PopulatedArticle,
+} from '@models/article-schema.ts';
+import {
+  ZArticleEmbedQueryParam,
+  ZArticleSearchQueryParam,
+  ZUuidSchema,
+  type ArticleEmbedQueryParam,
+  type ArticleSearchQueryParam,
+} from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
 
-const getArticleContent = async (articleId: UUID, sliceLength = 50): Promise<string> => {
+const getArticleContent = async (
+  articleId: UUID,
+  sliceLength = 50,
+): Promise<string> => {
   const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, `${articleId}.md`);
   try {
     const data = await fs.readFile(filePath, 'utf-8');
-    return data.length <= sliceLength ? data : data.slice(0, sliceLength) + '...';
+    return data.length <= sliceLength
+      ? data
+      : data.slice(0, sliceLength) + '...';
   } catch (err) {
     if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      logger.info(
+        `File not found for article ${articleId}: ${filePath}, returning empty string`,
+      );
       return '';
     }
-    logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+    logger.error(
+      `Error reading file for article ${articleId}: ${filePath}`,
+      err,
+    );
     throw err;
   }
 };
@@ -41,7 +65,8 @@ router.get('/', paginationParser, async (req, res) => {
     return;
   }
 
-  let articleDocs: HydratedDocument<Article | PopulatedArticle>[] = await ArticleModel.searchArticles(searchParam);
+  let articleDocs: HydratedDocument<Article | PopulatedArticle>[] =
+    await ArticleModel.searchArticles(searchParam);
 
   const total = articleDocs.length;
   articleDocs = articleDocs.slice(offset, offset + limit);
@@ -53,14 +78,16 @@ router.get('/', paginationParser, async (req, res) => {
     articleDocs = articleDocs.map(article => article.depopulate('creator'));
   }
 
-  const articles = await Promise.all(articleDocs.map(async (articleDoc) => {
-    const article = articleDoc.toObject<Article>();
+  const articles = await Promise.all(
+    articleDocs.map(async articleDoc => {
+      const article = articleDoc.toObject<Article>();
 
-    if (!embedParam.embed?.includes('content')) return article;
+      if (!embedParam.embed?.includes('content')) return article;
 
-    const content = await getArticleContent(articleDoc._id);
-    return { ...article, content };
-  }));
+      const content = await getArticleContent(articleDoc._id);
+      return { ...article, content };
+    }),
+  );
 
   res.json({ articles, meta: { total, offset, limit } });
 });
@@ -74,21 +101,30 @@ router.post('/', async (req, res) => {
 
   let articleCreate: Omit<Article, '_id' | 'creator'>;
   try {
-    articleCreate = ZArticleSchema.omit({ _id: true, creator: true }).parse(req.body);
+    articleCreate = ZArticleSchema.omit({ _id: true, creator: true }).parse(
+      req.body,
+    );
   } catch (err) {
     logger.warn('Failed to parse request body in POST /articles: ', err);
     res.status(400).json({ message: 'Invalid request body' });
     return;
   }
 
-  const courseExists = await ArticleModel.exists({ course: articleCreate.course });
+  const courseExists = await ArticleModel.exists({
+    course: articleCreate.course,
+  });
   if (!courseExists) {
-    logger.warn(`Course not found for article creation: ${articleCreate.course}`);
+    logger.warn(
+      `Course not found for article creation: ${articleCreate.course}`,
+    );
     res.status(400).json({ message: 'Invalid course ID' });
     return;
   }
 
-  const articleDoc = new ArticleModel({ ...articleCreate, creator: req.userId });
+  const articleDoc = new ArticleModel({
+    ...articleCreate,
+    creator: req.userId,
+  });
   await articleDoc.save();
   const articleId = articleDoc._id;
   res.status(201).json({ articleId });
@@ -101,7 +137,10 @@ router.get('/:articleId', async (req, res) => {
     articleId = ZUuidSchema.parse(req.params.articleId);
     embedParam = ZArticleEmbedQueryParam.parse(req.query);
   } catch (err) {
-    logger.warn('Failed to parse path parameter or query parameters in GET /articles/:articleId: ', err);
+    logger.warn(
+      'Failed to parse path parameter or query parameters in GET /articles/:articleId: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request parameters' });
     return;
   }
@@ -144,13 +183,19 @@ router.patch('/:articleId', async (req, res) => {
   let articleUpdates;
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
-    articleUpdates = ZArticleSchema
-      .omit({ _id: true, course: true, creator: true })
+    articleUpdates = ZArticleSchema.omit({
+      _id: true,
+      course: true,
+      creator: true,
+    })
       .extend({ ratings: ZRatingSchema.partial() })
       .partial()
       .parse(req.body);
   } catch (err) {
-    logger.warn('Failed to parse articleId or request body in PATCH /articles/:articleId: ', err);
+    logger.warn(
+      'Failed to parse articleId or request body in PATCH /articles/:articleId: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request' });
     return;
   }
@@ -159,7 +204,9 @@ router.patch('/:articleId', async (req, res) => {
   if (articleDoc === null) {
     res.status(404).json({ message: 'Article not found' });
   } else if (articleDoc.creator !== req.userId) {
-    logger.warn(`Unauthorized access to PATCH /articles/${articleId} by user ${req.userId}`);
+    logger.warn(
+      `Unauthorized access to PATCH /articles/${articleId} by user ${req.userId}`,
+    );
     res.status(403).json({ message: 'Forbidden' });
   } else {
     articleDoc.set(articleUpdates, null, { merge: true });
@@ -173,7 +220,10 @@ router.get('/:articleId/file', async (req, res) => {
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
-    logger.warn('Failed to parse articleId in GET /articles/:articleId/file: ', err);
+    logger.warn(
+      'Failed to parse articleId in GET /articles/:articleId/file: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request' });
     return;
   }
@@ -190,10 +240,15 @@ router.get('/:articleId/file', async (req, res) => {
     content = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
     if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      logger.info(
+        `File not found for article ${articleId}: ${filePath}, returning empty string`,
+      );
       content = '';
     } else {
-      logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+      logger.error(
+        `Error reading file for article ${articleId}: ${filePath}`,
+        err,
+      );
       res.status(500).json({ message: 'Failed to read article file' });
       return;
     }
@@ -212,7 +267,10 @@ router.put('/:articleId/file', async (req, res) => {
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
-    logger.warn('Failed to parse articleId in PUT /articles/:articleId/file: ', err);
+    logger.warn(
+      'Failed to parse articleId in PUT /articles/:articleId/file: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request' });
     return;
   }
@@ -221,7 +279,10 @@ router.put('/:articleId/file', async (req, res) => {
   try {
     content = z.object({ file: z.string() }).parse(req.body);
   } catch (err) {
-    logger.warn('Failed to parse request body in PUT /articles/:articleId/file: ', err);
+    logger.warn(
+      'Failed to parse request body in PUT /articles/:articleId/file: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request body' });
     return;
   }
@@ -232,7 +293,9 @@ router.put('/:articleId/file', async (req, res) => {
     return;
   }
   if (article.creator !== req.userId) {
-    logger.warn(`Unauthorized access to PUT /articles/${articleId}/file by user ${req.userId}`);
+    logger.warn(
+      `Unauthorized access to PUT /articles/${articleId}/file by user ${req.userId}`,
+    );
     res.status(403).json({ message: 'Forbidden' });
     return;
   }
@@ -241,7 +304,10 @@ router.put('/:articleId/file', async (req, res) => {
   try {
     await fs.writeFile(filePath, content.file, 'utf-8');
   } catch (err) {
-    logger.error(`Failed to write file for article ${articleId}: ${filePath}`, err);
+    logger.error(
+      `Failed to write file for article ${articleId}: ${filePath}`,
+      err,
+    );
     res.status(500).json({ message: 'Failed to write article file' });
     return;
   }

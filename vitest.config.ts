@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
@@ -8,7 +8,7 @@ export default defineConfig({
     globalSetup: './test/global-setup.ts',
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
-      reporter: ['text']
-    }
+      reporter: ['text'],
+    },
   },
 });

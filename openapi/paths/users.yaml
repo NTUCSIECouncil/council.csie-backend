@@ -12,9 +12,9 @@ users:
       content:
         application/json:
           schema:
-            $ref: "../components/schemas.yaml#/UserCreate"
+            $ref: '../components/schemas.yaml#/UserCreate'
     responses:
-      "201":
+      '201':
         description: |-
           Created. The user was successfully created. Returns the ID of the new user.
         content:
@@ -24,24 +24,24 @@ users:
               description: User creation response
               properties:
                 userId: { type: string }
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "409":
+              $ref: '../components/schemas.yaml#/Error'
+      '409':
         description: Conflict. The user already exists with the provided Google ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 users_userId:
   get:
@@ -54,9 +54,9 @@ users_userId:
         in: path
         required: true
         description: The unique identifier of the user to retrieve.
-        schema: { $ref: "../components/schemas.yaml#/UUID" }
+        schema: { $ref: '../components/schemas.yaml#/UUID' }
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the user with the specified ID.
         content:
@@ -65,25 +65,25 @@ users_userId:
               type: object
               description: User response
               properties:
-                user: { $ref: "../components/schemas.yaml#/UserResponse" }
-      "400":
+                user: { $ref: '../components/schemas.yaml#/UserResponse' }
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. You do not have permission to access or modify this user.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
   patch:
     tags: [users]
     summary: Update user by ID
@@ -96,40 +96,40 @@ users_userId:
         in: path
         required: true
         description: The unique identifier of the user to update.
-        schema: { $ref: "../components/schemas.yaml#/UUID" }
+        schema: { $ref: '../components/schemas.yaml#/UUID' }
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "../components/schemas.yaml#/UserCreate"
+            $ref: '../components/schemas.yaml#/UserCreate'
     responses:
-      "204":
+      '204':
         description: No Content. The user was updated successfully.
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. You do not have permission to access or modify this user.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 users_me:
   get:
     tags: [users]
@@ -139,7 +139,7 @@ users_me:
     security:
       - bearerAuth: []
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the current login user.
         content:
@@ -148,25 +148,25 @@ users_me:
               type: object
               description: User response
               properties:
-                user: { $ref: "../components/schemas.yaml#/UserResponse" }
-      "400":
+                user: { $ref: '../components/schemas.yaml#/UserResponse' }
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. You do not have permission to access or modify this user.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
   patch:
     tags: [users]
@@ -180,28 +180,28 @@ users_me:
       content:
         application/json:
           schema:
-            $ref: "../components/schemas.yaml#/UserCreate"
+            $ref: '../components/schemas.yaml#/UserCreate'
     responses:
-      "204":
+      '204':
         description: No Content. The user was updated successfully.
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. You do not have permission to access or modify this user.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 users_me_private:
   get:
@@ -212,7 +212,7 @@ users_me_private:
     security:
       - bearerAuth: []
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the current login user with private details.
         content:
@@ -222,22 +222,22 @@ users_me_private:
               description: Private user response
               properties:
                 user:
-                  { $ref: "../components/schemas.yaml#/PrivateUserResponse" }
-      "400":
+                  { $ref: '../components/schemas.yaml#/PrivateUserResponse' }
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires authentication.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. You do not have permission to access or modify this user.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'

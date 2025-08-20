@@ -1,8 +1,11 @@
 import 'dotenv/config';
+
 import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
+
 import mongoose from 'mongoose'; // Use type imports and sort
+
 import { models } from '@models/index.ts';
 
 interface EnvConfig {
@@ -13,9 +16,15 @@ interface EnvConfig {
 }
 
 function getEnvVariables(): EnvConfig {
-  const { MONGODB_URL, MONGODB_DEV_DB_NAME, ARTICLE_FILE_DIR, QUIZ_FILE_DIR } = process.env;
+  const { MONGODB_URL, MONGODB_DEV_DB_NAME, ARTICLE_FILE_DIR, QUIZ_FILE_DIR } =
+    process.env;
 
-  if (!MONGODB_URL || !MONGODB_DEV_DB_NAME || !ARTICLE_FILE_DIR || !QUIZ_FILE_DIR) {
+  if (
+    !MONGODB_URL ||
+    !MONGODB_DEV_DB_NAME ||
+    !ARTICLE_FILE_DIR ||
+    !QUIZ_FILE_DIR
+  ) {
     console.error(
       'Error: MONGODB_URL, MONGODB_DEV_DB_NAME, ARTICLE_FILE_DIR, and QUIZ_FILE_DIR must be defined in your .env file.',
     );
@@ -36,8 +45,8 @@ async function connectToMongoDB(url: string, dbName: string): Promise<void> {
 
 async function disconnectFromMongoDB(): Promise<void> {
   if (
-    mongoose.connection.readyState === mongoose.ConnectionStates.connected
-    || mongoose.connection.readyState === mongoose.ConnectionStates.connecting
+    mongoose.connection.readyState === mongoose.ConnectionStates.connected ||
+    mongoose.connection.readyState === mongoose.ConnectionStates.connecting
   ) {
     await mongoose.disconnect();
     console.log('Successfully disconnected from MongoDB.');
@@ -50,12 +59,18 @@ async function deleteModelFiles(
   fileSuffix: string,
   modelNameForLog: string,
 ): Promise<void> {
-  console.log(`Attempting to delete ${modelNameForLog} files based on database entries...`);
+  console.log(
+    `Attempting to delete ${modelNameForLog} files based on database entries...`,
+  );
   let entries: { _id: UUID }[];
   if (model == 'Article') {
-    entries = (await models.Article.find().lean().exec()).map(doc => ({ _id: doc._id }));
+    entries = (await models.Article.find().lean().exec()).map(doc => ({
+      _id: doc._id,
+    }));
   } else {
-    entries = (await models.Quiz.find().lean().exec()).map(doc => ({ _id: doc._id }));
+    entries = (await models.Quiz.find().lean().exec()).map(doc => ({
+      _id: doc._id,
+    }));
   }
 
   let filesDeleted = 0;
@@ -110,7 +125,7 @@ async function main(): Promise<void> {
   console.log('Cleanup process finished.');
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error('An unexpected error occurred at the top level:', err);
   process.exit(1);
 });

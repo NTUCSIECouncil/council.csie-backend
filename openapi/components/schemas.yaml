@@ -24,7 +24,7 @@ ArticleBase:
       type: array
       items: { type: string }
       description: Tags associated with the article.
-      example: ["DSA", "GOAT", "cool"]
+      example: ['DSA', 'GOAT', 'cool']
     ratings:
       type: object
       description: Ratings for the related course.
@@ -64,17 +64,17 @@ ArticleCreate:
   type: object
   description: Payload to create a new article.
   allOf:
-    - $ref: "#/ArticleBase"
+    - $ref: '#/ArticleBase'
     - type: object
       properties:
-        course: { $ref: "#/UUID" }
+        course: { $ref: '#/UUID' }
   required: [title, tags, ratings, course]
 
 ArticleUpdate:
   type: object
   description: Payload to update an article.
   allOf:
-    - $ref: "#/ArticleBase"
+    - $ref: '#/ArticleBase'
 
 ArticleResponse:
   type: object
@@ -82,46 +82,46 @@ ArticleResponse:
   allOf:
     - type: object
       properties:
-        _id: { $ref: "#/UUID" }
-    - $ref: "#/ArticleBase"
+        _id: { $ref: '#/UUID' }
+    - $ref: '#/ArticleBase'
     - type: object
       properties:
         course:
           oneOf:
-            - $ref: "#/UUID"
-            - $ref: "#/CourseResponse"
+            - $ref: '#/UUID'
+            - $ref: '#/CourseResponse'
         creator:
           oneOf:
-            - $ref: "#/UUID"
-            - $ref: "#/UserResponse"
+            - $ref: '#/UUID'
+            - $ref: '#/UserResponse'
         content:
           type: string
           description: First 50 characters of the article content, truncated with an ellipsis if longer. May be an empty string if no file content has been uploaded.
-          example: "This is a sample article content that is very long and goes on and on..."
+          example: 'This is a sample article content that is very long and goes on and on...'
   required: [_id, title, tags, ratings, course, creator]
 
 CourseResponse:
   type: object
   description: Course information.
   properties:
-    _id: { $ref: "#/UUID" }
+    _id: { $ref: '#/UUID' }
     curriculum:
       type: string
       description: Course code.
-      example: "CSIE1212"
+      example: 'CSIE1212'
     lecturer:
       type: string
       description: Course lecturer name.
-      example: "HT Lin"
+      example: 'HT Lin'
     class:
       type: string
       description: Class name or number.
-      example: "1"
+      example: '1'
     names:
       type: array
       items: { type: string }
       description: Course names.
-      example: ["Data Structures and Algorithms"]
+      example: ['Data Structures and Algorithms']
     credit:
       type: integer
       description: Course credit count.
@@ -130,27 +130,27 @@ CourseResponse:
     semester:
       type: string
       description: Semester code.
-      example: "113-2"
+      example: '113-2'
   required: [_id, curriculum, lecturer, names, credit, semester]
 
 QuizResponse:
   type: object
   description: Quiz information.
   properties:
-    _id: { $ref: "#/UUID" }
+    _id: { $ref: '#/UUID' }
     session:
       type: string
       enum: [midterm, final, first, second, other]
       description: Quiz session type.
-      example: "midterm"
+      example: 'midterm'
     course:
       oneOf:
-        - $ref: "#/UUID"
-        - $ref: "#/CourseResponse"
+        - $ref: '#/UUID'
+        - $ref: '#/CourseResponse'
     uploader:
       oneOf:
-        - $ref: "#/UUID"
-        - $ref: "#/UserResponse"
+        - $ref: '#/UUID'
+        - $ref: '#/UserResponse'
   required: [_id, session, course, uploader]
 
 UserBase:
@@ -160,13 +160,13 @@ UserBase:
     nickname:
       type: string
       description: User nickname.
-      example: "Boss Wang"
+      example: 'Boss Wang'
 
 UserCreate:
   type: object
   description: Payload to create a user.
   allOf:
-    - $ref: "#/UserBase"
+    - $ref: '#/UserBase'
   required: [nickname]
 
 UserResponse:
@@ -175,8 +175,8 @@ UserResponse:
   allOf:
     - type: object
       properties:
-        _id: { $ref: "#/UUID" }
-    - $ref: "#/UserBase"
+        _id: { $ref: '#/UUID' }
+    - $ref: '#/UserBase'
     - type: object
   required: [_id, nickname]
 
@@ -186,21 +186,21 @@ PrivateUserResponse:
   allOf:
     - type: object
       properties:
-        _id: { $ref: "#/UUID" }
+        _id: { $ref: '#/UUID' }
         gid:
           type: string
           description: User Google ID.
-          example: "1234567890"
+          example: '1234567890'
         email:
           type: string
           format: email
           description: User email address.
-          example: "boss-wang@example.com"
+          example: 'boss-wang@example.com'
         name:
           type: string
           description: User full name.
-          example: "Claud Wang"
-    - $ref: "#/UserBase"
+          example: 'Claud Wang'
+    - $ref: '#/UserBase'
   required: [_id, nickname, email, name, gid]
 
 Error:
@@ -216,4 +216,4 @@ Error:
       description: Additional error information.
       example:
         field: title
-        reason: "This field is required."
+        reason: 'This field is required.'

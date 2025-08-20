@@ -1,8 +1,10 @@
 import winston from 'winston';
 
-const logFormat = winston.format.printf((info: winston.Logform.TransformableInfo) => {
-  return `${info.timestamp as string} [${(info.level).toUpperCase()}]: ${info.message as string}`;
-});
+const logFormat = winston.format.printf(
+  (info: winston.Logform.TransformableInfo) => {
+    return `${info.timestamp as string} [${info.level.toUpperCase()}]: ${info.message as string}`;
+  },
+);
 
 const logger = winston.createLogger({
   level: 'info',
@@ -11,7 +13,10 @@ const logger = winston.createLogger({
     logFormat,
   ),
   transports: [
-    new winston.transports.File({ filename: 'logs/database.log', level: 'silly' }),
+    new winston.transports.File({
+      filename: 'logs/database.log',
+      level: 'silly',
+    }),
   ],
 });
 
