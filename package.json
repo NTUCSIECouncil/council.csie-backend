@@ -73,8 +73,17 @@
     ]
   },
   "lint-staged": {
-    "src/**/*.ts": ["eslint", "prettier --check"],
-    "test/**/*.ts": ["eslint", "prettier --check"],
-    "scripts/**/*.ts": ["eslint", "prettier --check"]
+    "src/**/*.ts": [
+      "prettier --check",
+      "eslint"
+    ],
+    "test/**/*.ts": [
+      "prettier --check",
+      "eslint"
+    ],
+    "scripts/**/*.ts": [
+      "prettier --check",
+      "eslint"
+    ]
   }
 }
