@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import mongoose from 'mongoose'; // Use type imports and sort
@@ -50,17 +51,17 @@ async function deleteModelFiles(
   modelNameForLog: string,
 ): Promise<void> {
   console.log(`Attempting to delete ${modelNameForLog} files based on database entries...`);
-  let entries;
+  let entries: { _id: UUID }[];
   if (model == 'Article') {
-    entries = await models.Article.find().lean();
+    entries = (await models.Article.find().lean().exec()).map(doc => ({ _id: doc._id }));
   } else {
-    entries = await models.Quiz.find().lean();
+    entries = (await models.Quiz.find().lean().exec()).map(doc => ({ _id: doc._id }));
   }
 
   let filesDeleted = 0;
 
   for (const entry of entries) {
-    const filePath = path.join(fileDir, `${entry._id.toString()}${fileSuffix}`);
+    const filePath = path.join(fileDir, `${entry._id}${fileSuffix}`);
     try {
       await fs.unlink(filePath);
       // console.log(`Deleted ${modelNameForLog} file: ${filePath}`);
