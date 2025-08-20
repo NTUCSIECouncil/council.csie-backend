@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
   if (req.guser.displayName === undefined || req.guser.email === undefined) {
     logger.warn(`Missing user information for gid ${req.guser.uid}`);
     logger.warn('User information:', req.guser);
-    res.status(400).json({ message: 'Missing user information' });
+    res.status(500).json({ message: 'Missing user information' });
     return;
   }
 

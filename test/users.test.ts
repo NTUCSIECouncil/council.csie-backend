@@ -145,6 +145,15 @@ describe('GET /api/users/:userId', () => {
     });
   });
 
+  describe('Input validation', () => {
+    it('should validate UUID format', async () => {
+      const res = await request(app)
+        .get('/api/users/invalid-uuid')
+        .expect(400);
+      expectValidErrorResponse(res.body);
+    });
+  });
+
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
       const res = await request(app)
@@ -448,11 +457,20 @@ describe('GET /api/users/me/private', () => {
 
   describe('Authentication', () => {
     it('should require valid authentication', async () => {
-      const res = await request(app)
-        .get('/api/users/me/private')
-        .expect(401);
+      {
+        const res = await request(app)
+          .get('/api/users/me/private')
+          .expect(401);
+        expectValidErrorResponse(res.body);
+      }
 
-      expectValidErrorResponse(res.body);
+      {
+        const res = await request(app)
+          .get('/api/users/me/private')
+          .set('gid', 'fake')
+          .expect(401);
+        expectValidErrorResponse(res.body);
+      }
     });
   });
 });

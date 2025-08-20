@@ -15,7 +15,7 @@ const QuizModel = models.Quiz;
 
 // get all quizzes
 router.get('/', paginationParser, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- authChecker() checked
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
   const [offset, limit] = [req.offset!, req.limit!];
   let embedParam: QuizEmbedQueryParam;
   try {
