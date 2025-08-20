@@ -5,21 +5,25 @@ import { Router } from 'express';
 import { type HydratedDocument } from 'mongoose';
 import { z } from 'zod';
 import { env } from '@/config.ts';
-import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema } from '@models/article-schema.ts';
+import { type Article, ArticleModel, type PopulatedArticle, ZArticleSchema, ZRatingSchema } from '@models/article-schema.ts';
 import { type ArticleEmbedQueryParam, type ArticleSearchQueryParam, ZArticleEmbedQueryParam, ZArticleSearchQueryParam, ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
 const router = Router();
 
-const getArticleContent = async (articleId: UUID, sliceLength = 50): Promise<string | null> => {
+const getArticleContent = async (articleId: UUID, sliceLength = 50): Promise<string> => {
   const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, `${articleId}.md`);
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return data.length <= sliceLength ? data : data.slice(0, sliceLength) + '...';
   } catch (err) {
-    logger.error(`File not found for article ${articleId}: ${filePath}`, err);
-    return null;
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      return '';
+    }
+    logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+    throw err;
   }
 };
 
@@ -32,8 +36,8 @@ router.get('/', paginationParser, async (req, res) => {
     searchParam = ZArticleSearchQueryParam.parse(req.query);
     embedParam = ZArticleEmbedQueryParam.parse(req.query);
   } catch (err) {
-    logger.warn('Failed to parse query parameters in GET /articles/search: ', err);
-    res.sendStatus(400);
+    logger.warn('Failed to parse query parameters in GET /articles: ', err);
+    res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
 
@@ -64,7 +68,7 @@ router.get('/', paginationParser, async (req, res) => {
 router.post('/', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to POST /articles');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Authentication required' });
     return;
   }
 
@@ -73,7 +77,14 @@ router.post('/', async (req, res) => {
     articleCreate = ZArticleSchema.omit({ _id: true, creator: true }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in POST /articles: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request body' });
+    return;
+  }
+
+  const courseExists = await ArticleModel.exists({ course: articleCreate.course });
+  if (!courseExists) {
+    logger.warn(`Course not found for article creation: ${articleCreate.course}`);
+    res.status(400).json({ message: 'Invalid course ID' });
     return;
   }
 
@@ -91,7 +102,7 @@ router.get('/:articleId', async (req, res) => {
     embedParam = ZArticleEmbedQueryParam.parse(req.query);
   } catch (err) {
     logger.warn('Failed to parse path parameter or query parameters in GET /articles/:articleId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request parameters' });
     return;
   }
 
@@ -104,26 +115,28 @@ router.get('/:articleId', async (req, res) => {
   }
   const article = await query.lean({ versionKey: false }).exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
 
   if (!embedParam.embed?.includes('content')) {
     res.json({ article });
   } else {
-    const content = await getArticleContent(articleId);
-    if (content === null) {
-      res.sendStatus(500);
+    try {
+      const content = await getArticleContent(articleId);
+      res.json({ article: { ...article, content } });
+    } catch (err) {
+      logger.error(`Failed to read article content for ${articleId}`, err);
+      res.status(500).json({ message: 'Failed to read article content' });
       return;
     }
-    res.json({ article: { ...article, content } });
   }
 });
 
 router.patch('/:articleId', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to PATCH /articles/:articleId');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -131,21 +144,25 @@ router.patch('/:articleId', async (req, res) => {
   let articleUpdates;
   try {
     articleId = ZUuidSchema.parse(req.params.articleId);
-    articleUpdates = ZArticleSchema.omit({ _id: true, course: true, creator: true }).partial().parse(req.body);
+    articleUpdates = ZArticleSchema
+      .omit({ _id: true, course: true, creator: true })
+      .extend({ ratings: ZRatingSchema.partial() })
+      .partial()
+      .parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse articleId or request body in PATCH /articles/:articleId: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
   const articleDoc = await ArticleModel.findById(articleId).exec();
   if (articleDoc === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
   } else if (articleDoc.creator !== req.userId) {
     logger.warn(`Unauthorized access to PATCH /articles/${articleId} by user ${req.userId}`);
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Forbidden' });
   } else {
-    articleDoc.set(articleUpdates);
+    articleDoc.set(articleUpdates, null, { merge: true });
     await articleDoc.save();
     res.sendStatus(204);
   }
@@ -157,13 +174,13 @@ router.get('/:articleId/file', async (req, res) => {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
     logger.warn('Failed to parse articleId in GET /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
   const article = await ArticleModel.findById(articleId).lean().exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
   const fileName = `${articleId}.md`;
@@ -172,9 +189,14 @@ router.get('/:articleId/file', async (req, res) => {
   try {
     content = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
-    logger.error(`File not found for article ${articleId}: ${filePath}`, err);
-    res.sendStatus(500);
-    return;
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      logger.info(`File not found for article ${articleId}: ${filePath}, returning empty string`);
+      content = '';
+    } else {
+      logger.error(`Error reading file for article ${articleId}: ${filePath}`, err);
+      res.status(500).json({ message: 'Failed to read article file' });
+      return;
+    }
   }
   res.json({ file: content });
 });
@@ -182,7 +204,7 @@ router.get('/:articleId/file', async (req, res) => {
 router.put('/:articleId/file', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to PUT /articles/:articleId/file');
-    res.sendStatus(401);
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -191,7 +213,7 @@ router.put('/:articleId/file', async (req, res) => {
     articleId = ZUuidSchema.parse(req.params.articleId);
   } catch (err) {
     logger.warn('Failed to parse articleId in PUT /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request' });
     return;
   }
 
@@ -200,18 +222,18 @@ router.put('/:articleId/file', async (req, res) => {
     content = z.object({ file: z.string() }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in PUT /articles/:articleId/file: ', err);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid request body' });
     return;
   }
 
   const article = await ArticleModel.findById(articleId).lean().exec();
   if (article === null) {
-    res.sendStatus(404);
+    res.status(404).json({ message: 'Article not found' });
     return;
   }
   if (article.creator !== req.userId) {
     logger.warn(`Unauthorized access to PUT /articles/${articleId}/file by user ${req.userId}`);
-    res.sendStatus(403);
+    res.status(403).json({ message: 'Forbidden' });
     return;
   }
   const fileName = `${articleId}.md`;
@@ -220,7 +242,7 @@ router.put('/:articleId/file', async (req, res) => {
     await fs.writeFile(filePath, content.file, 'utf-8');
   } catch (err) {
     logger.error(`Failed to write file for article ${articleId}: ${filePath}`, err);
-    res.sendStatus(500);
+    res.status(500).json({ message: 'Failed to write article file' });
     return;
   }
   res.sendStatus(204);

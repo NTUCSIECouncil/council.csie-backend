@@ -35,7 +35,7 @@ articles:
         explode: true
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
+        description: Specifies which related resources to include in the response. If omitted, course and creator return only their UUIDs, and content is not included. The content field may be an empty string if no file content has been uploaded.
         style: form
         explode: true
         schema:
@@ -122,7 +122,7 @@ articles_articleId:
           $ref: "../components/schemas.yaml#/UUID"
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
+        description: Specifies which related resources to include in the response. If omitted, course and creator return only their UUIDs, and content is not included. The content field may be an empty string if no file content has been uploaded.
         style: form
         explode: true
         schema:
@@ -219,7 +219,7 @@ articles_articleId_file:
     responses:
       "200":
         description: |-
-          Success. Returns the Markdown file for the specified article.
+          Success. Returns the Markdown file for the specified article. Returns an empty string if no file content has been uploaded for this article.
         content:
           application/json:
             schema:

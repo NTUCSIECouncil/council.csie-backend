@@ -96,7 +96,7 @@ ArticleResponse:
             - $ref: "#/UserResponse"
         content:
           type: string
-          description: First 50 characters of the article content, truncated with an ellipsis if longer.
+          description: First 50 characters of the article content, truncated with an ellipsis if longer. May be an empty string if no file content has been uploaded.
           example: "This is a sample article content that is very long and goes on and on..."
   required: [_id, title, tags, ratings, course, creator]
 
@@ -114,8 +114,8 @@ CourseResponse:
       description: Course lecturer name.
       example: "HT Lin"
     class:
-      type: [string, "null"]
-      description: Class name or number, or null if not applicable.
+      type: string
+      description: Class name or number.
       example: "1"
     names:
       type: array
@@ -125,6 +125,7 @@ CourseResponse:
     credit:
       type: integer
       description: Course credit count.
+      minimum: 0
       example: 3
     semester:
       type: string
@@ -136,20 +137,21 @@ QuizResponse:
   type: object
   description: Quiz information.
   properties:
+    _id: { $ref: "#/UUID" }
     session:
       type: string
       enum: [midterm, final, first, second, other]
       description: Quiz session type.
       example: "midterm"
     course:
-      allOf:
+      oneOf:
         - $ref: "#/UUID"
         - $ref: "#/CourseResponse"
     uploader:
-      allOf:
+      oneOf:
         - $ref: "#/UUID"
         - $ref: "#/UserResponse"
-  required: [session, course, uploader]
+  required: [_id, session, course, uploader]
 
 UserBase:
   type: object

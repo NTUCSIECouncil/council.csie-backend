@@ -7,21 +7,6 @@ import { env } from '@/config.ts';
 import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
-const authChecker: RequestHandler = (req, res, next) => {
-  if (!req.userId) {
-    res.sendStatus(401);
-    logger.warn(`Unauthorized access in ${req.method} ${req.baseUrl}: userId is undefined`);
-    return;
-  }
-  if (req.userId !== req.params.userId) {
-    res.sendStatus(403);
-    logger.warn(`Forbidden access in ${req.method} ${req.baseUrl}: userId mismatch`);
-    return;
-  }
-
-  next();
-};
-
 const paginationParser: RequestHandler = (req, res, next) => {
   req.limit = 10;
   req.offset = 0;
@@ -29,7 +14,7 @@ const paginationParser: RequestHandler = (req, res, next) => {
   const result = ZPaginationQueryParam.safeParse(req.query);
   if (!result.success) {
     logger.warn(`Failed to parse pagination query parameters in ${req.method} ${req.baseUrl}:\n${z.prettifyError(result.error)}`);
-    res.sendStatus(400);
+    res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
 
@@ -91,4 +76,4 @@ const fileUploader = (
   return handler;
 };
 
-export { authChecker, paginationParser, fileUploader };
+export { paginationParser, fileUploader };

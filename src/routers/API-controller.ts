@@ -8,14 +8,13 @@ import userInfoController from './user-controller.ts';
 
 const router = Router();
 
-/* istanbul ignore next */
 const uncaughtErrorHandler: ErrorRequestHandler = (err: unknown, req, res, next) => {
   logger.error('Uncaught error: ', err);
   if (res.headersSent) {
     next(err);
     return;
   }
-  res.sendStatus(500);
+  res.status(500).json({ message: 'Internal server error' });
 };
 
 router.use('/articles', articleController);

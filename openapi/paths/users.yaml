@@ -167,12 +167,7 @@ users_me:
           application/json:
             schema:
               $ref: "../components/schemas.yaml#/Error"
-      "404":
-        description: Not Found. No user exists with the specified ID.
-        content:
-          application/json:
-            schema:
-              $ref: "../components/schemas.yaml#/Error"
+
   patch:
     tags: [users]
     summary: Update current login user (alias of /users/{userId})
@@ -203,12 +198,6 @@ users_me:
               $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
-        content:
-          application/json:
-            schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
-        description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
@@ -248,12 +237,6 @@ users_me_private:
               $ref: "../components/schemas.yaml#/Error"
       "403":
         description: Forbidden. You do not have permission to access or modify this user.
-        content:
-          application/json:
-            schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
-        description: Not Found. No user exists with the specified ID.
         content:
           application/json:
             schema:
