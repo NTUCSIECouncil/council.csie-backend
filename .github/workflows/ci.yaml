@@ -37,7 +37,6 @@ jobs:
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
-
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -88,6 +87,7 @@ jobs:
           path: ./samples/
           key: samples-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
           restore-keys: |
+            samples-${{ runner.os }}-
             samples-
 
       - name: Fetch course data
@@ -121,6 +121,7 @@ jobs:
           path: ./samples/
           key: samples-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
           restore-keys: |
+            samples-${{ runner.os }}-
             samples-
 
       - name: Run test
