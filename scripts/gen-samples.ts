@@ -1,7 +1,9 @@
 import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+
 import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 import { type Quiz } from '@models/quiz-schema.ts';
@@ -17,10 +19,13 @@ async function readListJsonFile<T>(filePath: string): Promise<T[]> {
   }
 }
 
-async function generateArticleFiles(articleFileDirPath: string, articles: Article[]): Promise<void> {
+async function generateArticleFiles(
+  articleFileDirPath: string,
+  articles: Article[],
+): Promise<void> {
   await fs.mkdir(articleFileDirPath, { recursive: true });
   await Promise.all(
-    articles.map(async (article) => {
+    articles.map(async article => {
       const mdPath = path.join(articleFileDirPath, `${article._id}.md`);
       const content = `# ${article.title}\n\nThis is a generated markdown file for article **${article._id}** \nby user **${article.creator}**.`;
       await fs.writeFile(mdPath, content, 'utf8');
@@ -28,10 +33,13 @@ async function generateArticleFiles(articleFileDirPath: string, articles: Articl
   );
 }
 
-async function generateQuizFiles(quizFileDirPath: string, quizzes: Quiz[]): Promise<void> {
+async function generateQuizFiles(
+  quizFileDirPath: string,
+  quizzes: Quiz[],
+): Promise<void> {
   await fs.mkdir(quizFileDirPath, { recursive: true });
   await Promise.all(
-    quizzes.map(async (quiz) => {
+    quizzes.map(async quiz => {
       const pdfDoc = await PDFDocument.create();
       const page = pdfDoc.addPage([595.28, 841.89]);
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -52,13 +60,16 @@ async function generateQuizFiles(quizFileDirPath: string, quizzes: Quiz[]): Prom
 }
 
 function generateUsers(num = 30): User[] {
-  return Array.from({ length: num }, (_, i): User => ({
-    _id: randomUUID(),
-    gid: `GID${i.toString()}`,
-    name: `user${i.toString()}`,
-    email: `user${i.toString()}@example.com`,
-    nickname: `User ${i.toString()}`,
-  }));
+  return Array.from(
+    { length: num },
+    (_, i): User => ({
+      _id: randomUUID(),
+      gid: `GID${i.toString()}`,
+      name: `user${i.toString()}`,
+      email: `user${i.toString()}@example.com`,
+      nickname: `User ${i.toString()}`,
+    }),
+  );
 }
 
 function getRandomUser(users: User[]): User {
@@ -66,7 +77,12 @@ function getRandomUser(users: User[]): User {
   return users[Math.floor(Math.random() * users.length)];
 }
 
-function getRandomSection(): 'first' | 'second' | 'midterm' | 'final' | 'other' {
+function getRandomSection():
+  | 'first'
+  | 'second'
+  | 'midterm'
+  | 'final'
+  | 'other' {
   const sections = ['first', 'second', 'midterm', 'final', 'other'] as const;
   return sections[Math.floor(Math.random() * sections.length)];
 }
@@ -133,7 +149,10 @@ const userJsonPath = path.join(jsonDirPath, 'user-samples.json');
 await fs.mkdir(jsonDirPath, { recursive: true });
 
 const users = generateUsers();
-const courses = (await readListJsonFile<Course>(originalCourseJsonPath)).slice(0, 30);
+const courses = (await readListJsonFile<Course>(originalCourseJsonPath)).slice(
+  0,
+  30,
+);
 const articles = generateArticles(courses, users);
 const quizzes = generateQuiz(courses, users);
 

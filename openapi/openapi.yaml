@@ -21,37 +21,37 @@ tags:
 
 paths:
   /articles:
-    $ref: "./paths/articles.yaml#/articles"
+    $ref: './paths/articles.yaml#/articles'
   /articles/{articleId}:
-    $ref: "./paths/articles.yaml#/articles_articleId"
+    $ref: './paths/articles.yaml#/articles_articleId'
   /articles/{articleId}/file:
-    $ref: "./paths/articles.yaml#/articles_articleId_file"
+    $ref: './paths/articles.yaml#/articles_articleId_file'
   /courses:
-    $ref: "./paths/courses.yaml#/courses"
+    $ref: './paths/courses.yaml#/courses'
   /courses/{courseId}:
-    $ref: "./paths/courses.yaml#/courses_courseId"
+    $ref: './paths/courses.yaml#/courses_courseId'
   /courses/{courseId}/quizzes:
-    $ref: "./paths/courses.yaml#/courses_courseId_quizzes"
+    $ref: './paths/courses.yaml#/courses_courseId_quizzes'
   /quizzes:
-    $ref: "./paths/quizzes.yaml#/quizzes"
+    $ref: './paths/quizzes.yaml#/quizzes'
   /quizzes/{quizId}:
-    $ref: "./paths/quizzes.yaml#/quizzes_quizId"
+    $ref: './paths/quizzes.yaml#/quizzes_quizId'
   /quizzes/{quizId}/file:
-    $ref: "./paths/quizzes.yaml#/quizzes_quizId_file"
+    $ref: './paths/quizzes.yaml#/quizzes_quizId_file'
   /tags:
-    $ref: "./paths/tags.yaml#/tags"
+    $ref: './paths/tags.yaml#/tags'
   /users:
-    $ref: "./paths/users.yaml#/users"
+    $ref: './paths/users.yaml#/users'
   /users/{userId}:
-    $ref: "./paths/users.yaml#/users_userId"
+    $ref: './paths/users.yaml#/users_userId'
   /users/me:
-    $ref: "./paths/users.yaml#/users_me"
+    $ref: './paths/users.yaml#/users_me'
   /users/me/private:
-    $ref: "./paths/users.yaml#/users_me_private"
+    $ref: './paths/users.yaml#/users_me_private'
 
 components:
   schemas:
-    $ref: "./components/schemas.yaml"
+    $ref: './components/schemas.yaml'
   securitySchemes:
     bearerAuth:
       type: http

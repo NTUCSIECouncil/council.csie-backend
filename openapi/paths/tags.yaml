@@ -14,7 +14,7 @@ tags:
         schema: { type: integer, default: 0, minimum: 0 }
         description: Number of tags to skip before starting to collect the result set
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns a paginated list of all available tags.
         content:
@@ -28,10 +28,10 @@ tags:
                     type: string
                   description: List of tag names
                 meta:
-                  $ref: "../components/schemas.yaml#/Meta"
-      "400":
+                  $ref: '../components/schemas.yaml#/Meta'
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'

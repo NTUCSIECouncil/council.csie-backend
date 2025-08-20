@@ -1,6 +1,8 @@
 import { type UUID } from 'crypto';
+
 import { Router } from 'express';
 import { z } from 'zod';
+
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { models } from '@models/index.ts';
 import logger from '@utils/logger.ts';
@@ -72,7 +74,9 @@ router.get('/:userId', async (req, res) => {
     return;
   }
 
-  const user = await UserModel.findById(userId).lean({ versionKey: false }).exec();
+  const user = await UserModel.findById(userId)
+    .lean({ versionKey: false })
+    .exec();
   if (user === null) {
     res.status(404).json({ message: 'User not found' });
     return;
@@ -99,7 +103,10 @@ router.patch('/:userId', async (req, res) => {
     userId = ZUuidSchema.parse(req.params.userId);
     userUpdates = z.object({ nickname: z.string() }).partial().parse(req.body);
   } catch (err) {
-    logger.warn('Failed to parse userId or request body in PATCH /users/:userId: ', err);
+    logger.warn(
+      'Failed to parse userId or request body in PATCH /users/:userId: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid request' });
     return;
   }
@@ -111,7 +118,9 @@ router.patch('/:userId', async (req, res) => {
   }
 
   if (userId !== req.userId) {
-    logger.warn(`Forbidden access to PATCH /users/${userId} by user ${req.userId}`);
+    logger.warn(
+      `Forbidden access to PATCH /users/${userId} by user ${req.userId}`,
+    );
     res.status(403).json({ message: 'Forbidden' });
     return;
   }
@@ -138,14 +147,18 @@ router.get('/:userId/private', async (req, res) => {
     return;
   }
 
-  const user = await UserModel.findById(userId).lean({ versionKey: false }).exec();
+  const user = await UserModel.findById(userId)
+    .lean({ versionKey: false })
+    .exec();
   if (user === null) {
     res.status(404).json({ message: 'User not found' });
     return;
   }
 
   if (userId !== req.userId) {
-    logger.warn(`Forbidden access to GET /users/${userId}/private by user ${req.userId}`);
+    logger.warn(
+      `Forbidden access to GET /users/${userId}/private by user ${req.userId}`,
+    );
     res.status(403).json({ message: 'Forbidden' });
     return;
   }

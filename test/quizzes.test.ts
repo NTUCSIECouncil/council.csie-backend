@@ -1,13 +1,20 @@
 import { randomUUID } from 'crypto';
+
 import mongoose from 'mongoose';
 import qs from 'qs';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
 import { QuizModel } from '@models/quiz-schema.ts';
 import app from './app.ts';
 import { ZMetaSchema, ZQuizResponseSchema } from './response-schemas.ts';
-import { expectValidErrorResponse, getTestQuiz, parseAndExpectValid, seedModelFromSamples } from './utils.ts';
+import {
+  expectValidErrorResponse,
+  getTestQuiz,
+  parseAndExpectValid,
+  seedModelFromSamples,
+} from './utils.ts';
 
 const ZQuizListResponse = z.object({
   quizzes: ZQuizResponseSchema.array(),
@@ -59,7 +66,9 @@ describe('GET /api/quizzes', () => {
         expect(quiz).toHaveProperty('uploader');
 
         // Verify session is one of the allowed enum values
-        expect(['midterm', 'final', 'first', 'second', 'other']).toContain(quiz.session);
+        expect(['midterm', 'final', 'first', 'second', 'other']).toContain(
+          quiz.session,
+        );
 
         // Without embedding, course and uploader should be UUIDs (strings)
         expect(typeof quiz.course).toBe('string');
@@ -68,9 +77,7 @@ describe('GET /api/quizzes', () => {
     });
 
     it('should use default pagination values (limit: 10, offset: 0)', async () => {
-      const res = await request(app)
-        .get('/api/quizzes')
-        .expect(200);
+      const res = await request(app).get('/api/quizzes').expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.meta.limit).toBe(10);
@@ -82,9 +89,7 @@ describe('GET /api/quizzes', () => {
       // Clear all quizzes to test empty response
       await QuizModel.deleteMany({});
 
-      const res = await request(app)
-        .get('/api/quizzes')
-        .expect(200);
+      const res = await request(app).get('/api/quizzes').expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
@@ -125,7 +130,9 @@ describe('GET /api/quizzes', () => {
         // Ensure pages contain different quizzes
         const firstPageIds = body.quizzes.map(q => q._id);
         const secondPageIds = secondPageBody.quizzes.map(q => q._id);
-        const intersection = firstPageIds.filter(id => secondPageIds.includes(id));
+        const intersection = firstPageIds.filter(id =>
+          secondPageIds.includes(id),
+        );
         expect(intersection).toHaveLength(0);
       }
     });
@@ -133,9 +140,7 @@ describe('GET /api/quizzes', () => {
     it('should match default pagination with explicit values', async () => {
       let defaultPagBody;
       {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .expect(200);
+        const res = await request(app).get('/api/quizzes').expect(200);
         defaultPagBody = parseAndExpectValid(ZQuizListResponse, res.body);
       }
       {
@@ -143,7 +148,9 @@ describe('GET /api/quizzes', () => {
           .get('/api/quizzes')
           .query(qs.stringify({ limit: 10, offset: 0 }))
           .expect(200);
-        expect(parseAndExpectValid(ZQuizListResponse, res.body)).toEqual(defaultPagBody);
+        expect(parseAndExpectValid(ZQuizListResponse, res.body)).toEqual(
+          defaultPagBody,
+        );
       }
     });
 

@@ -6,33 +6,14 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@models/*": [
-        "./src/models/*"
-      ],
-      "@routers/*": [
-        "./src/routers/*"
-      ],
-      "@scripts/*": [
-        "./scripts/*"
-      ],
-      "@type/*": [
-        "./src/types/*"
-      ],
-      "@utils/*": [
-        "./src/utils/*"
-      ]
+      "@/*": ["./src/*"],
+      "@models/*": ["./src/models/*"],
+      "@routers/*": ["./src/routers/*"],
+      "@scripts/*": ["./scripts/*"],
+      "@type/*": ["./src/types/*"],
+      "@utils/*": ["./src/utils/*"]
     },
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "scripts/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*", "scripts/**/*"]
 }

@@ -1,7 +1,15 @@
 import { type UUID } from 'crypto';
+
 import { Router } from 'express';
+
 import { models } from '@models/index.ts';
-import { type CourseSearchQueryParam, type QuizEmbedQueryParam, ZCourseSearchQueryParam, ZQuizEmbedQueryParam, ZUuidSchema } from '@models/util-schema.ts';
+import {
+  ZCourseSearchQueryParam,
+  ZQuizEmbedQueryParam,
+  ZUuidSchema,
+  type CourseSearchQueryParam,
+  type QuizEmbedQueryParam,
+} from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 import { paginationParser } from './middleware.ts';
 
@@ -24,7 +32,9 @@ router.get('/', paginationParser, async (req, res) => {
 
   const courseDocs = await CourseModel.searchCourses(param);
   const total = courseDocs.length;
-  const courses = courseDocs.slice(offset, offset + limit).map(course => course.toObject());
+  const courses = courseDocs
+    .slice(offset, offset + limit)
+    .map(course => course.toObject());
 
   res.json({ courses, meta: { total, offset, limit } });
 });
@@ -39,7 +49,9 @@ router.get('/:courseId', async (req, res) => {
     return;
   }
 
-  const course = await CourseModel.findById(courseId).lean({ versionKey: false }).exec();
+  const course = await CourseModel.findById(courseId)
+    .lean({ versionKey: false })
+    .exec();
   if (course === null) {
     res.status(404).json({ message: 'Course not found' });
   } else {
@@ -56,7 +68,10 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
     courseId = ZUuidSchema.parse(req.params.courseId);
     embedParam = ZQuizEmbedQueryParam.parse(req.query);
   } catch (err) {
-    logger.warn('Failed to parse courseId or query parameters in GET /courses/:courseId/quizzes: ', err);
+    logger.warn(
+      'Failed to parse courseId or query parameters in GET /courses/:courseId/quizzes: ',
+      err,
+    );
     res.status(400).json({ message: 'Invalid course ID or query parameters' });
     return;
   }
@@ -67,7 +82,9 @@ router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
     return;
   }
 
-  const totalCount = await QuizModel.countDocuments({ course: courseId }).exec();
+  const totalCount = await QuizModel.countDocuments({
+    course: courseId,
+  }).exec();
 
   let query = QuizModel.find({ course: courseId }).skip(offset).limit(limit);
   if (embedParam.embed?.includes('course')) {

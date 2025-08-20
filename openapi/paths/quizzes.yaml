@@ -22,7 +22,7 @@ quizzes:
         style: form
         explode: true
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns a paginated list of quizzes matching the query parameters. Each quiz may include embedded resources if requested.
         content:
@@ -35,15 +35,15 @@ quizzes:
                   type: array
                   description: List of quizzes
                   items:
-                    $ref: "../components/schemas.yaml#/QuizResponse"
+                    $ref: '../components/schemas.yaml#/QuizResponse'
                 meta:
-                  $ref: "../components/schemas.yaml#/Meta"
-      "400":
+                  $ref: '../components/schemas.yaml#/Meta'
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 quizzes_quizId:
   get:
@@ -67,7 +67,7 @@ quizzes_quizId:
         style: form
         explode: true
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the quiz with the specified ID. May include embedded resources if requested.
         content:
@@ -77,19 +77,19 @@ quizzes_quizId:
               description: Quiz response
               properties:
                 quiz:
-                  $ref: "../components/schemas.yaml#/QuizResponse"
-      "400":
+                  $ref: '../components/schemas.yaml#/QuizResponse'
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No quiz exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 quizzes_quizId_file:
   get:
@@ -103,7 +103,7 @@ quizzes_quizId_file:
         required: true
         schema: { type: string }
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the PDF file for the specified quiz.
         content:
@@ -112,15 +112,15 @@ quizzes_quizId_file:
               type: string
               format: binary
               description: PDF file content
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No quiz exists with the specified ID or file is missing.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'

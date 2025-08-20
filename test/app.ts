@@ -1,5 +1,6 @@
 import express from 'express';
 import { type UserRecord } from 'firebase-admin/auth';
+
 import { UserModel } from '@/models/user-schema.ts';
 import APIController from '@routers/API-controller.ts';
 

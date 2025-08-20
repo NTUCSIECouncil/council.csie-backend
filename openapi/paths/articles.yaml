@@ -44,7 +44,7 @@ articles:
             type: string
             enum: [course, creator, content]
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns a paginated list of articles matching the query parameters. Each article may include embedded resources if requested.
         content:
@@ -57,16 +57,16 @@ articles:
                   type: array
                   description: List of articles matching the search criteria
                   items:
-                    $ref: "../components/schemas.yaml#/ArticleResponse"
+                    $ref: '../components/schemas.yaml#/ArticleResponse'
                 meta:
-                  $ref: "../components/schemas.yaml#/Meta"
+                  $ref: '../components/schemas.yaml#/Meta'
               required: [articles, meta]
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
   post:
     tags: [articles]
     summary: Create an article
@@ -79,10 +79,10 @@ articles:
       content:
         application/json:
           schema:
-            $ref: "../components/schemas.yaml#/ArticleCreate"
+            $ref: '../components/schemas.yaml#/ArticleCreate'
 
     responses:
-      "201":
+      '201':
         description: |-
           Created. The article was successfully created. Returns the ID of the new article.
         content:
@@ -92,20 +92,20 @@ articles:
               description: Article creation response
               properties:
                 articleId:
-                  $ref: "../components/schemas.yaml#/UUID"
+                  $ref: '../components/schemas.yaml#/UUID'
               required: [articleId]
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires user authentication. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 articles_articleId:
   get:
@@ -119,7 +119,7 @@ articles_articleId:
         required: true
         description: The unique identifier of the article to retrieve.
         schema:
-          $ref: "../components/schemas.yaml#/UUID"
+          $ref: '../components/schemas.yaml#/UUID'
       - name: embed
         in: query
         description: Specifies which related resources to include in the response. If omitted, course and creator return only their UUIDs, and content is not included. The content field may be an empty string if no file content has been uploaded.
@@ -131,7 +131,7 @@ articles_articleId:
             type: string
             enum: [course, creator, content]
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the article with the specified ID. May include embedded resources if requested.
         content:
@@ -141,20 +141,20 @@ articles_articleId:
               description: Article response
               properties:
                 article:
-                  $ref: "../components/schemas.yaml#/ArticleResponse"
+                  $ref: '../components/schemas.yaml#/ArticleResponse'
               required: [article]
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No article exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
   patch:
     tags: [articles]
     summary: Update article by ID
@@ -168,40 +168,40 @@ articles_articleId:
         required: true
         description: The unique identifier of the article to update.
         schema:
-          $ref: "../components/schemas.yaml#/UUID"
+          $ref: '../components/schemas.yaml#/UUID'
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "../components/schemas.yaml#/ArticleUpdate"
+            $ref: '../components/schemas.yaml#/ArticleUpdate'
     responses:
-      "204":
+      '204':
         description: No Content. The article was updated successfully.
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires user authentication. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. The authenticated user is required to be the creator of the article to update it. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No article exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
 
 articles_articleId_file:
   get:
@@ -215,9 +215,9 @@ articles_articleId_file:
         required: true
         description: The unique identifier of the article.
         schema:
-          $ref: "../components/schemas.yaml#/UUID"
+          $ref: '../components/schemas.yaml#/UUID'
     responses:
-      "200":
+      '200':
         description: |-
           Success. Returns the Markdown file for the specified article. Returns an empty string if no file content has been uploaded for this article.
         content:
@@ -230,18 +230,18 @@ articles_articleId_file:
                   type: string
                   format: markdown
               required: [file]
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No article exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'
   put:
     tags: [articles]
     summary: Upload or replace article Markdown file
@@ -255,7 +255,7 @@ articles_articleId_file:
         required: true
         description: The unique identifier of the article.
         schema:
-          $ref: "../components/schemas.yaml#/UUID"
+          $ref: '../components/schemas.yaml#/UUID'
     requestBody:
       required: true
       content:
@@ -269,29 +269,29 @@ articles_articleId_file:
                 description: The Markdown file content to upload.
             required: [file]
     responses:
-      "204":
+      '204':
         description: No Content. The file was uploaded successfully.
-      "400":
+      '400':
         description: Bad Request. The request could not be processed due to invalid or missing path or file parameters. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "401":
+              $ref: '../components/schemas.yaml#/Error'
+      '401':
         description: Unauthorized. The request requires user authentication. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "403":
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
         description: Forbidden. The authenticated user is required to be the creator of the article to upload a file. Returns a standard error object.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
-      "404":
+              $ref: '../components/schemas.yaml#/Error'
+      '404':
         description: Not Found. No article exists with the specified ID.
         content:
           application/json:
             schema:
-              $ref: "../components/schemas.yaml#/Error"
+              $ref: '../components/schemas.yaml#/Error'

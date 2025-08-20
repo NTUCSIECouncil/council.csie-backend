@@ -13,15 +13,19 @@
   - 可以使用 `npm run dev:watch` 變種，這樣除了 `./node_modules`，所有檔案都會被監聽；當有變更時會自動重新啟動。
   - 在終端機中按下 `Enter` 來手動重新啟動。
   - 在終端機中按下 `Ctrl+C` 來關閉。
-- 使用 `npm run lint` 來在整個專案的 TypeScript 檔案上運行 ESLint。
-  - 使用 `npm run lint -- --fix` 修復所有可自動修復的問題。
-- 使用 `npm run test` 來運行測試。
-  - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
+- 使用 `npm run format` 來在整個專案上運行 Prettier 並修復所有可自動修復的問題。
+  - 使用 `npm run format:check` 來檢查整個專案的格式是否符合 Prettier 的規範。
+- 使用 `npm run lint` 來在整個專案的 TypeScript 檔案上運行 ESLint 並修復所有可自動修復的問題。
+  - 使用 `npm run lint:check` 修復所有可自動修復的問題。
+- 使用 `npm run type-check` 來檢查 TypeScript 檔案的型別。
 - 為了初始化開發用資料庫：
   - 使用 `npm run fetch-courses` 來從課程系統抓取課程資料，並儲存在 `samples/course-original.json`。
   - 使用 `npm run generate-samples` 來產生開發用的資料，並儲存在 `samples/`。
   - 使用 `npm run setup-dev-db` 來建立開發用資料庫，並將測試用考古題與評價文放置在 `uploads/`。
   - 以上步驟需要按照順序執行。
+- 使用 `npm run test` 來運行測試。
+  - 開發用資料（`sample/`）需要在測試前建立。
+  - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
 
 ## `.env` 相關
 

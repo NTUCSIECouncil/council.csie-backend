@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
+
 import { env } from '@/config.ts';
 import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
@@ -13,7 +15,9 @@ const paginationParser: RequestHandler = (req, res, next) => {
 
   const result = ZPaginationQueryParam.safeParse(req.query);
   if (!result.success) {
-    logger.warn(`Failed to parse pagination query parameters in ${req.method} ${req.baseUrl}:\n${z.prettifyError(result.error)}`);
+    logger.warn(
+      `Failed to parse pagination query parameters in ${req.method} ${req.baseUrl}:\n${z.prettifyError(result.error)}`,
+    );
     res.status(400).json({ message: 'Invalid query parameters' });
     return;
   }
@@ -49,7 +53,9 @@ const fileUploader = (
       if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Invalid file type'));
+        cb(
+          new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'Invalid file type'),
+        );
       }
     },
     limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit

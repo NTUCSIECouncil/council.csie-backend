@@ -5,6 +5,7 @@ import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+
 import { UserModel } from '@models/user-schema.ts';
 import APIController from '@routers/API-controller.ts';
 import dbLogger from '@utils/db-logger.ts';
@@ -13,7 +14,9 @@ import { env } from './config.ts';
 
 let auth;
 try {
-  const firebaseApp = initializeApp({ credential: cert(env.FIREBASE_CERT_PATH) });
+  const firebaseApp = initializeApp({
+    credential: cert(env.FIREBASE_CERT_PATH),
+  });
   logger.info('Connected to Firebase');
   auth = getAuth(firebaseApp);
   logger.info('Initialized Firebase Auth');
@@ -33,7 +36,10 @@ const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
 };
 
-const morganMiddleware = morgan(':method :url :status :res[content-length] - :response-time ms', { stream });
+const morganMiddleware = morgan(
+  ':method :url :status :res[content-length] - :response-time ms',
+  { stream },
+);
 
 expressApp.use(morganMiddleware);
 
@@ -45,7 +51,8 @@ expressApp.use(async (req, res, next) => {
       const decodedToken = await auth.verifyIdToken(token.slice(7));
       const userRecord = await auth.getUser(decodedToken.uid);
       req.guser = userRecord;
-      const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())?._id;
+      const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())
+        ?._id;
       req.userId = userId;
     } catch (err) {
       logger.error('Error verifying Firebase token: ', err);
@@ -66,13 +73,18 @@ mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
   const truncatedArray = (key: string, value: any): any => {
     const maxArrayLength = 5;
     if (Array.isArray(value) && value.length > maxArrayLength) {
-      return value.slice(0, maxArrayLength).concat(
-        `...and ${(value.length - maxArrayLength).toString()} more`);
+      return value
+        .slice(0, maxArrayLength)
+        .concat(`...and ${(value.length - maxArrayLength).toString()} more`);
     }
     return value;
   };
-  const methodArgsString = methodArgs.map(val => JSON.stringify(val, truncatedArray)).join(', ');
-  dbLogger.debug(`Mongoose Query: ${collectionName}.${methodName}(${methodArgsString})`);
+  const methodArgsString = methodArgs
+    .map(val => JSON.stringify(val, truncatedArray))
+    .join(', ');
+  dbLogger.debug(
+    `Mongoose Query: ${collectionName}.${methodName}(${methodArgsString})`,
+  );
 });
 
 mongoose.connection.on('connected', () => {
@@ -83,7 +95,7 @@ mongoose.connection.on('disconnected', () => {
   dbLogger.warn('Mongoose disconnected');
 });
 
-mongoose.connection.on('error', (err) => {
+mongoose.connection.on('error', err => {
   dbLogger.error('Mongoose connection error: ', err);
 });
 
@@ -91,7 +103,7 @@ await mongoose.connect(env.MONGODB_URI, { dbName: env.MONGODB_DEV_DB_NAME });
 
 logger.info(`Connected to ${env.MONGODB_URI}/${env.MONGODB_DEV_DB_NAME}`);
 
-expressApp.listen(env.PORT, (err) => {
+expressApp.listen(env.PORT, err => {
   if (err) {
     logger.error(`Failed to start server at port ${env.PORT}: `, err);
     logger.error('Exiting...');
