@@ -7,21 +7,6 @@ import { env } from '@/config.ts';
 import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
-const authChecker: RequestHandler = (req, res, next) => {
-  if (!req.userId) {
-    res.status(401).json({ message: 'Unauthorized' });
-    logger.warn(`Unauthorized access in ${req.method} ${req.baseUrl}: userId is undefined`);
-    return;
-  }
-  if (req.userId !== req.params.userId) {
-    res.status(403).json({ message: 'Forbidden' });
-    logger.warn(`Forbidden access in ${req.method} ${req.baseUrl}: userId mismatch`);
-    return;
-  }
-
-  next();
-};
-
 const paginationParser: RequestHandler = (req, res, next) => {
   req.limit = 10;
   req.offset = 0;
@@ -91,4 +76,4 @@ const fileUploader = (
   return handler;
 };
 
-export { authChecker, paginationParser, fileUploader };
+export { paginationParser, fileUploader };
