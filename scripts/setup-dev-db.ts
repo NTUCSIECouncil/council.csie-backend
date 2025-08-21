@@ -10,16 +10,13 @@ import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
 
-dotenv.config({
-  path: ['.env.default', '.env'],
-  override: true,
-});
+dotenv.config({ path: ['.env.default', '.env'], override: true });
 
 if (
-  process.env.MONGODB_URI === undefined ||
-  process.env.MONGODB_DB_NAME === undefined ||
-  process.env.UPLOADS_DIR === undefined ||
-  process.env.SAMPLES_DIR === undefined
+  process.env.MONGODB_URI === undefined
+  || process.env.MONGODB_DB_NAME === undefined
+  || process.env.UPLOADS_DIR === undefined
+  || process.env.SAMPLES_DIR === undefined
 ) {
   console.error('One or more environment variables are not set');
   console.error('Exiting...');

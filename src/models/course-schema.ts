@@ -35,9 +35,7 @@ const courseSchema = new Schema<Course, CourseModel>(
     credit: { type: Number, required: true },
     semester: { type: String, required: true },
   },
-  {
-    toObject: { versionKey: false },
-  },
+  { toObject: { versionKey: false } },
 );
 
 const staticSearchCourses: CourseModel['searchCourses'] = async function (
@@ -46,10 +44,7 @@ const staticSearchCourses: CourseModel['searchCourses'] = async function (
   let courses = await this.find().exec();
 
   if (params.keyword) {
-    const fuseOptions = {
-      keys: ['lecturer', 'names'],
-      threshold: 0.6,
-    };
+    const fuseOptions = { keys: ['lecturer', 'names'], threshold: 0.6 };
 
     const fuse = new Fuse(courses, fuseOptions);
 

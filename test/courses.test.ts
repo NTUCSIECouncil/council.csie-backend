@@ -27,9 +27,7 @@ const ZCourseListResponse = z.object({
   meta: ZMetaSchema,
 });
 
-const ZCourseResponse = z.object({
-  course: ZCourseResponseSchema,
-});
+const ZCourseResponse = z.object({ course: ZCourseResponseSchema });
 
 const ZQuizListResponse = z.object({
   quizzes: ZQuizResponseSchema.array(),

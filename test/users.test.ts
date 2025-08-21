@@ -15,22 +15,14 @@ import {
   seedModelFromSamples,
 } from './utils.ts';
 
-const ZUserCreateResponse = z.object({
-  userId: z.string(),
-});
+const ZUserCreateResponse = z.object({ userId: z.string() });
 
-const ZUserResponse = z.object({
-  user: ZUserResponseSchema,
-});
+const ZUserResponse = z.object({ user: ZUserResponseSchema });
 
-const ZPrivateUserResponse = z.object({
-  user: ZPrivateUserResponseSchema,
-});
+const ZPrivateUserResponse = z.object({ user: ZPrivateUserResponseSchema });
 
 const genUserCreate = () => {
-  return {
-    nickname: 'Test User',
-  };
+  return { nickname: 'Test User' };
 };
 
 beforeEach(async () => {
@@ -57,9 +49,7 @@ describe('POST /api/users', () => {
     });
 
     it('should handle Unicode content correctly', async () => {
-      const userData = {
-        nickname: '測試用戶 🚀',
-      };
+      const userData = { nickname: '測試用戶 🚀' };
 
       const res = await request(app)
         .post('/api/users')

@@ -6,9 +6,6 @@ export default defineConfig({
   test: {
     setupFiles: './test/setup-file.ts',
     globalSetup: './test/global-setup.ts',
-    coverage: {
-      include: ['src/**/*.{ts,tsx}'],
-      reporter: ['text'],
-    },
+    coverage: { include: ['src/**/*.{ts,tsx}'], reporter: ['text'] },
   },
 });

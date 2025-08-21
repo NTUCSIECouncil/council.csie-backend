@@ -21,9 +21,7 @@ const ZQuizListResponse = z.object({
   meta: ZMetaSchema,
 });
 
-const ZQuizResponse = z.object({
-  quiz: ZQuizResponseSchema,
-});
+const ZQuizResponse = z.object({ quiz: ZQuizResponseSchema });
 
 beforeEach(async () => {
   await seedModelFromSamples('Quiz');
