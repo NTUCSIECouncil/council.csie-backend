@@ -5,18 +5,14 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { afterAll, beforeAll } from 'vitest';
 
-if (
-  !process.env.QUIZ_FILE_DIR ||
-  !process.env.ARTICLE_FILE_DIR ||
-  !process.env.VITEST_POOL_ID
-) {
-  throw new Error(
-    'Missing environment variables: QUIZ_FILE_DIR, ARTICLE_FILE_DIR, VITEST_POOL_ID',
-  );
+if (!process.env.UPLOADS_DIR || !process.env.VITEST_POOL_ID) {
+  throw new Error('Missing environment variables: UPLOADS_DIR, VITEST_POOL_ID');
 }
 // Ensure the directories are unique for each test worker
-process.env.QUIZ_FILE_DIR = `${process.env.QUIZ_FILE_DIR}_${process.env.VITEST_POOL_ID}`;
-process.env.ARTICLE_FILE_DIR = `${process.env.ARTICLE_FILE_DIR}_${process.env.VITEST_POOL_ID}`;
+process.env.UPLOADS_DIR = path.join(
+  process.env.UPLOADS_DIR,
+  process.env.VITEST_POOL_ID,
+);
 
 const { env } = await import('@/config.ts');
 
@@ -32,12 +28,16 @@ beforeAll(async () => {
   const samplesDir = path.join(import.meta.dirname, '..', 'samples');
   await fs.cp(
     path.join(samplesDir, 'article-file-samples'),
-    env.ARTICLE_FILE_DIR,
+    path.join(env.UPLOADS_DIR, 'articles'),
     { recursive: true },
   );
-  await fs.cp(path.join(samplesDir, 'quiz-file-samples'), env.QUIZ_FILE_DIR, {
-    recursive: true,
-  });
+  await fs.cp(
+    path.join(samplesDir, 'quiz-file-samples'),
+    path.join(env.UPLOADS_DIR, 'quizzes'),
+    {
+      recursive: true,
+    },
+  );
 });
 
 afterAll(async () => {

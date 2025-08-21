@@ -137,7 +137,7 @@ router.get('/:quizId/file', async (req, res) => {
     return;
   }
   const fileName = `${quizId}.pdf`;
-  const filePath = path.join(env.PWD, env.QUIZ_FILE_DIR, fileName);
+  const filePath = path.join(env.UPLOADS_DIR, 'quizzes', fileName);
   try {
     await fs.access(filePath);
   } catch (err) {
@@ -149,7 +149,7 @@ router.get('/:quizId/file', async (req, res) => {
 });
 
 const quizFileUploader = fileUploader(
-  env.QUIZ_FILE_DIR,
+  path.join(env.UPLOADS_DIR, 'quizzes'),
   ['application/pdf'],
   (req: Request) => {
     return `${req.params.quizId}.pdf`;

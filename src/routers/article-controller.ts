@@ -30,7 +30,7 @@ const getArticleContent = async (
   articleId: UUID,
   sliceLength = 50,
 ): Promise<string> => {
-  const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, `${articleId}.md`);
+  const filePath = path.join(env.UPLOADS_DIR, 'articles', `${articleId}.md`);
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return data.length <= sliceLength
@@ -234,7 +234,7 @@ router.get('/:articleId/file', async (req, res) => {
     return;
   }
   const fileName = `${articleId}.md`;
-  const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, fileName);
+  const filePath = path.join(env.UPLOADS_DIR, 'articles', fileName);
   let content;
   try {
     content = await fs.readFile(filePath, 'utf-8');
@@ -300,7 +300,7 @@ router.put('/:articleId/file', async (req, res) => {
     return;
   }
   const fileName = `${articleId}.md`;
-  const filePath = path.join(env.PWD, env.ARTICLE_FILE_DIR, fileName);
+  const filePath = path.join(env.UPLOADS_DIR, 'articles', fileName);
   try {
     await fs.writeFile(filePath, content.file, 'utf-8');
   } catch (err) {
