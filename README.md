@@ -29,7 +29,7 @@
 
 ## `.env` 相關
 
-`git clone` 下來會有一個 `.default.env` 檔案，其中有一些環境變數的預設值。請建立一個叫做 `.env` 的空白檔案，並且將任何你想要覆蓋或新定義的環境變數寫入其中，參考 `default.env` 的格式。
+`git clone` 下來會有一個 `.env.default` 檔案，其中有一些環境變數的預設值。請建立一個叫做 `.env` 的空白檔案，並且將任何你想要覆蓋或新定義的環境變數寫入其中，參考 `default.env` 的格式。
 
 ## Firebase service account 相關
 

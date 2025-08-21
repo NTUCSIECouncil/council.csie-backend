@@ -2,8 +2,8 @@
   "type": "module",
   "scripts": {
     "prepare": "husky",
-    "dev": "tsx --env-file=.default.env --env-file=.env src/index.ts",
-    "dev:watch": "tsx watch --include openapi --clear-screen=false --env-file=.default.env --env-file=.env src/index.ts",
+    "dev": "tsx --env-file=.env.default --env-file=.env src/index.ts",
+    "dev:watch": "tsx watch --include openapi --clear-screen=false --env-file=.env.default --env-file=.env src/index.ts",
     "type-check": "tsc --noEmit",
     "lint": "eslint 'src/**/*.ts' 'scripts/**/*.ts' 'test/**/*.ts' --fix",
     "lint:check": "eslint 'src/**/*.ts' 'scripts/**/*.ts' 'test/**/*.ts'",
@@ -13,8 +13,8 @@
     "test:watch": "vitest watch",
     "fetch-courses": "tsx scripts/fetch-courses.ts",
     "generate-samples": "tsx scripts/gen-samples.ts",
-    "setup-dev-db": "tsx --env-file=.default.env --env-file=.env scripts/setup-dev-db.ts",
-    "cleanup-dev-db": "tsx --env-file=.default.env --env-file=.env scripts/cleanup-dev-db.ts"
+    "setup-dev-db": "tsx --env-file=.env.default --env-file=.env scripts/setup-dev-db.ts",
+    "cleanup-dev-db": "tsx --env-file=.env.default --env-file=.env scripts/cleanup-dev-db.ts"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.0.0",
