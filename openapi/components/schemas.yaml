@@ -250,3 +250,4 @@ Error:
       example:
         field: title
         reason: 'This field is required.'
+  required: [message]
