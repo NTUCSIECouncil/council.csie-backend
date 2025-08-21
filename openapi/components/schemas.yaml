@@ -41,7 +41,7 @@ ArticleBase:
       properties:
         sweetness:
           type: integer
-          description: How enjoyable or pleasant the course is
+          description: How good the final grades of this course generally are
           minimum: 1
           maximum: 5
           example: 4
