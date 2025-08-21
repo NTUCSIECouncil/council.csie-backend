@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import { ZArticleSchema } from '@models/article-schema.ts';
@@ -8,6 +9,11 @@ import { ZCourseSchema } from '@models/course-schema.ts';
 import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
+
+dotenv.config({
+  path: ['.env.default', '.env'],
+  override: true,
+});
 
 if (
   process.env.MONGODB_URI === undefined ||

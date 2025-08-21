@@ -1,8 +1,14 @@
 import path from 'path';
 
+import dotenv from 'dotenv';
 import { z } from 'zod';
 
 import logger from '@utils/logger.ts';
+
+dotenv.config({
+  path: ['.env.default', '.env'],
+  override: true,
+});
 
 const EnvSchema = z.object({
   FIREBASE_CERT_PATH: z.string(),
@@ -17,8 +23,7 @@ const parsed = EnvSchema.safeParse(process.env);
 
 if (!parsed.success) {
   logger.error(
-    'Environment variables validation failed:',
-    z.prettifyError(parsed.error),
+    `Environment variables validation failed:\n${z.prettifyError(parsed.error)}`,
   );
   logger.error('Exiting...');
   process.exit(1);

@@ -1,10 +1,16 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+import dotenv from 'dotenv';
 import { z } from 'zod';
 
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
+
+dotenv.config({
+  path: ['.env.default', '.env'],
+  override: true,
+});
 
 if (process.env.SAMPLES_DIR === undefined) {
   console.error('environment variable SAMPLES_DIR is not set');
