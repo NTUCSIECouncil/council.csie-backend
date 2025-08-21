@@ -1,32 +1,33 @@
 articles:
   get:
     tags: [articles]
-    summary: Get or search articles
+    summary: List and search course review articles
     description: |
-      Retrieves a paginated list of articles. Supports keyword search, tag filtering, and embedding related resources (course, creator, content). Includes pagination metadata.
+      Retrieves a paginated list of course review articles with support for filtering 
+      and searching. Can embed related resources like course details and creator information.
     parameters:
       - name: limit
         in: query
-        description: Maximum number of articles to return per page.
+        description: Maximum number of articles to return per page
         schema:
           type: integer
           default: 10
           minimum: 1
       - name: offset
         in: query
-        description: Number of articles to skip before starting to collect the result set.
+        description: Number of articles to skip for pagination
         schema:
           type: integer
           default: 0
           minimum: 0
       - name: keyword
         in: query
-        description: Fuzzy search term applied to article title, content, course name, lecturer, and course curriculum.
+        description: Search term for fuzzy matching against article titles, content, course names, lecturers, and curriculum codes
         schema:
           type: string
       - name: tags
         in: query
-        description: List of tags to filter articles by. Multiple tags can be specified.
+        description: Filter articles by specific tags (multiple tags supported)
         schema:
           type: array
           items:
@@ -35,7 +36,9 @@ articles:
         explode: true
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, course and creator return only their UUIDs, and content is not included. The content field may be an empty string if no file content has been uploaded.
+        description: |
+          Related resources to include in the response. When omitted, only UUID references 
+          are returned. The 'content' option provides a preview of the article content.
         style: form
         explode: true
         schema:
@@ -45,33 +48,33 @@ articles:
             enum: [course, creator, content]
     responses:
       '200':
-        description: |-
-          Success. Returns a paginated list of articles matching the query parameters. Each article may include embedded resources if requested.
+        description: Articles retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: List response for articles
+              description: Paginated list of articles
               properties:
                 articles:
                   type: array
-                  description: List of articles matching the search criteria
+                  description: Array of articles matching the search criteria
                   items:
                     $ref: '../components/schemas.yaml#/ArticleResponse'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
               required: [articles, meta]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid request parameters
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
   post:
     tags: [articles]
-    summary: Create an article
+    summary: Create a new course review article
     description: |
-      Creates a new article with the provided data. User authentication is required, and the authenticated user will be set as the creator of the article.
+      Creates a new course review article. Requires authentication, and the authenticated 
+      user becomes the article creator.
     security:
       - bearerAuth: []
     requestBody:
@@ -83,8 +86,7 @@ articles:
 
     responses:
       '201':
-        description: |-
-          Created. The article was successfully created. Returns the ID of the new article.
+        description: Article created successfully
         content:
           application/json:
             schema:
@@ -95,13 +97,13 @@ articles:
                   $ref: '../components/schemas.yaml#/UUID'
               required: [articleId]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid request body or parameters
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires user authentication. Returns a standard error object.
+        description: Authentication required
         content:
           application/json:
             schema:
@@ -112,17 +114,20 @@ articles_articleId:
     tags: [articles]
     summary: Get article by ID
     description: |
-      Retrieves a single article by its unique ID. Optionally embeds related resources (course, creator, content).
+      Retrieves a single article by its unique identifier. 
+      Can optionally embed related resources like course details and creator information.
     parameters:
       - name: articleId
         in: path
         required: true
-        description: The unique identifier of the article to retrieve.
+        description: Unique identifier of the article to retrieve
         schema:
           $ref: '../components/schemas.yaml#/UUID'
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, course and creator return only their UUIDs, and content is not included. The content field may be an empty string if no file content has been uploaded.
+        description: |
+          Related resources to include in the response. When omitted, only UUID references 
+          are returned. The 'content' option provides a preview of the article content.
         style: form
         explode: true
         schema:
@@ -132,25 +137,24 @@ articles_articleId:
             enum: [course, creator, content]
     responses:
       '200':
-        description: |-
-          Success. Returns the article with the specified ID. May include embedded resources if requested.
+        description: Article retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: Article response
+              description: Single article response
               properties:
                 article:
                   $ref: '../components/schemas.yaml#/ArticleResponse'
               required: [article]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid article ID or request parameters
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No article exists with the specified ID.
+        description: Article not found
         content:
           application/json:
             schema:
@@ -159,14 +163,15 @@ articles_articleId:
     tags: [articles]
     summary: Update article by ID
     description: |
-      Updates an existing article by its unique ID with the provided data. User authentication is required, and the authenticated user must be the creator of the article to update it.
+      Updates an existing article with new information. Requires authentication, 
+      and only the article creator can modify their own articles.
     security:
       - bearerAuth: []
     parameters:
       - name: articleId
         in: path
         required: true
-        description: The unique identifier of the article to update.
+        description: Unique identifier of the article to update
         schema:
           $ref: '../components/schemas.yaml#/UUID'
     requestBody:
@@ -177,27 +182,27 @@ articles_articleId:
             $ref: '../components/schemas.yaml#/ArticleUpdate'
     responses:
       '204':
-        description: No Content. The article was updated successfully.
+        description: Article updated successfully
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid article ID or request body
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires user authentication. Returns a standard error object.
+        description: Authentication required
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Forbidden. The authenticated user is required to be the creator of the article to update it. Returns a standard error object.
+        description: Only the article creator can update this article
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No article exists with the specified ID.
+        description: Article not found
         content:
           application/json:
             schema:
@@ -206,54 +211,55 @@ articles_articleId:
 articles_articleId_file:
   get:
     tags: [articles]
-    summary: Get article Markdown file
+    summary: Get article content file
     description: |
-      Retrieves the Markdown file content for the specified article.
+      Retrieves the complete Markdown content for the specified article.
     parameters:
       - name: articleId
         in: path
         required: true
-        description: The unique identifier of the article.
+        description: Unique identifier of the article
         schema:
           $ref: '../components/schemas.yaml#/UUID'
     responses:
       '200':
-        description: |-
-          Success. Returns the Markdown file for the specified article. Returns an empty string if no file content has been uploaded for this article.
+        description: Article content file retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: Markdown file content
+              description: Article Markdown content
               properties:
                 file:
                   type: string
                   format: markdown
+                  description: Complete Markdown content of the article (may be empty if no content has been uploaded)
               required: [file]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid article ID
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No article exists with the specified ID.
+        description: Article not found
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
   put:
     tags: [articles]
-    summary: Upload or replace article Markdown file
+    summary: Upload or replace article content
     description: |
-      Uploads or replaces the Markdown file for the specified article. User authentication is required, and the authenticated user must be the creator of the article to upload a file.
+      Uploads or replaces the Markdown content for an article. Requires authentication, 
+      and only the article creator can upload content to their articles.
     security:
       - bearerAuth: []
     parameters:
       - name: articleId
         in: path
         required: true
-        description: The unique identifier of the article.
+        description: Unique identifier of the article
         schema:
           $ref: '../components/schemas.yaml#/UUID'
     requestBody:
@@ -266,31 +272,31 @@ articles_articleId_file:
               file:
                 type: string
                 format: markdown
-                description: The Markdown file content to upload.
+                description: Markdown content to upload for this article
             required: [file]
     responses:
       '204':
-        description: No Content. The file was uploaded successfully.
+        description: Article content uploaded successfully
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or file parameters. Returns a standard error object.
+        description: Invalid article ID or file content
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires user authentication. Returns a standard error object.
+        description: Authentication required
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Forbidden. The authenticated user is required to be the creator of the article to upload a file. Returns a standard error object.
+        description: Only the article creator can upload content to this article
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No article exists with the specified ID.
+        description: Article not found
         content:
           application/json:
             schema:

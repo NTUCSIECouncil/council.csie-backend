@@ -2,9 +2,10 @@ users:
   post:
     tags: [users]
     operationId: createUser
-    summary: Create a new user
+    summary: Create a new user account
     description: |
-      Creates a new user with the provided data and information from Firebase. User authentication is required. If a user with the provided Google ID in the header already exists, the request will fail with a 409 Conflict error.
+      Creates a new user account using Firebase authentication information. 
+      The Google ID from the authentication token is used to prevent duplicate accounts.
     security:
       - bearerAuth: []
     requestBody:
@@ -15,29 +16,30 @@ users:
             $ref: '../components/schemas.yaml#/UserCreate'
     responses:
       '201':
-        description: |-
-          Created. The user was successfully created. Returns the ID of the new user.
+        description: User account created successfully
         content:
           application/json:
             schema:
               type: object
               description: User creation response
               properties:
-                userId: { type: string }
+                userId:
+                  $ref: '../components/schemas.yaml#/UUID'
+              required: [userId]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        description: Invalid request body or missing required fields
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires authentication.
+        description: Authentication required
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '409':
-        description: Conflict. The user already exists with the provided Google ID.
+        description: User account already exists with this Google ID
         content:
           application/json:
             schema:
@@ -46,57 +48,55 @@ users:
 users_userId:
   get:
     tags: [users]
-    summary: Get user by ID
+    summary: Get user profile by ID
     description: |
-      Retrieves a user by their unique ID.
+      Retrieves public profile information for a specific user using their unique identifier.
     parameters:
       - name: userId
         in: path
         required: true
-        description: The unique identifier of the user to retrieve.
-        schema: { $ref: '../components/schemas.yaml#/UUID' }
+        description: Unique identifier of the user whose profile to retrieve
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
     responses:
       '200':
-        description: |-
-          Success. Returns the user with the specified ID.
+        description: User profile retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: User response
+              description: Public user profile response
               properties:
-                user: { $ref: '../components/schemas.yaml#/UserResponse' }
+                user:
+                  $ref: '../components/schemas.yaml#/UserResponse'
+              required: [user]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
-      '403':
-        description: Forbidden. You do not have permission to access or modify this user.
+        description: Invalid user ID
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No user exists with the specified ID.
+        description: User not found
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
   patch:
     tags: [users]
-    summary: Update user by ID
+    summary: Update user profile by ID
     description: |
-      Updates an existing user with the specified ID.
+      Updates profile information for a specific user. Requires authentication 
+      and appropriate permissions to modify the user account.
     security:
       - bearerAuth: []
     parameters:
       - name: userId
         in: path
         required: true
-        description: The unique identifier of the user to update.
-        schema: { $ref: '../components/schemas.yaml#/UUID' }
+        description: Unique identifier of the user to update
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
     requestBody:
       required: true
       content:
@@ -105,27 +105,27 @@ users_userId:
             $ref: '../components/schemas.yaml#/UserCreate'
     responses:
       '204':
-        description: No Content. The user was updated successfully.
+        description: User profile updated successfully
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        description: Invalid user ID or request body
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires authentication.
+        description: Authentication required
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Forbidden. You do not have permission to access or modify this user.
+        description: Only user account owners can modify their profiles
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No user exists with the specified ID.
+        description: User not found
         content:
           application/json:
             schema:
@@ -133,36 +133,32 @@ users_userId:
 users_me:
   get:
     tags: [users]
-    summary: Get current login user (alias of /users/{userId})
+    summary: Get current user profile
     description: |
-      Retrieves the currently authenticated user. This is an alias of GET /users/{userId}
+      Retrieves the public profile information for the currently authenticated user. 
+      This is a convenience endpoint equivalent to GET /users/{userId} for the current user.
     security:
       - bearerAuth: []
     responses:
       '200':
-        description: |-
-          Success. Returns the current login user.
+        description: Current user profile retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: User response
+              description: Current user profile response
               properties:
-                user: { $ref: '../components/schemas.yaml#/UserResponse' }
+                user:
+                  $ref: '../components/schemas.yaml#/UserResponse'
+              required: [user]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        description: Invalid request or malformed authentication token
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires authentication.
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
-      '403':
-        description: Forbidden. You do not have permission to access or modify this user.
+        description: Authentication required
         content:
           application/json:
             schema:
@@ -170,9 +166,10 @@ users_me:
 
   patch:
     tags: [users]
-    summary: Update current login user (alias of /users/{userId})
+    summary: Update current user profile
     description: |
-      Updates the currently authenticated user. This is an alias of PATCH /users/{userId}.
+      Updates the profile information for the currently authenticated user. 
+      This is a convenience endpoint equivalent to PATCH /users/{userId} for the current user.
     security:
       - bearerAuth: []
     requestBody:
@@ -183,21 +180,21 @@ users_me:
             $ref: '../components/schemas.yaml#/UserCreate'
     responses:
       '204':
-        description: No Content. The user was updated successfully.
+        description: Current user profile updated successfully
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        description: Invalid request body or malformed authentication token
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires authentication.
+        description: Authentication required
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Forbidden. You do not have permission to access or modify this user.
+        description: Only user account owners can modify their profiles
         content:
           application/json:
             schema:
@@ -206,37 +203,33 @@ users_me:
 users_me_private:
   get:
     tags: [users]
-    summary: Get current login user with private details
+    summary: Get current user with private details
     description: |
-      Retrieves the currently authenticated user with private details such as email and Google ID.
+      Retrieves the complete profile information for the currently authenticated user, 
+      including private details like email address and Google ID that are not visible 
+      in public profiles.
     security:
       - bearerAuth: []
     responses:
       '200':
-        description: |-
-          Success. Returns the current login user with private details.
+        description: Current user's complete profile retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: Private user response
+              description: Complete user profile with private information
               properties:
                 user:
-                  { $ref: '../components/schemas.yaml#/PrivateUserResponse' }
+                  $ref: '../components/schemas.yaml#/PrivateUserResponse'
+              required: [user]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing path or body parameters. Returns a standard error object.
+        description: Invalid request or malformed authentication token
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Unauthorized. The request requires authentication.
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
-      '403':
-        description: Forbidden. You do not have permission to access or modify this user.
+        description: Authentication required
         content:
           application/json:
             schema:
