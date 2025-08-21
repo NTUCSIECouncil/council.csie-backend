@@ -47,6 +47,11 @@ if (process.env.MONGODB_DEV_DB_NAME === undefined) {
   process.exit();
 }
 
+if (process.env.UPLOADS_DIR === undefined) {
+  console.log('env.UPLOADS_DIR not found');
+  process.exit();
+}
+
 const dbName = process.env.MONGODB_DEV_DB_NAME;
 
 await mongoose.connect(process.env.MONGODB_URI, { dbName });
@@ -66,7 +71,7 @@ console.log('Inserted data into database');
 
 console.log('Copying article files and quiz files to uploads/');
 
-const uploadsPath = path.join(import.meta.dirname, '..', 'uploads');
+const uploadsPath = process.env.UPLOADS_DIR;
 await fs.rm(uploadsPath, { recursive: true, force: true });
 await fs.mkdir(uploadsPath, { recursive: true });
 
