@@ -5,9 +5,21 @@ import { z } from 'zod';
 
 import { ZUuidSchema } from './util-schema.ts';
 
+const ZQuizSessionSchema = z.enum([
+  'midterm',
+  'final',
+  'first',
+  'second',
+  'other',
+]);
+
+type QuizSession = z.infer<typeof ZQuizSessionSchema>;
+
+const QuizSessionEnum = ZQuizSessionSchema.enum;
+
 const ZQuizSchema = z.object({
   _id: ZUuidSchema,
-  session: z.enum(['midterm', 'final', 'first', 'second', 'other']),
+  session: ZQuizSessionSchema,
   course: ZUuidSchema, // foreign key to Course
   uploader: ZUuidSchema, // foreign key to User
 });
@@ -22,7 +34,7 @@ const quizSchema = new Schema<Quiz, QuizModel>({
     type: String,
     required: true,
     immutable: true,
-    enum: ['midterm', 'final', 'first', 'second', 'other'],
+    enum: QuizSessionEnum,
   },
   course: { type: String, ref: 'Course', required: true, immutable: true },
   uploader: { type: String, ref: 'User', required: true, immutable: true },
@@ -30,4 +42,11 @@ const quizSchema = new Schema<Quiz, QuizModel>({
 
 const QuizModel = model<Quiz, QuizModel>('Quiz', quizSchema);
 
-export { type Quiz, QuizModel, ZQuizSchema };
+export {
+  type Quiz,
+  QuizModel,
+  ZQuizSchema,
+  QuizSession,
+  ZQuizSessionSchema,
+  QuizSessionEnum,
+};

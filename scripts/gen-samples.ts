@@ -6,7 +6,11 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 import { type Article } from '@models/article-schema.ts';
 import { type Course } from '@models/course-schema.ts';
-import { type Quiz } from '@models/quiz-schema.ts';
+import {
+  QuizSessionEnum,
+  type Quiz,
+  type QuizSession,
+} from '@models/quiz-schema.ts';
 import { type User } from '@models/user-schema.ts';
 
 async function readListJsonFile<T>(filePath: string): Promise<T[]> {
@@ -77,14 +81,9 @@ function getRandomUser(users: User[]): User {
   return users[Math.floor(Math.random() * users.length)];
 }
 
-function getRandomSection():
-  | 'first'
-  | 'second'
-  | 'midterm'
-  | 'final'
-  | 'other' {
-  const sections = ['first', 'second', 'midterm', 'final', 'other'] as const;
-  return sections[Math.floor(Math.random() * sections.length)];
+function getRandomSection(): QuizSession {
+  const values = Object.values(QuizSessionEnum);
+  return values[Math.floor(Math.random() * values.length)];
 }
 
 function generateArticles(

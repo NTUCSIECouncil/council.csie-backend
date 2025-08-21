@@ -42,38 +42,7 @@ describe('GET /api/quizzes', () => {
         .get('/api/quizzes')
         .query(qs.stringify({ limit: 5 }))
         .expect(200);
-
-      const body = parseAndExpectValid(ZQuizListResponse, res.body);
-
-      // Verify response structure matches OpenAPI spec
-      expect(body).toHaveProperty('quizzes');
-      expect(body).toHaveProperty('meta');
-      expect(Array.isArray(body.quizzes)).toBe(true);
-
-      // Verify meta structure
-      expect(body.meta).toHaveProperty('total');
-      expect(body.meta).toHaveProperty('limit');
-      expect(body.meta).toHaveProperty('offset');
-      expect(typeof body.meta.total).toBe('number');
-      expect(typeof body.meta.limit).toBe('number');
-      expect(typeof body.meta.offset).toBe('number');
-
-      // Verify quiz structure for each quiz if any exist
-      for (const quiz of body.quizzes) {
-        expect(quiz).toHaveProperty('_id');
-        expect(quiz).toHaveProperty('session');
-        expect(quiz).toHaveProperty('course');
-        expect(quiz).toHaveProperty('uploader');
-
-        // Verify session is one of the allowed enum values
-        expect(['midterm', 'final', 'first', 'second', 'other']).toContain(
-          quiz.session,
-        );
-
-        // Without embedding, course and uploader should be UUIDs (strings)
-        expect(typeof quiz.course).toBe('string');
-        expect(typeof quiz.uploader).toBe('string');
-      }
+      parseAndExpectValid(ZQuizListResponse, res.body);
     });
 
     it('should use default pagination values (limit: 10, offset: 0)', async () => {
@@ -359,10 +328,7 @@ describe('GET /api/quizzes/:quizId', () => {
         .expect(200);
 
       const body = parseAndExpectValid(ZQuizResponse, res.body);
-      expect(body.quiz._id).toBe(testQuiz._id);
-      expect(body.quiz.session).toBe(testQuiz.session);
-      expect(body.quiz.course).toBe(testQuiz.course);
-      expect(body.quiz.uploader).toBe(testQuiz.uploader);
+      expect(body.quiz).toEqual(testQuiz);
     });
 
     it('should support embed parameters correctly', async () => {
