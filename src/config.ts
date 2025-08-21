@@ -7,10 +7,10 @@ import logger from '@utils/logger.ts';
 const EnvSchema = z.object({
   FIREBASE_CERT_PATH: z.string(),
   MONGODB_URI: z.string(),
-  MONGODB_DEV_DB_NAME: z.string(),
+  MONGODB_DB_NAME: z.string(),
   PORT: z.string(),
   UPLOADS_DIR: z.string(),
-  PWD: z.string(),
+  SAMPLES_DIR: z.string(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

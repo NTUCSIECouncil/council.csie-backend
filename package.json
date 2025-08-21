@@ -11,8 +11,8 @@
     "format:check": "prettier . --check",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "fetch-courses": "tsx scripts/fetch-courses.ts",
-    "generate-samples": "tsx scripts/gen-samples.ts",
+    "fetch-courses": "tsx --env-file=.env.default --env-file=.env scripts/fetch-courses.ts",
+    "generate-samples": "tsx --env-file=.env.default --env-file=.env scripts/gen-samples.ts",
     "setup-dev-db": "tsx --env-file=.env.default --env-file=.env scripts/setup-dev-db.ts",
     "cleanup-dev-db": "tsx --env-file=.env.default --env-file=.env scripts/cleanup-dev-db.ts"
   },
@@ -74,7 +74,7 @@
   },
   "lint-staged": {
     "*": [
-      "prettier --check"
+      "prettier --check --ignore-unknown"
     ],
     "(src|test|scripts)/**/*.ts": [
       "eslint"

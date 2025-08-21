@@ -9,6 +9,17 @@ import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
 
+if (
+  process.env.MONGODB_URI === undefined ||
+  process.env.MONGODB_DB_NAME === undefined ||
+  process.env.UPLOADS_DIR === undefined ||
+  process.env.SAMPLES_DIR === undefined
+) {
+  console.error('One or more environment variables are not set');
+  console.error('Exiting...');
+  process.exit();
+}
+
 const ZSchema = {
   Article: ZArticleSchema,
   Course: ZCourseSchema,
@@ -20,9 +31,8 @@ const insertFromFile = async (
   model: 'Article' | 'Course' | 'Quiz' | 'User',
 ) => {
   const filePath = path.join(
-    import.meta.dirname,
-    '..',
-    'samples',
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- env.SAMPLES_DIR is checked above
+    process.env.SAMPLES_DIR!,
     `${model.toLowerCase()}-samples.json`,
   );
   const data = await fs.readFile(filePath, 'utf-8');
@@ -37,22 +47,11 @@ const insertFromFile = async (
   );
 };
 
-// check env
-if (process.env.MONGODB_URI === undefined) {
-  console.log('env.MONGODB_URI not found');
-  process.exit();
-}
-if (process.env.MONGODB_DEV_DB_NAME === undefined) {
-  console.log('env.MONGODB_DEV_DB_NAME not found');
-  process.exit();
-}
+const dbName = process.env.MONGODB_DB_NAME;
 
-if (process.env.UPLOADS_DIR === undefined) {
-  console.log('env.UPLOADS_DIR not found');
-  process.exit();
-}
-
-const dbName = process.env.MONGODB_DEV_DB_NAME;
+console.log(
+  `Connecting to MongoDB database ${dbName} at ${process.env.MONGODB_URI}`,
+);
 
 await mongoose.connect(process.env.MONGODB_URI, { dbName });
 
@@ -62,6 +61,7 @@ console.log(`Dropping database "${dbName}"`);
 await mongoose.connection.db.dropDatabase();
 console.log(`Dropped database "${dbName}"`);
 
+console.log(`Using samples directory: ${process.env.SAMPLES_DIR}`);
 console.log('Inserting data into database');
 for (const model in ZSchema) {
   await insertFromFile(model as 'Article' | 'Course' | 'Quiz' | 'User');
@@ -69,30 +69,30 @@ for (const model in ZSchema) {
 
 console.log('Inserted data into database');
 
-console.log('Copying article files and quiz files to uploads/');
+console.log(
+  `Copying article files and quiz files to ${process.env.UPLOADS_DIR}`,
+);
 
 const uploadsPath = process.env.UPLOADS_DIR;
 await fs.rm(uploadsPath, { recursive: true, force: true });
 await fs.mkdir(uploadsPath, { recursive: true });
 
 const articleFilesSrcPath = path.join(
-  import.meta.dirname,
-  '..',
-  'samples',
+  process.env.SAMPLES_DIR,
   'article-file-samples',
 );
 const articleFilesDestPath = path.join(uploadsPath, 'articles');
 await fs.cp(articleFilesSrcPath, articleFilesDestPath, { recursive: true });
 
 const quizFilesSrcPath = path.join(
-  import.meta.dirname,
-  '..',
-  'samples',
+  process.env.SAMPLES_DIR,
   'quiz-file-samples',
 );
 const quizFilesDestPath = path.join(uploadsPath, 'quizzes');
 await fs.cp(quizFilesSrcPath, quizFilesDestPath, { recursive: true });
 
-console.log('Copied article files and quiz files to uploads/');
+console.log(
+  `Copied article files and quiz files to ${process.env.UPLOADS_DIR}`,
+);
 
 await mongoose.disconnect();

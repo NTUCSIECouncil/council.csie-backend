@@ -13,6 +13,12 @@ import {
 } from '@models/quiz-schema.ts';
 import { type User } from '@models/user-schema.ts';
 
+if (process.env.SAMPLES_DIR === undefined) {
+  console.error('environment variable SAMPLES_DIR is not set');
+  console.error('Exiting...');
+  process.exit();
+}
+
 async function readListJsonFile<T>(filePath: string): Promise<T[]> {
   try {
     const data = await fs.readFile(filePath, 'utf8');
@@ -136,7 +142,9 @@ function generateQuiz(
   return quizzes;
 }
 
-const jsonDirPath = path.join(import.meta.dirname, '..', 'samples');
+const jsonDirPath = process.env.SAMPLES_DIR;
+console.log(`Writing sample data to ${jsonDirPath}`);
+
 const originalCourseJsonPath = path.join(jsonDirPath, 'course-original.json');
 const courseJsonPath = path.join(jsonDirPath, 'course-samples.json');
 const articleJsonPath = path.join(jsonDirPath, 'article-samples.json');
@@ -167,3 +175,5 @@ await fs.rm(quizFileDirPath, { recursive: true, force: true });
 
 await generateArticleFiles(articleFileDirPath, articles);
 await generateQuizFiles(quizFileDirPath, quizzes);
+
+console.log(`Finished writing sample data to ${jsonDirPath}`);

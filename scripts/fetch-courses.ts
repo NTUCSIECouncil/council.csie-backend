@@ -6,6 +6,12 @@ import { z } from 'zod';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
+if (process.env.SAMPLES_DIR === undefined) {
+  console.error('environment variable SAMPLES_DIR is not set');
+  console.error('Exiting...');
+  process.exit();
+}
+
 const ZCourseFromApiSchema = z.object({
   id: ZUuidSchema,
   identifier: z.string(),
@@ -175,9 +181,13 @@ const getBatchCourseData = async (
   return allProcessedCourses;
 };
 
-const jsonDirPath = path.join(import.meta.dirname, '..', 'samples');
+const jsonDirPath = process.env.SAMPLES_DIR;
+console.log(`Writing course data to ${jsonDirPath}`);
+
 const originalCourseJsonPath = path.join(jsonDirPath, 'course-original.json');
 
 await fs.mkdir(jsonDirPath, { recursive: true });
 const courseList = await getBatchCourseData('', '113-2');
 await fs.writeFile(originalCourseJsonPath, JSON.stringify(courseList, null, 2));
+
+console.log(`Finished writing course data to ${originalCourseJsonPath}`);
