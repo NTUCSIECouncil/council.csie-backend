@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
@@ -33,7 +32,7 @@ const fileUploader = (
   allowedMimeTypes: string[],
   getFilename: (req: Request) => string,
 ): RequestHandler => {
-  const uploadDir = path.join(env.PWD, fileDir);
+  const uploadDir = env.UPLOADS_DIR;
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }

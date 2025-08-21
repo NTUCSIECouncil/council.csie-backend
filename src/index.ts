@@ -99,9 +99,9 @@ mongoose.connection.on('error', err => {
   dbLogger.error('Mongoose connection error: ', err);
 });
 
-await mongoose.connect(env.MONGODB_URI, { dbName: env.MONGODB_DEV_DB_NAME });
+await mongoose.connect(env.MONGODB_URI, { dbName: env.MONGODB_DB_NAME });
 
-logger.info(`Connected to ${env.MONGODB_URI}/${env.MONGODB_DEV_DB_NAME}`);
+logger.info(`Connected to ${env.MONGODB_URI}/${env.MONGODB_DB_NAME}`);
 
 expressApp.listen(env.PORT, err => {
   if (err) {

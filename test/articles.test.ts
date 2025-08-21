@@ -1243,7 +1243,7 @@ describe('GET /api/articles/:articleId/file', () => {
       // Verify file content matches what's on disk if file exists
       try {
         const diskData = await fs.readFile(
-          path.join(env.PWD, env.ARTICLE_FILE_DIR, `${article._id}.md`),
+          path.join(env.UPLOADS_DIR, 'articles', `${article._id}.md`),
           'utf-8',
         );
         expect(body.file).toBe(diskData);

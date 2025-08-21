@@ -31,9 +31,7 @@ const seedModelFromSamples = async (
   model: 'Article' | 'Course' | 'Quiz' | 'User',
 ) => {
   const filePath = path.join(
-    import.meta.dirname,
-    '..',
-    'samples',
+    process.env.SAMPLES_DIR!,
     `${model.toLowerCase()}-samples.json`,
   );
   const data = readFileSync(filePath, 'utf-8');

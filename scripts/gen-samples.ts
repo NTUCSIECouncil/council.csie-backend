@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 
+import dotenv from 'dotenv';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 import { type Article } from '@models/article-schema.ts';
@@ -12,6 +13,17 @@ import {
   type QuizSession,
 } from '@models/quiz-schema.ts';
 import { type User } from '@models/user-schema.ts';
+
+dotenv.config({
+  path: ['.env.default', '.env'],
+  override: true,
+});
+
+if (process.env.SAMPLES_DIR === undefined) {
+  console.error('environment variable SAMPLES_DIR is not set');
+  console.error('Exiting...');
+  process.exit();
+}
 
 async function readListJsonFile<T>(filePath: string): Promise<T[]> {
   try {
@@ -136,7 +148,9 @@ function generateQuiz(
   return quizzes;
 }
 
-const jsonDirPath = path.join(import.meta.dirname, '..', 'samples');
+const jsonDirPath = process.env.SAMPLES_DIR;
+console.log(`Writing sample data to ${jsonDirPath}`);
+
 const originalCourseJsonPath = path.join(jsonDirPath, 'course-original.json');
 const courseJsonPath = path.join(jsonDirPath, 'course-samples.json');
 const articleJsonPath = path.join(jsonDirPath, 'article-samples.json');
@@ -167,3 +181,5 @@ await fs.rm(quizFileDirPath, { recursive: true, force: true });
 
 await generateArticleFiles(articleFileDirPath, articles);
 await generateQuizFiles(quizFileDirPath, quizzes);
+
+console.log(`Finished writing sample data to ${jsonDirPath}`);
