@@ -95,9 +95,7 @@ const articleSchema = new Schema<Article, ArticleModel>(
     course: { type: String, ref: 'Course', required: true, immutable: true },
     creator: { type: String, ref: 'User', required: true, immutable: true },
   },
-  {
-    toObject: { versionKey: false },
-  },
+  { toObject: { versionKey: false } },
 );
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (

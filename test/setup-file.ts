@@ -6,9 +6,9 @@ import mongoose from 'mongoose';
 import { afterAll, beforeAll } from 'vitest';
 
 if (
-  !process.env.UPLOADS_DIR ||
-  !process.env.VITEST_POOL_ID ||
-  !process.env.SAMPLES_DIR
+  !process.env.UPLOADS_DIR
+  || !process.env.VITEST_POOL_ID
+  || !process.env.SAMPLES_DIR
 ) {
   throw new Error(
     'Missing environment variables: UPLOADS_DIR, VITEST_POOL_ID, SAMPLES_DIR',
@@ -40,9 +40,7 @@ beforeAll(async () => {
   await fs.cp(
     path.join(samplesDir, 'quiz-file-samples'),
     path.join(env.UPLOADS_DIR, 'quizzes'),
-    {
-      recursive: true,
-    },
+    { recursive: true },
   );
 });
 

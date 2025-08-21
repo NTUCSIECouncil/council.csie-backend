@@ -33,17 +33,11 @@ const ZArticleListResponse = z.object({
   meta: ZMetaSchema,
 });
 
-const ZArticleCreateResponse = z.object({
-  articleId: ZUuidSchema,
-});
+const ZArticleCreateResponse = z.object({ articleId: ZUuidSchema });
 
-const ZArticleResponse = z.object({
-  article: ZArticleResponseSchema,
-});
+const ZArticleResponse = z.object({ article: ZArticleResponseSchema });
 
-const ZFileResponse = z.object({
-  file: z.string(),
-});
+const ZFileResponse = z.object({ file: z.string() });
 
 const genArticleCreate = async () => {
   const course = await getTestCourse();
@@ -313,13 +307,7 @@ describe('GET /api/articles', () => {
     it('should combine keyword and tag filtering correctly', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(
-          qs.stringify({
-            keyword: '物理',
-            tags: ['賴喜美'],
-            limit: 50,
-          }),
-        )
+        .query(qs.stringify({ keyword: '物理', tags: ['賴喜美'], limit: 50 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -1073,10 +1061,7 @@ describe('PATCH /api/articles/:articleId', () => {
 
       await request(app)
         .patch(`/api/articles/${article._id}`)
-        .send({
-          title: 'Multi Update Test',
-          tags: ['multi', 'update'],
-        })
+        .send({ title: 'Multi Update Test', tags: ['multi', 'update'] })
         .set('gid', creator!.gid)
         .expect(204);
 
@@ -1349,11 +1334,7 @@ describe('PUT /api/articles/:articleId/file', () => {
         .exec();
 
       const contentTests = [
-        {
-          name: 'empty content',
-          content: '',
-          expected: '',
-        },
+        { name: 'empty content', content: '', expected: '' },
         {
           name: 'Unicode content with emojis',
           content: '測試中文內容 🚀 with émojis and spéçial chars',

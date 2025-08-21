@@ -15,13 +15,8 @@ export async function setup() {
   process.env.ORIGINAL_UPLOADS_DIR = process.env.UPLOADS_DIR;
 
   const uploadsDir = path.resolve(process.env.UPLOADS_DIR);
-  await fs.rm(uploadsDir, {
-    recursive: true,
-    force: true,
-  });
-  await fs.mkdir(uploadsDir, {
-    recursive: true,
-  });
+  await fs.rm(uploadsDir, { recursive: true, force: true });
+  await fs.mkdir(uploadsDir, { recursive: true });
 }
 
 export async function teardown() {
@@ -29,8 +24,5 @@ export async function teardown() {
     throw new Error('Missing environment variable: ORIGINAL_UPLOADS_DIR');
   }
   const originalUploadsDir = path.resolve(process.env.ORIGINAL_UPLOADS_DIR);
-  await fs.rm(originalUploadsDir, {
-    recursive: true,
-    force: true,
-  });
+  await fs.rm(originalUploadsDir, { recursive: true, force: true });
 }

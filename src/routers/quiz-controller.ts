@@ -110,8 +110,8 @@ router.patch('/:quizId', async (req, res) => {
 
   const target = await QuizModel.findById(quizId).exec();
   if (
-    (quizUpdates._id !== undefined && quizUpdates._id !== quizId) ||
-    target === null
+    (quizUpdates._id !== undefined && quizUpdates._id !== quizId)
+    || target === null
   ) {
     res.status(400).json({ message: 'Invalid request or quiz not found' });
   } else {

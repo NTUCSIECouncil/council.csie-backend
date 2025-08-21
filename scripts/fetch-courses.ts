@@ -7,10 +7,7 @@ import { z } from 'zod';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
-dotenv.config({
-  path: ['.env.default', '.env'],
-  override: true,
-});
+dotenv.config({ path: ['.env.default', '.env'], override: true });
 
 if (process.env.SAMPLES_DIR === undefined) {
   console.error('environment variable SAMPLES_DIR is not set');
@@ -76,9 +73,7 @@ const fetchCoursePage = async (
 
   const response = await fetch(API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
@@ -157,9 +152,9 @@ const getBatchCourseData = async (
       fetchedCoursesOnPage = pageResponse.courses.length;
 
       if (
-        fetchedCoursesOnPage === 0 &&
-        totalCount > 0 &&
-        currentPageIndex * DEFAULT_BATCH_SIZE < totalCount
+        fetchedCoursesOnPage === 0
+        && totalCount > 0
+        && currentPageIndex * DEFAULT_BATCH_SIZE < totalCount
       ) {
         console.warn(
           `Warning: API returned no courses on page ${currentPageIndex.toString()} for keyword "${keyword}", Semester: ${semester}, even though more were expected. Stopping.`,

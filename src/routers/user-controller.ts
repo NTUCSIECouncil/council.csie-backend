@@ -83,10 +83,7 @@ router.get('/:userId', async (req, res) => {
   }
 
   // Return only public user information
-  const userResponse = {
-    _id: user._id,
-    nickname: user.nickname,
-  };
+  const userResponse = { _id: user._id, nickname: user.nickname };
   res.json({ user: userResponse });
 });
 
