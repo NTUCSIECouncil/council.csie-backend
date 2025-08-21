@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 
 import { type Request, type RequestHandler } from 'express';
 import multer from 'multer';
