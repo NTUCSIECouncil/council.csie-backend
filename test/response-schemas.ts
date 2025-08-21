@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { ZQuizSessionSchema } from '@/models/quiz-schema.ts';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 
 const ZErrorSchema = z.object({
@@ -52,7 +53,7 @@ const ZArticleResponseSchema = z.object({
 
 const ZQuizResponseSchema = z.object({
   _id: ZUuidSchema,
-  session: z.enum(['midterm', 'final', 'first', 'second', 'other']),
+  session: ZQuizSessionSchema,
   course: z.union([ZUuidSchema, ZCourseResponseSchema]),
   uploader: z.union([ZUuidSchema, ZUserResponseSchema]),
 });
