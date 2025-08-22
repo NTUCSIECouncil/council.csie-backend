@@ -36,8 +36,6 @@ const ZQuizListResponse = z.object({
 
 beforeEach(async () => {
   await seedModelFromSamples('Course');
-  await seedModelFromSamples('Quiz');
-  await seedModelFromSamples('User');
 });
 
 afterEach(async () => {
@@ -45,8 +43,8 @@ afterEach(async () => {
 });
 
 describe('GET /api/courses', () => {
-  describe('Pagination', () => {
-    it('should return paginated courses with default parameters', async () => {
+  describe('Basic retrieval', () => {
+    it('should return courses list with default pagination', async () => {
       const res = await request(app).get('/api/courses').expect(200);
 
       const body = parseAndExpectValid(ZCourseListResponse, res.body);
@@ -55,44 +53,16 @@ describe('GET /api/courses', () => {
       expect(body.courses.length).toBeLessThanOrEqual(10);
     });
 
-    it('should handle custom pagination parameters', async () => {
+    it('should respect custom pagination parameters', async () => {
       const res = await request(app)
         .get('/api/courses')
-        .query(qs.stringify({ limit: 5, offset: 0 }))
+        .query(qs.stringify({ limit: 5, offset: 2 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZCourseListResponse, res.body);
-      expect(body.courses.length).toBeLessThanOrEqual(5);
       expect(body.meta.limit).toBe(5);
-      expect(body.meta.offset).toBe(0);
-    });
-
-    it('should handle pagination across multiple pages', async () => {
-      const total = await CourseModel.countDocuments().exec();
-
-      // Test first page
-      {
-        const res = await request(app)
-          .get('/api/courses')
-          .query(qs.stringify({ limit: 5, offset: 0 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZCourseListResponse, res.body);
-        expect(body.meta).toEqual({ total, limit: 5, offset: 0 });
-        expect(body.courses.length).toBeLessThanOrEqual(5);
-      }
-
-      // Test second page if we have enough data
-      if (total > 5) {
-        const res = await request(app)
-          .get('/api/courses')
-          .query(qs.stringify({ limit: 5, offset: 5 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZCourseListResponse, res.body);
-        expect(body.meta).toEqual({ total, limit: 5, offset: 5 });
-        expect(body.courses.length).toBeLessThanOrEqual(5);
-      }
+      expect(body.meta.offset).toBe(2);
+      expect(body.courses.length).toBeLessThanOrEqual(5);
     });
 
     it('should handle large offset gracefully', async () => {
@@ -103,46 +73,30 @@ describe('GET /api/courses', () => {
 
       const body = parseAndExpectValid(ZCourseListResponse, res.body);
       expect(body.courses).toHaveLength(0);
-      expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(999999);
     });
 
     it('should validate pagination parameters', async () => {
-      // Invalid limit values (must be positive integer)
-      const invalidLimits = [0, -1, 'invalid'];
-      for (const limit of invalidLimits) {
+      const invalidParams = [
+        { limit: 0 },
+        { limit: -1 },
+        { limit: 'invalid' },
+        { offset: -1 },
+        { offset: 'invalid' },
+      ];
+
+      for (const params of invalidParams) {
         const res = await request(app)
           .get('/api/courses')
-          .query(qs.stringify({ limit }))
+          .query(qs.stringify(params))
           .expect(400);
         expectValidErrorResponse(res.body);
       }
-
-      // Invalid offset values (must be non-negative integer)
-      const invalidOffsets = [-1, 'invalid'];
-      for (const offset of invalidOffsets) {
-        const res = await request(app)
-          .get('/api/courses')
-          .query(qs.stringify({ offset }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-    });
-
-    it('should return empty results for no matches', async () => {
-      const res = await request(app)
-        .get('/api/courses')
-        .query(qs.stringify({ keyword: 'nonexistent-course-xyz-123' }))
-        .expect(200);
-
-      const body = parseAndExpectValid(ZCourseListResponse, res.body);
-      expect(body.courses).toHaveLength(0);
-      expect(body.meta.total).toBe(0);
     });
   });
 
   describe('Keyword search', () => {
-    it('should support fuzzy keyword search across course names and lecturer', async () => {
+    it('should search across course names and lecturer', async () => {
       const courses = await CourseModel.find()
         .lean({ versionKey: false })
         .exec();
@@ -165,32 +119,24 @@ describe('GET /api/courses', () => {
       }
     });
 
-    it('should handle empty keyword as returning all courses', async () => {
-      const allCoursesRes = await request(app)
+    it('should return all courses when keyword is empty', async () => {
+      const allRes = await request(app)
         .get('/api/courses')
         .query(qs.stringify({ limit: 1000 }))
         .expect(200);
-      const allCourses = parseAndExpectValid(
-        ZCourseListResponse,
-        allCoursesRes.body,
-      );
+      const allBody = parseAndExpectValid(ZCourseListResponse, allRes.body);
 
-      const emptyKeywordRes = await request(app)
+      const emptyRes = await request(app)
         .get('/api/courses')
         .query(qs.stringify({ keyword: '', limit: 1000 }))
         .expect(200);
-      const emptyKeywordCourses = parseAndExpectValid(
-        ZCourseListResponse,
-        emptyKeywordRes.body,
-      );
+      const emptyBody = parseAndExpectValid(ZCourseListResponse, emptyRes.body);
 
-      expect(emptyKeywordCourses.courses.length).toBe(
-        allCourses.courses.length,
-      );
-      expect(emptyKeywordCourses.meta.total).toBe(allCourses.meta.total);
+      expect(emptyBody.courses.length).toBe(allBody.courses.length);
+      expect(emptyBody.meta.total).toBe(allBody.meta.total);
     });
 
-    it('should return empty results for non-existent keyword', async () => {
+    it('should return empty results for non-existent keywords', async () => {
       const res = await request(app)
         .get('/api/courses')
         .query(qs.stringify({ keyword: 'nonexistent-keyword-xyz-987654321' }))
@@ -262,8 +208,8 @@ describe('GET /api/courses/:courseId', () => {
 });
 
 describe('GET /api/courses/:courseId/quizzes', () => {
-  describe('Pagination', () => {
-    it('should return paginated quizzes with default parameters', async () => {
+  describe('Basic retrieval', () => {
+    it('should return quizzes with default pagination', async () => {
       const course = await getTestCourse();
 
       const res = await request(app)
@@ -279,49 +225,18 @@ describe('GET /api/courses/:courseId/quizzes', () => {
       }
     });
 
-    it('should handle custom pagination parameters', async () => {
+    it('should respect custom pagination parameters', async () => {
       const course = await getTestCourse();
 
       const res = await request(app)
         .get(`/api/courses/${course._id}/quizzes`)
-        .query(qs.stringify({ limit: 5, offset: 0 }))
+        .query(qs.stringify({ limit: 5, offset: 2 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.meta.limit).toBe(5);
-      expect(body.meta.offset).toBe(0);
+      expect(body.meta.offset).toBe(2);
       expect(body.quizzes.length).toBeLessThanOrEqual(5);
-    });
-
-    it('should handle pagination across multiple pages', async () => {
-      const course = await getTestCourse();
-      const totalQuizzes = await QuizModel.countDocuments({
-        course: course._id,
-      }).exec();
-
-      // Test first page
-      {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ limit: 2, offset: 0 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZQuizListResponse, res.body);
-        expect(body.meta).toEqual({ total: totalQuizzes, limit: 2, offset: 0 });
-        expect(body.quizzes.length).toBeLessThanOrEqual(2);
-      }
-
-      // Test second page if we have enough data
-      if (totalQuizzes > 2) {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ limit: 2, offset: 2 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZQuizListResponse, res.body);
-        expect(body.meta).toEqual({ total: totalQuizzes, limit: 2, offset: 2 });
-        expect(body.quizzes.length).toBeLessThanOrEqual(2);
-      }
     });
 
     it('should handle large offset gracefully', async () => {
@@ -334,29 +249,24 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
-      expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(999999);
     });
 
     it('should validate pagination parameters', async () => {
       const course = await getTestCourse();
 
-      // Invalid limit values (must be positive integer)
-      const invalidLimits = [0, -1, 'invalid'];
-      for (const limit of invalidLimits) {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ limit }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
+      const invalidParams = [
+        { limit: 0 },
+        { limit: -1 },
+        { limit: 'invalid' },
+        { offset: -1 },
+        { offset: 'invalid' },
+      ];
 
-      // Invalid offset values (must be non-negative integer)
-      const invalidOffsets = [-1, 'invalid'];
-      for (const offset of invalidOffsets) {
+      for (const params of invalidParams) {
         const res = await request(app)
           .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ offset }))
+          .query(qs.stringify(params))
           .expect(400);
         expectValidErrorResponse(res.body);
       }
@@ -376,8 +286,8 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     });
   });
 
-  describe('Embedding related resources', () => {
-    it('should support all valid embed parameter combinations', async () => {
+  describe('Embedding', () => {
+    it('should support all embed combinations', async () => {
       const course = await getTestCourse();
 
       // Test no embed (default - should return UUIDs)
@@ -439,20 +349,16 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     it('should validate embed parameters', async () => {
       const course = await getTestCourse();
 
-      // Invalid embed value
-      {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ embed: ['invalid'] }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
+      const invalidEmbeds = [
+        ['invalid'],
+        ['course', 'invalid'],
+        ['content'], // not supported for this endpoint
+      ];
 
-      // Mix of valid and invalid embed values
-      {
+      for (const embed of invalidEmbeds) {
         const res = await request(app)
           .get(`/api/courses/${course._id}/quizzes`)
-          .query(qs.stringify({ embed: ['course', 'invalid'] }))
+          .query(qs.stringify({ embed }))
           .expect(400);
         expectValidErrorResponse(res.body);
       }

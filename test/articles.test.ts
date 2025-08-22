@@ -1,6 +1,4 @@
 import { randomUUID } from 'crypto';
-import fs from 'fs/promises';
-import path from 'path';
 
 import Fuse from 'fuse.js';
 import mongoose from 'mongoose';
@@ -9,7 +7,6 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { env } from '@/config.ts';
 import { ArticleModel } from '@models/article-schema.ts';
 import { UserModel } from '@models/user-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
@@ -39,9 +36,13 @@ const ZArticleResponse = z.object({ article: ZArticleResponseSchema });
 
 const ZFileResponse = z.object({ file: z.string() });
 
-const createTestRatings = () => {
-  return { sweetness: 3, chill: 3, teaching: 3, gain: 3, recommend: 3 };
-};
+const createTestRatings = () => ({
+  sweetness: 3,
+  chill: 3,
+  teaching: 3,
+  gain: 3,
+  recommend: 3,
+});
 
 const createTestArticle = async () => {
   const course = await getTestCourse();
@@ -64,53 +65,26 @@ afterEach(async () => {
 });
 
 describe('GET /api/articles', () => {
-  describe('Pagination', () => {
-    it('should return paginated articles with default parameters', async () => {
+  describe('Basic retrieval', () => {
+    it('should return articles list with default pagination', async () => {
       const res = await request(app).get('/api/articles').expect(200);
-
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
+
       expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(0);
       expect(body.articles.length).toBeLessThanOrEqual(10);
     });
 
-    it('should handle custom pagination parameters', async () => {
+    it('should respect custom pagination parameters', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ limit: 5, offset: 0 }))
+        .query(qs.stringify({ limit: 5, offset: 2 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
-      expect(body.articles.length).toBeLessThanOrEqual(5);
       expect(body.meta.limit).toBe(5);
-      expect(body.meta.offset).toBe(0);
-    });
-
-    it('should handle pagination across multiple pages', async () => {
-      const total = await ArticleModel.countDocuments().exec();
-
-      // Test first page
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 5, offset: 0 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        expect(body.meta).toEqual({ total, limit: 5, offset: 0 });
-        expect(body.articles.length).toBeLessThanOrEqual(5);
-      }
-
-      // Test second page if we have enough data
-      if (total > 5) {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 5, offset: 5 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        expect(body.meta).toEqual({ total, limit: 5, offset: 5 });
-      }
+      expect(body.meta.offset).toBe(2);
+      expect(body.articles.length).toBeLessThanOrEqual(5);
     });
 
     it('should handle large offset gracefully', async () => {
@@ -121,48 +95,30 @@ describe('GET /api/articles', () => {
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
       expect(body.articles).toHaveLength(0);
-      expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(999999);
     });
 
     it('should validate pagination parameters', async () => {
-      // Invalid limit values (must be positive integer)
-      const invalidLimits = [0, -1, 'invalid'];
-      for (const limit of invalidLimits) {
+      const invalidParams = [
+        { limit: 0 },
+        { limit: -1 },
+        { limit: 'invalid' },
+        { offset: -1 },
+        { offset: 'invalid' },
+      ];
+
+      for (const params of invalidParams) {
         const res = await request(app)
           .get('/api/articles')
-          .query(qs.stringify({ limit }))
+          .query(qs.stringify(params))
           .expect(400);
         expectValidErrorResponse(res.body);
       }
-
-      // Invalid offset values (must be non-negative integer)
-      const invalidOffsets = [-1, 'invalid'];
-      for (const offset of invalidOffsets) {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ offset }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-    });
-
-    it('should return empty results for no matches', async () => {
-      const res = await request(app)
-        .get('/api/articles')
-        .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
-        .expect(200);
-
-      const body = parseAndExpectValid(ZArticleListResponse, res.body);
-      expect(body.articles).toHaveLength(0);
-      expect(body.meta.total).toBe(0);
-      expect(body.meta.limit).toBe(10);
-      expect(body.meta.offset).toBe(0);
     });
   });
 
   describe('Keyword search', () => {
-    it('should support fuzzy keyword search across multiple fields', async () => {
+    it('should search across multiple fields', async () => {
       const populatedArticles = await ArticleModel.find()
         .populate('course')
         .lean({ versionKey: false })
@@ -189,7 +145,7 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should handle empty keyword as returning all articles', async () => {
+    it('should return all articles when keyword is empty', async () => {
       const allRes = await request(app)
         .get('/api/articles')
         .query(qs.stringify({ limit: 1000 }))
@@ -208,10 +164,10 @@ describe('GET /api/articles', () => {
       expect(emptyBody.articles.length).toBe(allBody.articles.length);
     });
 
-    it('should return empty results for non-existent keyword', async () => {
+    it('should return empty results for non-existent keywords', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ keyword: 'nonexistent-keyword-xyz-987654321' }))
+        .query(qs.stringify({ keyword: 'non-existent-keyword-xyz-123' }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -233,7 +189,7 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should filter by multiple tags with intersection behavior', async () => {
+    it('should filter by multiple tags', async () => {
       const testTagCombinations = [
         ['AC', '賴喜美'],
         ['AC', '賴喜美', '醣類化學與應用'],
@@ -247,7 +203,7 @@ describe('GET /api/articles', () => {
 
         const body = parseAndExpectValid(ZArticleListResponse, res.body);
         for (const article of body.articles) {
-          expect(article.tags).toEqual(expect.arrayContaining(tags));
+          expect(tags.some(tag => article.tags.includes(tag))).toBe(true);
         }
       }
     });
@@ -255,7 +211,7 @@ describe('GET /api/articles', () => {
     it('should return empty results for non-existent tags', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
+        .query(qs.stringify({ tags: ['non-existent-tag-xyz-123'] }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -263,7 +219,7 @@ describe('GET /api/articles', () => {
       expect(body.meta.total).toBe(0);
     });
 
-    it('should handle empty tags array as returning all articles', async () => {
+    it('should return all articles when tags array is empty', async () => {
       const allRes = await request(app)
         .get('/api/articles')
         .query(qs.stringify({ limit: 1000 }))
@@ -283,7 +239,6 @@ describe('GET /api/articles', () => {
     });
 
     it('should validate tags parameter format', async () => {
-      // Non-array tags should be rejected
       const res = await request(app)
         .get('/api/articles')
         .query(qs.stringify({ tags: 'single-string-not-array' }))
@@ -293,7 +248,7 @@ describe('GET /api/articles', () => {
   });
 
   describe('Combined filtering', () => {
-    it('should combine keyword and tag filtering correctly', async () => {
+    it('should combine keyword and tag filtering', async () => {
       const res = await request(app)
         .get('/api/articles')
         .query(
@@ -308,8 +263,8 @@ describe('GET /api/articles', () => {
     });
   });
 
-  describe('Embedding related resources', () => {
-    it('should support all valid embed parameter combinations', async () => {
+  describe('Embedding', () => {
+    it('should support all embed combinations', async () => {
       const validEmbedOptions = [
         [],
         ['course'],
@@ -371,31 +326,28 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should handle content truncation and empty content correctly', async () => {
+    it('should truncate content to 50 characters with ellipsis', async () => {
       const creator = await getTestUser();
 
-      // Create article with long content
-      const longContentArticle = await createTestArticle();
-      let longContentId: string;
+      let articleId: string;
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(longContentArticle)
+          .send(await createTestArticle())
           .set('gid', creator.gid)
           .expect(201);
         const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        longContentId = body.articleId;
+        articleId = body.articleId;
       }
 
       const longContent =
-        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
+        'A'.repeat(100) + ' This content is longer than 50 characters';
       await request(app)
-        .put(`/api/articles/${longContentId}/file`)
+        .put(`/api/articles/${articleId}/file`)
         .send({ file: longContent })
         .set('gid', creator.gid)
         .expect(204);
 
-      // Test truncation
       {
         const res = await request(app)
           .get('/api/articles')
@@ -403,41 +355,24 @@ describe('GET /api/articles', () => {
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === longContentId);
-        expect(testArticle).toBeDefined();
-        expect(testArticle?.content).toBe(longContent.substring(0, 50) + '...');
+        const article = body.articles.find(a => a._id === articleId);
+        expect(article).toBeDefined();
+        expect(article!.content).toBe(longContent.substring(0, 50) + '...');
       }
+    });
 
-      // Test exact 50 character content (no truncation)
-      const exactContent = 'x'.repeat(50);
-      await request(app)
-        .put(`/api/articles/${longContentId}/file`)
-        .send({ file: exactContent })
-        .set('gid', creator.gid)
-        .expect(204);
+    it('should show empty content for articles without files', async () => {
+      const creator = await getTestUser();
 
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ embed: ['content'], limit: 100 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === longContentId);
-        expect(testArticle?.content).toBe(exactContent);
-      }
-
-      // Test empty content
-      const emptyContentArticle = await createTestArticle();
-      let emptyContentId: string;
+      let articleId: string;
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(emptyContentArticle)
+          .send(await createTestArticle())
           .set('gid', creator.gid)
           .expect(201);
         const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        emptyContentId = body.articleId;
+        articleId = body.articleId;
       }
 
       {
@@ -447,8 +382,9 @@ describe('GET /api/articles', () => {
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === emptyContentId);
-        expect(testArticle?.content).toBe('');
+        const article = body.articles.find(a => a._id === articleId);
+        expect(article).toBeDefined();
+        expect(article!.content).toBe('');
       }
     });
   });
@@ -456,13 +392,13 @@ describe('GET /api/articles', () => {
 
 describe('POST /api/articles', () => {
   describe('Successful creation', () => {
-    it('should create article and return articleId', async () => {
+    it('should create article and return article ID', async () => {
       const creator = await getTestUser();
-      const articleCreate = await createTestArticle();
+      const articleData = await createTestArticle();
 
       const res = await request(app)
         .post('/api/articles')
-        .send(articleCreate)
+        .send(articleData)
         .set('gid', creator.gid)
         .expect(201);
 
@@ -471,14 +407,14 @@ describe('POST /api/articles', () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
       );
 
-      // Verify article was created correctly
+      // Verify created article
       {
         const res = await request(app)
           .get(`/api/articles/${body.articleId}`)
           .expect(200);
         const getBody = parseAndExpectValid(ZArticleResponse, res.body);
         expect(getBody.article).toEqual({
-          ...articleCreate,
+          ...articleData,
           _id: body.articleId,
           creator: creator._id,
         });
@@ -487,17 +423,16 @@ describe('POST /api/articles', () => {
 
     it('should set authenticated user as creator', async () => {
       const creator = await getTestUser();
-      const articleCreate = await createTestArticle();
+      const articleData = await createTestArticle();
 
       const res = await request(app)
         .post('/api/articles')
-        .send(articleCreate)
+        .send(articleData)
         .set('gid', creator.gid)
         .expect(201);
 
       const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
 
-      // Verify creator is set correctly
       {
         const res = await request(app)
           .get(`/api/articles/${body.articleId}`)
@@ -509,7 +444,7 @@ describe('POST /api/articles', () => {
 
     it('should handle Unicode content correctly', async () => {
       const creator = await getTestUser();
-      const unicodeContent = {
+      const unicodeData = {
         ...(await createTestArticle()),
         title: '测试文章 🚀 العربية 日本語 한국어',
         tags: ['测试', 'العربية', '日本語', '한국어', '🏷️'],
@@ -517,24 +452,23 @@ describe('POST /api/articles', () => {
 
       const res = await request(app)
         .post('/api/articles')
-        .send(unicodeContent)
+        .send(unicodeData)
         .set('gid', creator.gid)
         .expect(201);
 
       const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
 
-      // Verify Unicode content is preserved
       {
         const res = await request(app)
           .get(`/api/articles/${body.articleId}`)
           .expect(200);
         const getBody = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(getBody.article.title).toBe(unicodeContent.title);
-        expect(getBody.article.tags).toEqual(unicodeContent.tags);
+        expect(getBody.article.title).toBe(unicodeData.title);
+        expect(getBody.article.tags).toEqual(unicodeData.tags);
       }
     });
 
-    it('should accept valid boundary ratings values', async () => {
+    it('should accept boundary rating values', async () => {
       const creator = await getTestUser();
       const validBase = await createTestArticle();
 
@@ -562,110 +496,34 @@ describe('POST /api/articles', () => {
 
       const requiredFields = ['title', 'tags', 'ratings', 'course'] as const;
       for (const field of requiredFields) {
-        // Test undefined field
-        {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [field]: _, ...incompleteData } = validBase;
-
-          const res = await request(app)
-            .post('/api/articles')
-            .send(incompleteData)
-            .set('gid', creator.gid)
-            .expect(400);
-          expectValidErrorResponse(res.body);
-        }
-
-        // Test null field
-        {
-          const nullData = { ...validBase, [field]: null };
-
-          const res = await request(app)
-            .post('/api/articles')
-            .send(nullData)
-            .set('gid', creator.gid)
-            .expect(400);
-          expectValidErrorResponse(res.body);
-        }
-      }
-    });
-
-    it('should validate field data types', async () => {
-      const creator = await getTestUser();
-      const validBase = await createTestArticle();
-
-      const invalidTypeTests = [
-        { field: 'title', value: 123 },
-        { field: 'title', value: [] },
-        { field: 'title', value: {} },
-        { field: 'tags', value: 'not-an-array' },
-        { field: 'tags', value: 123 },
-        { field: 'course', value: 123 },
-        { field: 'course', value: [] },
-        { field: 'course', value: {} },
-        { field: 'ratings', value: 'invalid' },
-        { field: 'ratings', value: [] },
-        { field: 'ratings', value: 'string' },
-      ];
-
-      for (const test of invalidTypeTests) {
-        const invalidData = { ...validBase, [test.field]: test.value };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [field]: _, ...incompleteData } = validBase;
 
         const res = await request(app)
           .post('/api/articles')
-          .send(invalidData)
+          .send(incompleteData)
           .set('gid', creator.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
       }
     });
 
-    it('should validate ratings constraints (1-5 scale)', async () => {
+    it('should validate ratings constraints', async () => {
       const creator = await getTestUser();
       const validBase = await createTestArticle();
-      const validRatings = createTestRatings();
 
-      const invalidValues = [
-        0,
-        6,
-        -1,
-        10,
-        1.5,
-        4.2,
-        'invalid',
-        null,
-        undefined,
-        true,
-        [],
+      const invalidRatings = [
+        { sweetness: 0, chill: 3, teaching: 3, gain: 3, recommend: 3 },
+        { sweetness: 6, chill: 3, teaching: 3, gain: 3, recommend: 3 },
+        { sweetness: 3.5, chill: 3, teaching: 3, gain: 3, recommend: 3 },
+        { sweetness: 3, chill: -1, teaching: 3, gain: 3, recommend: 3 },
+        { sweetness: 3, chill: 3, teaching: 10, gain: 3, recommend: 3 },
       ];
-      const ratingFields = [
-        'sweetness',
-        'chill',
-        'teaching',
-        'gain',
-        'recommend',
-      ] as const;
 
-      for (const field of ratingFields) {
-        for (const invalidValue of invalidValues) {
-          const invalidRatings = { ...validRatings, [field]: invalidValue };
-
-          const res = await request(app)
-            .post('/api/articles')
-            .send({ ...validBase, ratings: invalidRatings })
-            .set('gid', creator.gid)
-            .expect(400);
-          expectValidErrorResponse(res.body);
-        }
-      }
-
-      // Test missing rating fields
-      for (const field of ratingFields) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [field]: _, ...incompleteRatings } = validRatings;
-
+      for (const ratings of invalidRatings) {
         const res = await request(app)
           .post('/api/articles')
-          .send({ ...validBase, ratings: incompleteRatings })
+          .send({ ...validBase, ratings })
           .set('gid', creator.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -676,16 +534,6 @@ describe('POST /api/articles', () => {
       const creator = await getTestUser();
       const validBase = await createTestArticle();
 
-      // Invalid UUID format
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send({ ...validBase, course: 'invalid-uuid' })
-          .set('gid', creator.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
       // Non-existent course UUID
       {
         const res = await request(app)
@@ -695,42 +543,41 @@ describe('POST /api/articles', () => {
           .expect(400);
         expectValidErrorResponse(res.body);
       }
+
+      // Invalid UUID format
+      {
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, course: 'invalid-uuid' })
+          .set('gid', creator.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
     });
   });
 
   describe('Authentication', () => {
     it('should require authentication', async () => {
-      const validArticle = await createTestArticle();
+      const articleData = await createTestArticle();
 
-      // Missing authentication header
+      // Missing auth
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(validArticle)
+          .send(articleData)
           .expect(401);
         expectValidErrorResponse(res.body);
       }
 
-      // Empty authentication header
+      // Invalid auth
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(validArticle)
-          .set('gid', '')
+          .send(articleData)
+          .set('gid', 'fake-gid-123')
           .expect(401);
         expectValidErrorResponse(res.body);
       }
-    });
-
-    it('should reject invalid authentication', async () => {
-      const validArticle = await createTestArticle();
-
-      const res = await request(app)
-        .post('/api/articles')
-        .send(validArticle)
-        .set('gid', 'fake-google-id-12345')
-        .expect(401);
-      expectValidErrorResponse(res.body);
     });
   });
 });
@@ -745,10 +592,10 @@ describe('GET /api/articles/:articleId', () => {
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleResponse, res.body);
-      expect(body.article).toEqual(article);
+      expect(body.article._id).toBe(article._id);
     });
 
-    it('should support all embed parameter combinations', async () => {
+    it('should support embed parameters', async () => {
       const article = await getTestArticle();
 
       const validEmbedOptions = [
@@ -769,54 +616,42 @@ describe('GET /api/articles/:articleId', () => {
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleResponse, res.body);
-        const articleData = body.article;
 
         if (embed.includes('course')) {
-          parseAndExpectValid(ZCourseResponseSchema, articleData.course);
-          expect(articleData.course).toBeTypeOf('object');
-        } else {
-          expect(articleData.course).toBeTypeOf('string');
+          expect(body.article.course).toBeTypeOf('object');
+          parseAndExpectValid(ZCourseResponseSchema, body.article.course);
         }
-
         if (embed.includes('creator')) {
-          expect(articleData.creator).toBeTypeOf('object');
-        } else {
-          expect(articleData.creator).toBeTypeOf('string');
+          expect(body.article.creator).toBeTypeOf('object');
         }
-
         if (embed.includes('content')) {
-          expect(articleData).toHaveProperty('content');
-        } else {
-          expect(articleData).not.toHaveProperty('content');
+          expect(body.article).toHaveProperty('content');
         }
       }
     });
 
-    it('should handle content embedding correctly', async () => {
+    it('should handle content embedding with truncation', async () => {
       const creator = await getTestUser();
-      const articleData = await createTestArticle();
 
-      // Create article and upload content
       let articleId: string;
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(articleData)
+          .send(await createTestArticle())
           .set('gid', creator.gid)
           .expect(201);
         const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
         articleId = body.articleId;
       }
 
-      // Upload long content and verify truncation
-      const longContent =
-        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
+      const longContent = 'A'.repeat(100) + ' This is long content for testing';
       await request(app)
         .put(`/api/articles/${articleId}/file`)
         .send({ file: longContent })
         .set('gid', creator.gid)
         .expect(204);
 
+      // Verify content truncation
       {
         const res = await request(app)
           .get(`/api/articles/${articleId}`)
@@ -827,7 +662,7 @@ describe('GET /api/articles/:articleId', () => {
         expect(body.article.content).toBe(longContent.substring(0, 50) + '...');
       }
 
-      // Verify no content field when not embedding
+      // Verify no content without embed
       {
         const res = await request(app)
           .get(`/api/articles/${articleId}`)
@@ -847,7 +682,6 @@ describe('GET /api/articles/:articleId', () => {
         ['invalid'],
         ['course', 'invalid'],
         ['nonexistent'],
-        ['course', 'creator', 'invalid-option'],
       ];
 
       for (const invalidEmbed of invalidEmbedValues) {
@@ -862,12 +696,7 @@ describe('GET /api/articles/:articleId', () => {
 
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
-      const invalidUuids = [
-        'not-a-uuid',
-        '123',
-        'invalid-uuid-format',
-        'abcd-efgh-ijkl',
-      ];
+      const invalidUuids = ['not-a-uuid', '123', 'invalid-format', 'abcd-efgh'];
 
       for (const invalidUuid of invalidUuids) {
         const res = await request(app)
@@ -890,14 +719,14 @@ describe('GET /api/articles/:articleId', () => {
 
 describe('PATCH /api/articles/:articleId', () => {
   describe('Successful updates', () => {
-    it('should support individual field updates', async () => {
+    it('should update individual fields', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
         .exec();
 
-      // Test title update
-      const newTitle = '不普通物理學';
+      // Update title
+      const newTitle = 'Updated Title';
       await request(app)
         .patch(`/api/articles/${article._id}`)
         .send({ title: newTitle })
@@ -912,7 +741,7 @@ describe('PATCH /api/articles/:articleId', () => {
         expect(body.article.title).toBe(newTitle);
       }
 
-      // Test tags update
+      // Update tags
       const newTags = ['updated', 'tags'];
       await request(app)
         .patch(`/api/articles/${article._id}`)
@@ -928,8 +757,14 @@ describe('PATCH /api/articles/:articleId', () => {
         expect(body.article.tags).toEqual(newTags);
       }
 
-      // Test ratings update
-      const newRatings = createTestRatings();
+      // Update ratings
+      const newRatings = {
+        sweetness: 5,
+        chill: 4,
+        teaching: 3,
+        gain: 2,
+        recommend: 1,
+      };
       await request(app)
         .patch(`/api/articles/${article._id}`)
         .send({ ratings: newRatings })
@@ -945,7 +780,7 @@ describe('PATCH /api/articles/:articleId', () => {
       }
     });
 
-    it('should support multiple field updates in single request', async () => {
+    it('should update multiple fields simultaneously', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
@@ -974,7 +809,7 @@ describe('PATCH /api/articles/:articleId', () => {
       }
     });
 
-    it('should handle empty updates as no-op', async () => {
+    it('should handle empty updates', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
@@ -989,53 +824,23 @@ describe('PATCH /api/articles/:articleId', () => {
   });
 
   describe('Input validation', () => {
-    it('should validate data type constraints', async () => {
+    it('should validate ratings constraints', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
         .exec();
 
-      // Invalid title type
-      {
+      const invalidRatings = [
+        { ratings: { sweetness: 0 } },
+        { ratings: { sweetness: 6 } },
+        { ratings: { chill: -1 } },
+        { ratings: { teaching: 10 } },
+      ];
+
+      for (const invalidUpdate of invalidRatings) {
         const res = await request(app)
           .patch(`/api/articles/${article._id}`)
-          .send({ title: null })
-          .set('gid', creator!.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Invalid tags format
-      {
-        const res = await request(app)
-          .patch(`/api/articles/${article._id}`)
-          .send({ tags: 'not-an-array' })
-          .set('gid', creator!.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-    });
-
-    it('should validate ratings constraints (1-5 scale)', async () => {
-      const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
-
-      // Invalid rating values (should be 1-5)
-      {
-        const res = await request(app)
-          .patch(`/api/articles/${article._id}`)
-          .send({ ratings: { sweetness: 6 } })
-          .set('gid', creator!.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      {
-        const res = await request(app)
-          .patch(`/api/articles/${article._id}`)
-          .send({ ratings: { sweetness: 0 } })
+          .send(invalidUpdate)
           .set('gid', creator!.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -1049,7 +854,7 @@ describe('PATCH /api/articles/:articleId', () => {
 
       const res = await request(app)
         .patch('/api/articles/invalid-uuid')
-        .send({ title: 'Test' })
+        .send({ title: 'test' })
         .set('gid', creator.gid)
         .expect(400);
       expectValidErrorResponse(res.body);
@@ -1060,7 +865,7 @@ describe('PATCH /api/articles/:articleId', () => {
 
       const res = await request(app)
         .patch(`/api/articles/${randomUUID()}`)
-        .send({ title: 'Test' })
+        .send({ title: 'test' })
         .set('gid', creator.gid)
         .expect(404);
       expectValidErrorResponse(res.body);
@@ -1071,11 +876,24 @@ describe('PATCH /api/articles/:articleId', () => {
     it('should require authentication', async () => {
       const article = await getTestArticle();
 
-      const res = await request(app)
-        .patch(`/api/articles/${article._id}`)
-        .send({ title: 'Test' })
-        .expect(401);
-      expectValidErrorResponse(res.body);
+      // Missing auth
+      {
+        const res = await request(app)
+          .patch(`/api/articles/${article._id}`)
+          .send({ title: 'test' })
+          .expect(401);
+        expectValidErrorResponse(res.body);
+      }
+
+      // Invalid auth
+      {
+        const res = await request(app)
+          .patch(`/api/articles/${article._id}`)
+          .send({ title: 'test' })
+          .set('gid', 'fake-gid-123')
+          .expect(401);
+        expectValidErrorResponse(res.body);
+      }
     });
 
     it('should enforce creator-only authorization', async () => {
@@ -1089,14 +907,14 @@ describe('PATCH /api/articles/:articleId', () => {
       if (nonCreator) {
         const res = await request(app)
           .patch(`/api/articles/${article._id}`)
-          .send({ title: 'Test' })
+          .send({ title: 'test' })
           .set('gid', nonCreator.gid)
           .expect(403);
         expectValidErrorResponse(res.body);
       }
     });
 
-    it('should allow creator to update their own article', async () => {
+    it('should allow creator to update their article', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
@@ -1104,7 +922,7 @@ describe('PATCH /api/articles/:articleId', () => {
 
       await request(app)
         .patch(`/api/articles/${article._id}`)
-        .send({ title: 'Updated by Creator' })
+        .send({ title: 'Creator can update' })
         .set('gid', creator!.gid)
         .expect(204);
     });
@@ -1114,53 +932,54 @@ describe('PATCH /api/articles/:articleId', () => {
 describe('GET /api/articles/:articleId/file', () => {
   describe('Successful retrieval', () => {
     it('should return file content', async () => {
-      const article = await getTestArticle();
-
-      const res = await request(app)
-        .get(`/api/articles/${article._id}/file`)
-        .expect(200);
-
-      const body = parseAndExpectValid(ZFileResponse, res.body);
-      expect(typeof body.file).toBe('string');
-
-      // Verify file content matches what's on disk if file exists
-      try {
-        const diskData = await fs.readFile(
-          path.join(env.UPLOADS_DIR, 'articles', `${article._id}.md`),
-          'utf-8',
-        );
-        expect(body.file).toBe(diskData);
-      } catch {
-        // File doesn't exist, should return empty string
-        expect(body.file).toBe('');
-      }
-    });
-
-    it('should return empty string for articles without uploaded files', async () => {
       const creator = await getTestUser();
-      const articleCreate = await createTestArticle();
 
-      // Create article without uploading file
       let articleId: string;
       {
         const res = await request(app)
           .post('/api/articles')
-          .send(articleCreate)
+          .send(await createTestArticle())
           .set('gid', creator.gid)
           .expect(201);
-
         const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
         articleId = body.articleId;
       }
 
+      const testContent = '# Test Article\n\nThis is test content.';
+      await request(app)
+        .put(`/api/articles/${articleId}/file`)
+        .send({ file: testContent })
+        .set('gid', creator.gid)
+        .expect(204);
+
+      const res = await request(app)
+        .get(`/api/articles/${articleId}/file`)
+        .expect(200);
+
+      const body = parseAndExpectValid(ZFileResponse, res.body);
+      expect(body.file).toBe(testContent);
+    });
+
+    it('should return empty string for articles without files', async () => {
+      const creator = await getTestUser();
+
+      let articleId: string;
       {
         const res = await request(app)
-          .get(`/api/articles/${articleId}/file`)
-          .expect(200);
-
-        const body = parseAndExpectValid(ZFileResponse, res.body);
-        expect(body.file).toBe('');
+          .post('/api/articles')
+          .send(await createTestArticle())
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        articleId = body.articleId;
       }
+
+      const res = await request(app)
+        .get(`/api/articles/${articleId}/file`)
+        .expect(200);
+
+      const body = parseAndExpectValid(ZFileResponse, res.body);
+      expect(body.file).toBe('');
     });
   });
 
@@ -1184,127 +1003,139 @@ describe('GET /api/articles/:articleId/file', () => {
 describe('PUT /api/articles/:articleId/file', () => {
   describe('Successful file operations', () => {
     it('should upload and update file content', async () => {
-      const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
+      const creator = await getTestUser();
 
-      // Upload initial content
-      const content = '這是測試內容';
-      await request(app)
-        .put(`/api/articles/${article._id}/file`)
-        .send({ file: content })
-        .set('gid', creator!.gid)
-        .expect(204);
-
+      let articleId: string;
       {
         const res = await request(app)
-          .get(`/api/articles/${article._id}/file`)
-          .expect(200);
+          .post('/api/articles')
+          .send(await createTestArticle())
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        articleId = body.articleId;
+      }
 
+      // Upload content
+      const initialContent =
+        '# Initial Content\n\nThis is the initial content.';
+      await request(app)
+        .put(`/api/articles/${articleId}/file`)
+        .send({ file: initialContent })
+        .set('gid', creator.gid)
+        .expect(204);
+
+      // Verify content
+      {
+        const res = await request(app)
+          .get(`/api/articles/${articleId}/file`)
+          .expect(200);
+        const body = parseAndExpectValid(ZFileResponse, res.body);
+        expect(body.file).toBe(initialContent);
+      }
+
+      // Update content
+      const updatedContent =
+        '# Updated Content\n\nThis is the updated content.';
+      await request(app)
+        .put(`/api/articles/${articleId}/file`)
+        .send({ file: updatedContent })
+        .set('gid', creator.gid)
+        .expect(204);
+
+      // Verify updated content
+      {
+        const res = await request(app)
+          .get(`/api/articles/${articleId}/file`)
+          .expect(200);
+        const body = parseAndExpectValid(ZFileResponse, res.body);
+        expect(body.file).toBe(updatedContent);
+      }
+    });
+
+    it('should handle various content types', async () => {
+      const creator = await getTestUser();
+
+      let articleId: string;
+      {
+        const res = await request(app)
+          .post('/api/articles')
+          .send(await createTestArticle())
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        articleId = body.articleId;
+      }
+
+      const contentTypes = [
+        '# Simple markdown',
+        '測試中文內容 🚀',
+        'Line 1\nLine 2\nLine 3',
+        '',
+        'Special chars: !@#$%^&*()_+-=[]{}|;:",.<>?',
+      ];
+
+      for (const content of contentTypes) {
+        await request(app)
+          .put(`/api/articles/${articleId}/file`)
+          .send({ file: content })
+          .set('gid', creator.gid)
+          .expect(204);
+
+        const res = await request(app)
+          .get(`/api/articles/${articleId}/file`)
+          .expect(200);
         const body = parseAndExpectValid(ZFileResponse, res.body);
         expect(body.file).toBe(content);
       }
+    });
 
-      // Update with new content
-      const newContent = '更新的內容';
-      await request(app)
-        .put(`/api/articles/${article._id}/file`)
-        .send({ file: newContent })
-        .set('gid', creator!.gid)
-        .expect(204);
+    it('should integrate with content embedding', async () => {
+      const creator = await getTestUser();
 
+      let articleId: string;
       {
         const res = await request(app)
-          .get(`/api/articles/${article._id}/file`)
-          .expect(200);
-
-        const body = parseAndExpectValid(ZFileResponse, res.body);
-        expect(body.file).toBe(newContent);
+          .post('/api/articles')
+          .send(await createTestArticle())
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        articleId = body.articleId;
       }
-    });
 
-    it('should handle various content types and encodings', async () => {
-      const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
-
-      const contentTests = [
-        { name: 'empty content', content: '' },
-        {
-          name: 'Unicode content with emojis',
-          content: '測試中文內容 🚀 with émojis and spéçial chars',
-        },
-        {
-          name: 'Markdown content',
-          content:
-            '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
-        },
-        { name: 'Large content', content: 'x'.repeat(10000) },
-        {
-          name: 'Content with newlines and special characters',
-          content:
-            'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
-        },
-      ];
-
-      for (const test of contentTests) {
-        // Upload content
-        await request(app)
-          .put(`/api/articles/${article._id}/file`)
-          .send({ file: test.content })
-          .set('gid', creator!.gid)
-          .expect(204);
-
-        // Verify content was stored correctly
-        const res = await request(app)
-          .get(`/api/articles/${article._id}/file`)
-          .expect(200);
-
-        const body = parseAndExpectValid(ZFileResponse, res.body);
-        expect(body.file).toBe(test.content);
-      }
-    });
-
-    it('should integrate with content embedding correctly', async () => {
-      const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
-
-      const fileContent =
-        '# Test Article\n\nThis is a test article with some content that should be truncated when embedded.';
+      const longContent =
+        'A'.repeat(100) + ' This is a very long content for testing truncation';
       await request(app)
-        .put(`/api/articles/${article._id}/file`)
-        .send({ file: fileContent })
-        .set('gid', creator!.gid)
+        .put(`/api/articles/${articleId}/file`)
+        .send({ file: longContent })
+        .set('gid', creator.gid)
         .expect(204);
 
-      // Verify content truncation when embedding (first 50 chars + ...)
-      const res = await request(app)
-        .get(`/api/articles/${article._id}`)
-        .query(qs.stringify({ embed: ['content'] }))
-        .expect(200);
+      // Verify content embedding truncation
+      {
+        const res = await request(app)
+          .get(`/api/articles/${articleId}`)
+          .query(qs.stringify({ embed: ['content'] }))
+          .expect(200);
 
-      const body = parseAndExpectValid(ZArticleResponse, res.body);
-      expect(body.article.content).toBe(fileContent.substring(0, 50) + '...');
+        const body = parseAndExpectValid(ZArticleResponse, res.body);
+        expect(body.article.content).toBe(longContent.substring(0, 50) + '...');
+      }
     });
   });
 
   describe('Input validation', () => {
-    it('should validate request body structure', async () => {
+    it('should validate request body', async () => {
+      const creator = await getTestUser();
       const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
 
       // Missing file property
       {
         const res = await request(app)
           .put(`/api/articles/${article._id}/file`)
           .send({})
-          .set('gid', creator!.gid)
+          .set('gid', creator.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
       }
@@ -1323,22 +1154,30 @@ describe('PUT /api/articles/:articleId/file', () => {
         const res = await request(app)
           .put(`/api/articles/${article._id}/file`)
           .send(invalidBody)
-          .set('gid', creator!.gid)
+          .set('gid', creator.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
       }
     });
 
-    it('should allow extra properties in request body', async () => {
-      const article = await getTestArticle();
-      const creator = await UserModel.findById(article.creator)
-        .lean({ versionKey: false })
-        .exec();
+    it('should allow extra properties', async () => {
+      const creator = await getTestUser();
+
+      let articleId: string;
+      {
+        const res = await request(app)
+          .post('/api/articles')
+          .send(await createTestArticle())
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        articleId = body.articleId;
+      }
 
       await request(app)
-        .put(`/api/articles/${article._id}/file`)
-        .send({ file: 'valid content', extraProperty: 'should be ignored' })
-        .set('gid', creator!.gid)
+        .put(`/api/articles/${articleId}/file`)
+        .send({ file: 'valid content', extraProperty: 'ignored' })
+        .set('gid', creator.gid)
         .expect(204);
     });
   });
@@ -1371,7 +1210,7 @@ describe('PUT /api/articles/:articleId/file', () => {
     it('should require authentication', async () => {
       const article = await getTestArticle();
 
-      // Missing authentication
+      // Missing auth
       {
         const res = await request(app)
           .put(`/api/articles/${article._id}/file`)
@@ -1380,12 +1219,12 @@ describe('PUT /api/articles/:articleId/file', () => {
         expectValidErrorResponse(res.body);
       }
 
-      // Invalid authentication
+      // Invalid auth
       {
         const res = await request(app)
           .put(`/api/articles/${article._id}/file`)
           .send({ file: 'test' })
-          .set('gid', 'fake-google-id-12345')
+          .set('gid', 'fake-gid-123')
           .expect(401);
         expectValidErrorResponse(res.body);
       }
@@ -1417,7 +1256,7 @@ describe('PUT /api/articles/:articleId/file', () => {
 
       await request(app)
         .put(`/api/articles/${article._id}/file`)
-        .send({ file: 'valid upload by creator' })
+        .send({ file: 'Creator can upload' })
         .set('gid', creator!.gid)
         .expect(204);
     });

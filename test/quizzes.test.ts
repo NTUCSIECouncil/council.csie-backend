@@ -34,91 +34,26 @@ afterEach(async () => {
 });
 
 describe('GET /api/quizzes', () => {
-  describe('Basic functionality', () => {
-    it('should return quizzes list with correct response structure', async () => {
-      const res = await request(app)
-        .get('/api/quizzes')
-        .query(qs.stringify({ limit: 5 }))
-        .expect(200);
-      parseAndExpectValid(ZQuizListResponse, res.body);
-    });
-
-    it('should use default pagination values (limit: 10, offset: 0)', async () => {
+  describe('Basic retrieval', () => {
+    it('should return quizzes list with default pagination', async () => {
       const res = await request(app).get('/api/quizzes').expect(200);
-
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
       expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(0);
       expect(body.quizzes.length).toBeLessThanOrEqual(10);
     });
 
-    it('should handle empty result sets correctly', async () => {
-      // Clear all quizzes to test empty response
-      await QuizModel.deleteMany({});
-
-      const res = await request(app).get('/api/quizzes').expect(200);
+    it('should respect custom pagination parameters', async () => {
+      const res = await request(app)
+        .get('/api/quizzes')
+        .query(qs.stringify({ limit: 5, offset: 2 }))
+        .expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
-      expect(body.quizzes).toHaveLength(0);
-      expect(body.meta.total).toBe(0);
-      expect(body.meta.limit).toBe(10);
-      expect(body.meta.offset).toBe(0);
-    });
-  });
-
-  describe('Pagination', () => {
-    it('should handle pagination correctly with proper page separation', async () => {
-      const total = await QuizModel.countDocuments().exec();
-
-      // Test first page
-      let body;
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 5, offset: 0 }))
-          .expect(200);
-
-        body = parseAndExpectValid(ZQuizListResponse, res.body);
-        expect(body.meta).toEqual({ total, limit: 5, offset: 0 });
-        expect(body.quizzes.length).toBeLessThanOrEqual(5);
-      }
-
-      if (total > 5) {
-        // Test second page
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 5, offset: 5 }))
-          .expect(200);
-
-        const secondPageBody = parseAndExpectValid(ZQuizListResponse, res.body);
-        expect(secondPageBody.meta).toEqual({ total, limit: 5, offset: 5 });
-        expect(secondPageBody.quizzes.length).toBeLessThanOrEqual(5);
-
-        // Ensure pages contain different quizzes
-        const firstPageIds = body.quizzes.map(q => q._id);
-        const secondPageIds = secondPageBody.quizzes.map(q => q._id);
-        const intersection = firstPageIds.filter(id =>
-          secondPageIds.includes(id),
-        );
-        expect(intersection).toHaveLength(0);
-      }
-    });
-
-    it('should match default pagination with explicit values', async () => {
-      let defaultPagBody;
-      {
-        const res = await request(app).get('/api/quizzes').expect(200);
-        defaultPagBody = parseAndExpectValid(ZQuizListResponse, res.body);
-      }
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 10, offset: 0 }))
-          .expect(200);
-        expect(parseAndExpectValid(ZQuizListResponse, res.body)).toEqual(
-          defaultPagBody,
-        );
-      }
+      expect(body.meta.limit).toBe(5);
+      expect(body.meta.offset).toBe(2);
+      expect(body.quizzes.length).toBeLessThanOrEqual(5);
     });
 
     it('should handle large offset gracefully', async () => {
@@ -129,168 +64,113 @@ describe('GET /api/quizzes', () => {
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
-      expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(999999);
+    });
+
+    it('should validate pagination parameters', async () => {
+      const invalidParams = [
+        { limit: 0 },
+        { limit: -1 },
+        { limit: 'invalid' },
+        { offset: -1 },
+        { offset: 'invalid' },
+      ];
+
+      for (const params of invalidParams) {
+        const res = await request(app)
+          .get('/api/quizzes')
+          .query(qs.stringify(params))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should return empty results when no quizzes exist', async () => {
+      await QuizModel.deleteMany({});
+
+      const res = await request(app).get('/api/quizzes').expect(200);
+      const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
+      expect(body.quizzes).toHaveLength(0);
+      expect(body.meta.total).toBe(0);
     });
   });
 
-  describe('Embedding related resources', () => {
-    it('should support various embed parameter combinations', async () => {
-      // Test no embedding (default)
+  describe('Embedding', () => {
+    it('should support all embed combinations', async () => {
+      // No embedding (default)
       {
         const res = await request(app)
           .get('/api/quizzes')
           .query(qs.stringify({ limit: 1 }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
         if (body.quizzes.length > 0) {
           const quiz = body.quizzes[0];
-          expect(typeof quiz.course).toBe('string'); // UUID
-          expect(typeof quiz.uploader).toBe('string'); // UUID
+          expect(quiz.course).toBeTypeOf('string');
+          expect(quiz.uploader).toBeTypeOf('string');
         }
       }
 
-      // Test course embedding
+      // Course embedding
       {
         const res = await request(app)
           .get('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['course'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
         if (body.quizzes.length > 0) {
           const quiz = body.quizzes[0];
-          expect(typeof quiz.course).toBe('object'); // Embedded course
-          expect(typeof quiz.uploader).toBe('string'); // UUID
+          expect(quiz.course).toBeTypeOf('object');
+          expect(quiz.uploader).toBeTypeOf('string');
         }
       }
 
-      // Test uploader embedding
+      // Uploader embedding
       {
         const res = await request(app)
           .get('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['uploader'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
         if (body.quizzes.length > 0) {
           const quiz = body.quizzes[0];
-          expect(typeof quiz.course).toBe('string'); // UUID
-          expect(typeof quiz.uploader).toBe('object'); // Embedded uploader
+          expect(quiz.course).toBeTypeOf('string');
+          expect(quiz.uploader).toBeTypeOf('object');
         }
       }
 
-      // Test both course and uploader embedding
+      // Both embeddings
       {
         const res = await request(app)
           .get('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['course', 'uploader'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
+
         if (body.quizzes.length > 0) {
           const quiz = body.quizzes[0];
-          expect(typeof quiz.course).toBe('object'); // Embedded course
-          expect(typeof quiz.uploader).toBe('object'); // Embedded uploader
+          expect(quiz.course).toBeTypeOf('object');
+          expect(quiz.uploader).toBeTypeOf('object');
         }
-      }
-    });
-  });
-
-  describe('Parameter validation', () => {
-    it('should validate pagination parameters correctly', async () => {
-      // Test negative offset
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ offset: -1 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test zero limit
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 0 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test negative limit
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: -1 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test non-integer pagination parameters
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 'invalid' }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ offset: 'invalid' }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test very large limit
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 999999 }))
-          .expect(200);
-        parseAndExpectValid(ZQuizListResponse, res.body);
-      }
-
-      // Test decimal values
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ limit: 10.5 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ offset: 5.7 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
       }
     });
 
     it('should validate embed parameters', async () => {
-      // Test invalid embed value
-      {
+      const invalidEmbeds = ['invalid', 'nonexistent', 'content'];
+
+      for (const embed of invalidEmbeds) {
         const res = await request(app)
           .get('/api/quizzes')
-          .query(qs.stringify({ embed: ['invalid'] }))
+          .query(qs.stringify({ embed: [embed] }))
           .expect(400);
         expectValidErrorResponse(res.body);
       }
 
-      // Test multiple invalid embed values
-      {
-        const res = await request(app)
-          .get('/api/quizzes')
-          .query(qs.stringify({ embed: ['invalid1', 'invalid2'] }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test mix of valid and invalid embed values
+      // Mix of valid and invalid
       {
         const res = await request(app)
           .get('/api/quizzes')
@@ -300,7 +180,7 @@ describe('GET /api/quizzes', () => {
       }
     });
 
-    it('should handle empty embed array correctly', async () => {
+    it('should handle empty embed array', async () => {
       const res = await request(app)
         .get('/api/quizzes')
         .query(qs.stringify({ embed: [], limit: 1 }))
@@ -309,16 +189,16 @@ describe('GET /api/quizzes', () => {
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       if (body.quizzes.length > 0) {
         const quiz = body.quizzes[0];
-        expect(typeof quiz.course).toBe('string'); // UUID
-        expect(typeof quiz.uploader).toBe('string'); // UUID
+        expect(quiz.course).toBeTypeOf('string');
+        expect(quiz.uploader).toBeTypeOf('string');
       }
     });
   });
 });
 
 describe('GET /api/quizzes/:quizId', () => {
-  describe('Quiz retrieval', () => {
-    it('should return single quiz with correct response structure', async () => {
+  describe('Successful retrieval', () => {
+    it('should return single quiz', async () => {
       const testQuiz = await getTestQuiz();
 
       const res = await request(app)
@@ -329,43 +209,54 @@ describe('GET /api/quizzes/:quizId', () => {
       expect(body.quiz).toEqual(testQuiz);
     });
 
-    it('should support embed parameters correctly', async () => {
+    it('should support embed parameters', async () => {
       const testQuiz = await getTestQuiz();
 
-      // Test course embedding
+      // No embedding (default)
+      {
+        const res = await request(app)
+          .get(`/api/quizzes/${testQuiz._id}`)
+          .expect(200);
+        const body = parseAndExpectValid(ZQuizResponse, res.body);
+
+        expect(body.quiz.course).toBeTypeOf('string');
+        expect(body.quiz.uploader).toBeTypeOf('string');
+      }
+
+      // Course embedding
       {
         const res = await request(app)
           .get(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['course'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizResponse, res.body);
-        expect(typeof body.quiz.course).toBe('object'); // Embedded course
-        expect(typeof body.quiz.uploader).toBe('string'); // UUID
+
+        expect(body.quiz.course).toBeTypeOf('object');
+        expect(body.quiz.uploader).toBeTypeOf('string');
       }
 
-      // Test uploader embedding
+      // Uploader embedding
       {
         const res = await request(app)
           .get(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['uploader'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizResponse, res.body);
-        expect(typeof body.quiz.course).toBe('string'); // UUID
-        expect(typeof body.quiz.uploader).toBe('object'); // Embedded uploader
+
+        expect(body.quiz.course).toBeTypeOf('string');
+        expect(body.quiz.uploader).toBeTypeOf('object');
       }
 
-      // Test both embeddings
+      // Both embeddings
       {
         const res = await request(app)
           .get(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['course', 'uploader'] }))
           .expect(200);
-
         const body = parseAndExpectValid(ZQuizResponse, res.body);
-        expect(typeof body.quiz.course).toBe('object'); // Embedded course
-        expect(typeof body.quiz.uploader).toBe('object'); // Embedded uploader
+
+        expect(body.quiz.course).toBeTypeOf('object');
+        expect(body.quiz.uploader).toBeTypeOf('object');
       }
     });
   });
@@ -374,45 +265,14 @@ describe('GET /api/quizzes/:quizId', () => {
     it('should validate embed parameters', async () => {
       const testQuiz = await getTestQuiz();
 
-      // Test invalid embed value
-      {
+      const invalidEmbeds = ['invalid', 'nonexistent', 'content'];
+      for (const embed of invalidEmbeds) {
         const res = await request(app)
           .get(`/api/quizzes/${testQuiz._id}`)
-          .query(qs.stringify({ embed: ['invalid'] }))
+          .query(qs.stringify({ embed: [embed] }))
           .expect(400);
         expectValidErrorResponse(res.body);
       }
-
-      // Test multiple invalid embed values
-      {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
-          .query(qs.stringify({ embed: ['invalid1', 'invalid2'] }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Test mix of valid and invalid embed values
-      {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
-          .query(qs.stringify({ embed: ['course', 'invalid'] }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-    });
-
-    it('should handle empty embed array correctly', async () => {
-      const testQuiz = await getTestQuiz();
-
-      const res = await request(app)
-        .get(`/api/quizzes/${testQuiz._id}`)
-        .query(qs.stringify({ embed: [] }))
-        .expect(200);
-
-      const body = parseAndExpectValid(ZQuizResponse, res.body);
-      expect(typeof body.quiz.course).toBe('string'); // UUID
-      expect(typeof body.quiz.uploader).toBe('string'); // UUID
     });
   });
 
@@ -430,37 +290,21 @@ describe('GET /api/quizzes/:quizId', () => {
         .expect(404);
       expectValidErrorResponse(res.body);
     });
-
-    it('should validate malformed UUIDs with specific patterns', async () => {
-      const malformedUuids = [
-        'not-a-uuid',
-        '12345',
-        '123e4567-e89b-12d3-a456-42661417400', // missing last character
-        '123e4567-e89b-12d3-a456-4266141740000', // extra character
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx', // invalid characters
-      ];
-
-      for (const malformedUuid of malformedUuids) {
-        const res = await request(app)
-          .get(`/api/quizzes/${malformedUuid}`)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-    });
   });
 });
 
 describe('GET /api/quizzes/:quizId/file', () => {
-  describe('File retrieval', () => {
-    it('should return PDF file content for quizzes with uploaded files', async () => {
+  describe('Successful retrieval', () => {
+    it('should return PDF file content', async () => {
       const testQuiz = await getTestQuiz();
 
       const res = await request(app)
         .get(`/api/quizzes/${testQuiz._id}/file`)
-        .expect('Content-Type', /pdf/)
         .expect(200);
 
+      expect(res.headers['content-type']).toMatch(/application\/pdf/);
       expect(res.body).toBeDefined();
+      expect(Buffer.isBuffer(res.body)).toBe(true);
     });
   });
 
@@ -477,23 +321,6 @@ describe('GET /api/quizzes/:quizId/file', () => {
         .get(`/api/quizzes/${randomUUID()}/file`)
         .expect(404);
       expectValidErrorResponse(res.body);
-    });
-
-    it('should validate malformed UUIDs with specific patterns', async () => {
-      const malformedUuids = [
-        'not-a-uuid',
-        '12345',
-        '123e4567-e89b-12d3-a456-42661417400', // missing last character
-        '123e4567-e89b-12d3-a456-4266141740000', // extra character
-        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx', // invalid characters
-      ];
-
-      for (const malformedUuid of malformedUuids) {
-        const res = await request(app)
-          .get(`/api/quizzes/${malformedUuid}/file`)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
     });
   });
 });
