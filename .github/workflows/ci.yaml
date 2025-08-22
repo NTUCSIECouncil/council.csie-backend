@@ -85,10 +85,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./samples/
-          key: samples-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
-          restore-keys: |
-            samples-${{ runner.os }}-
-            samples-
+          key: ${{ runner.os }}-samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
 
       - name: Fetch course data
         if: steps.samples-cache.outputs.cache-hit != 'true'
@@ -119,10 +116,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./samples/
-          key: samples-${{ runner.os }}-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/gen-samples.ts') }}
-          restore-keys: |
-            samples-${{ runner.os }}-
-            samples-
+          key: ${{ runner.os }}-samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
 
       - name: Run test
         run: npm run test
