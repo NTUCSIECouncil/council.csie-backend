@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { ZUuidSchema } from '@/models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
-dotenv.config({ path: ['.env.default', '.env'], override: true });
+dotenv.config({ path: ['.env', '.env.default'] });
 
 if (process.env.SAMPLES_DIR === undefined) {
   console.error('environment variable SAMPLES_DIR is not set');
