@@ -14,7 +14,7 @@ import {
 } from '@models/quiz-schema.ts';
 import { type User } from '@models/user-schema.ts';
 
-dotenv.config({ path: ['.env', '.env.default'] });
+dotenv.config({ path: ['.env', '.env.default'], quiet: true });
 
 if (process.env.SAMPLES_DIR === undefined) {
   console.error('environment variable SAMPLES_DIR is not set');
