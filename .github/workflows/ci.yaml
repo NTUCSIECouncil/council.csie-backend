@@ -71,21 +71,23 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Restore cached samples
         id: samples-cache
         uses: actions/cache@v4
         with:
           path: ./samples/
           key: ${{ runner.os }}-samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
+
+      - name: Set up Node.js
+        if: steps.samples-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.samples-cache.outputs.cache-hit != 'true'
+        run: npm ci
 
       - name: Fetch course data
         if: steps.samples-cache.outputs.cache-hit != 'true'
@@ -117,6 +119,7 @@ jobs:
         with:
           path: ./samples/
           key: ${{ runner.os }}-samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
+          fail-on-cache-miss: true
 
       - name: Run test
         run: npm run test
