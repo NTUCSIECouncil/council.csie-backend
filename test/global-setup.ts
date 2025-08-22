@@ -3,16 +3,17 @@ import path from 'path';
 
 import dotenv from 'dotenv';
 
+let originalUploadsDir: string | undefined;
+
 export async function setup() {
   dotenv.config({
-    path: ['.env.default', '.env', 'test/.env.default'],
-    override: true,
+    path: ['test/.env', 'test/.env.default', '.env', '.env.default'],
   });
 
   if (!process.env.UPLOADS_DIR) {
     throw new Error('Missing environment variable: UPLOADS_DIR');
   }
-  process.env.ORIGINAL_UPLOADS_DIR = process.env.UPLOADS_DIR;
+  originalUploadsDir = path.resolve(process.env.UPLOADS_DIR);
 
   const uploadsDir = path.resolve(process.env.UPLOADS_DIR);
   await fs.rm(uploadsDir, { recursive: true, force: true });
@@ -20,9 +21,8 @@ export async function setup() {
 }
 
 export async function teardown() {
-  if (!process.env.ORIGINAL_UPLOADS_DIR) {
+  if (!originalUploadsDir) {
     throw new Error('Missing environment variable: ORIGINAL_UPLOADS_DIR');
   }
-  const originalUploadsDir = path.resolve(process.env.ORIGINAL_UPLOADS_DIR);
   await fs.rm(originalUploadsDir, { recursive: true, force: true });
 }
