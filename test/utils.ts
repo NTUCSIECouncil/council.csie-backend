@@ -35,8 +35,7 @@ const seedModelFromSamples = async (
     `${model.toLowerCase()}-samples.json`,
   );
   const data = readFileSync(filePath, 'utf-8');
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- Safe to use in schema validation
-  const objs = ZSchema[model].array().parse(JSON.parse(data).slice(0, 100));
+  const objs = ZSchema[model].array().parse(JSON.parse(data)).slice(0, 100);
 
   for (const obj of objs) {
     const doc = new models[model](obj);
