@@ -1,19 +1,18 @@
-import { randomUUID, type UUID } from 'crypto';
+import { type UUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 
-import { Router, type Request } from 'express';
+import { Router } from 'express';
 
 import { env } from '@/config.ts';
 import { models } from '@models/index.ts';
-import { ZQuizSchema, type Quiz } from '@models/quiz-schema.ts';
 import {
   ZQuizEmbedQueryParam,
   ZUuidSchema,
   type QuizEmbedQueryParam,
 } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
-import { fileUploader, paginationParser } from './middleware.ts';
+import { paginationParser } from './middleware.ts';
 
 const router = Router();
 
@@ -45,23 +44,6 @@ router.get('/', paginationParser, async (req, res) => {
   res.json({ quizzes, meta: { total, offset, limit } });
 });
 
-router.post('/', async (req, res) => {
-  const quizId = randomUUID();
-  let quiz: Quiz;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
-    quiz = ZQuizSchema.parse({ ...req.body.quiz, _id: quizId });
-  } catch (err) {
-    logger.warn('Failed to parse request body in POST /quizzes: ', err);
-    res.status(400).json({ message: 'Invalid request body' });
-    return;
-  }
-
-  const quizDoc = new QuizModel(quiz);
-  await quizDoc.save();
-  res.status(201).json({ quizId });
-});
-
 router.get('/:quizId', async (req, res) => {
   let quizId: UUID;
   let embedParam: QuizEmbedQueryParam;
@@ -90,37 +72,6 @@ router.get('/:quizId', async (req, res) => {
   }
 });
 
-// not actually required by API document
-// istanbul ignore next
-router.patch('/:quizId', async (req, res) => {
-  let quizId: UUID;
-  let quizUpdates: Partial<Quiz>;
-  try {
-    quizId = ZUuidSchema.parse(req.params.quizId);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- safe inside parse
-    quizUpdates = ZQuizSchema.partial().parse(req.body.quiz);
-  } catch (err) {
-    logger.warn(
-      'Failed to parse quizId or patch in PATCH /quizzes/:quizId: ',
-      err,
-    );
-    res.status(400).json({ message: 'Invalid quiz ID or request body' });
-    return;
-  }
-
-  const target = await QuizModel.findById(quizId).exec();
-  if (
-    (quizUpdates._id !== undefined && quizUpdates._id !== quizId)
-    || target === null
-  ) {
-    res.status(400).json({ message: 'Invalid request or quiz not found' });
-  } else {
-    target.set(quizUpdates);
-    await target.save();
-    res.sendStatus(204);
-  }
-});
-
 router.get('/:quizId/file', async (req, res) => {
   let quizId: UUID;
   try {
@@ -146,40 +97,6 @@ router.get('/:quizId/file', async (req, res) => {
     return;
   }
   res.sendFile(filePath);
-});
-
-const quizFileUploader = fileUploader(
-  path.join(env.UPLOADS_DIR, 'quizzes'),
-  ['application/pdf'],
-  (req: Request) => {
-    return `${req.params.quizId}.pdf`;
-  },
-);
-
-router.put('/:quizId/file', quizFileUploader, async (req, res) => {
-  let quizId: UUID;
-  try {
-    quizId = ZUuidSchema.parse(req.params.quizId);
-  } catch (err) {
-    logger.warn('Failed to parse quizId in PUT /quizzes/:quizId/file: ', err);
-    res.status(400).json({ message: 'Invalid quiz ID' });
-    return;
-  }
-
-  const quiz = await QuizModel.findById(quizId).lean().exec();
-  if (quiz === null) {
-    res.status(404).json({ message: 'Quiz not found' });
-    return;
-  }
-
-  if (!req.file) {
-    res
-      .status(400)
-      .json({ message: 'No file uploaded or invalid file format' });
-    return;
-  }
-
-  res.sendStatus(204);
 });
 
 export default router;

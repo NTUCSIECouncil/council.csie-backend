@@ -22,7 +22,6 @@
     "fuse.js": "^7.1.0",
     "mongoose": "^8.5.2",
     "morgan": "^1.10.0",
-    "multer": "^2.0.0",
     "pdf-lib": "^1.17.1",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.17.0",
