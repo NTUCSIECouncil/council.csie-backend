@@ -119,7 +119,7 @@ users_userId:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Only user account owners can modify their profiles
+        description: Insufficient permissions to modify this user profile
         content:
           application/json:
             schema:
@@ -151,12 +151,6 @@ users_me:
                 user:
                   $ref: '../components/schemas.yaml#/UserResponse'
               required: [user]
-      '400':
-        description: Invalid request or malformed authentication token
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
       '401':
         description: Authentication required
         content:
@@ -182,19 +176,13 @@ users_me:
       '204':
         description: Current user profile updated successfully
       '400':
-        description: Invalid request body or malformed authentication token
+        description: Invalid request body
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
         description: Authentication required
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
-      '403':
-        description: Only user account owners can modify their profiles
         content:
           application/json:
             schema:
@@ -222,12 +210,6 @@ users_me_private:
                 user:
                   $ref: '../components/schemas.yaml#/PrivateUserResponse'
               required: [user]
-      '400':
-        description: Invalid request or malformed authentication token
-        content:
-          application/json:
-            schema:
-              $ref: '../components/schemas.yaml#/Error'
       '401':
         description: Authentication required
         content:

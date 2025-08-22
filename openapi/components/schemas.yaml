@@ -41,31 +41,31 @@ ArticleBase:
       properties:
         sweetness:
           type: integer
-          description: How good the final grades of this course generally are
+          description: Grade distribution generosity (how lenient the grading is)
           minimum: 1
           maximum: 5
           example: 4
         chill:
           type: integer
-          description: How relaxed and low-stress the course workload is
+          description: Course workload intensity (how relaxed and manageable the pace is)
           minimum: 1
           maximum: 5
           example: 5
         teaching:
           type: integer
-          description: Quality of instruction and teaching methods
+          description: Quality of instruction and teaching effectiveness
           minimum: 1
           maximum: 5
           example: 3
         gain:
           type: integer
-          description: How much you learn and benefit from the course
+          description: Learning value and knowledge gained from the course
           minimum: 1
           maximum: 5
           example: 4
         recommend:
           type: integer
-          description: Overall recommendation rating for the course
+          description: Overall recommendation score for taking this course
           minimum: 1
           maximum: 5
           example: 5
@@ -115,8 +115,8 @@ ArticleResponse:
         content:
           type: string
           description: |
-            Preview of the article content (first 50 characters). Returns empty string 
-            if no content file has been uploaded yet. Use the file endpoint to retrieve full content.
+            Article content preview (first 50 characters). Returns empty string 
+            if no content file has been uploaded. Use the file endpoint to retrieve full content.
           example: 'This is a sample article content that is very...'
   required: [_id, title, tags, ratings, course, creator]
 
@@ -143,7 +143,7 @@ CourseResponse:
     names:
       type: array
       items: { type: string }
-      description: List of course names (may include multiple languages or variations)
+      description: Course names in different languages or alternative titles
       example: ['Data Structures and Algorithms']
     credit:
       type: integer
@@ -152,7 +152,7 @@ CourseResponse:
       example: 3
     semester:
       type: string
-      description: Academic semester when the course is offered (format year-semester)
+      description: 'Academic semester when the course is offered (format: year-semester)'
       example: '113-2'
   required: [_id, curriculum, lecturer, names, credit, semester]
 
@@ -238,16 +238,16 @@ PrivateUserResponse:
 
 Error:
   type: object
-  description: Standardized error response format used across all API endpoints
+  description: Standard error response format used across all API endpoints
   properties:
     message:
       type: string
-      description: Human-readable description of the error
-      example: "Validation failed: 'title' is required."
+      description: Human-readable error description
+      example: "Validation failed: 'title' is required"
     details:
       type: object
       description: Additional context and technical details about the error
       example:
         field: title
-        reason: 'This field is required.'
+        reason: 'This field is required'
   required: [message]

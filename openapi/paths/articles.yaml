@@ -3,8 +3,8 @@ articles:
     tags: [articles]
     summary: List and search course review articles
     description: |
-      Retrieves a paginated list of course review articles with support for filtering 
-      and searching. Can embed related resources like course details and creator information.
+      Retrieves a paginated list of course review articles with filtering and search capabilities. 
+      Can embed related resources like course details and creator information.
     parameters:
       - name: limit
         in: query
@@ -27,7 +27,7 @@ articles:
           type: string
       - name: tags
         in: query
-        description: Filter articles by specific tags (multiple tags supported)
+        description: Filter articles by specific tags (supports multiple values)
         schema:
           type: array
           items:
@@ -38,7 +38,7 @@ articles:
         in: query
         description: |
           Related resources to include in the response. When omitted, only UUID references 
-          are returned. The 'content' option provides a preview of the article content.
+          are returned. The 'content' option provides article content preview.
         style: form
         explode: true
         schema:
@@ -127,7 +127,7 @@ articles_articleId:
         in: query
         description: |
           Related resources to include in the response. When omitted, only UUID references 
-          are returned. The 'content' option provides a preview of the article content.
+          are returned. The 'content' option provides article content preview.
         style: form
         explode: true
         schema:
@@ -196,7 +196,7 @@ articles_articleId:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Only the article creator can update this article
+        description: Insufficient permissions to modify this article
         content:
           application/json:
             schema:
@@ -290,7 +290,7 @@ articles_articleId_file:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '403':
-        description: Only the article creator can upload content to this article
+        description: Insufficient permissions to modify this article
         content:
           application/json:
             schema:

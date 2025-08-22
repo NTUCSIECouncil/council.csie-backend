@@ -3,8 +3,8 @@ info:
   title: Council CSIE API
   version: 1.0.0
   description: |
-    RESTful API for the website of NTU CSIE student council, council.csie.ntu.edu.tw.
-    The website serves as a platform for students to share course reviews, access exam materials, and manage user profiles.
+    RESTful API for the NTU CSIE student council website (council.csie.ntu.edu.tw).
+    Provides a platform for students to share course reviews, access exam materials, and manage user profiles.
     This specification follows OpenAPI 3.1.0 standards with modular organization for maintainability.
 servers:
   - url: /api
@@ -62,4 +62,4 @@ components:
       bearerFormat: JWT
       description: |
         Authentication using Firebase ID Token. Include the token in the Authorization 
-        header as: `Bearer <Firebase_ID_Token>`
+        header as `Bearer <Firebase_ID_Token>`.
