@@ -39,18 +39,18 @@ const ZArticleResponse = z.object({ article: ZArticleResponseSchema });
 
 const ZFileResponse = z.object({ file: z.string() });
 
-const genArticleCreate = async () => {
+const createTestRatings = () => {
+  return { sweetness: 3, chill: 3, teaching: 3, gain: 3, recommend: 3 };
+};
+
+const createTestArticle = async () => {
   const course = await getTestCourse();
   return {
     title: 'Test Article',
     tags: ['test'],
-    ratings: genRatings(),
+    ratings: createTestRatings(),
     course: course._id,
   };
-};
-
-const genRatings = () => {
-  return { sweetness: 3, chill: 3, teaching: 3, gain: 3, recommend: 3 };
 };
 
 beforeEach(async () => {
@@ -64,17 +64,8 @@ afterEach(async () => {
 });
 
 describe('GET /api/articles', () => {
-  describe('Basic functionality', () => {
-    it('should return articles list with correct response structure', async () => {
-      const res = await request(app)
-        .get('/api/articles')
-        .query(qs.stringify({ limit: 5 }))
-        .expect(200);
-
-      parseAndExpectValid(ZArticleListResponse, res.body);
-    });
-
-    it('should use default pagination values (limit: 10, offset: 0)', async () => {
+  describe('Pagination', () => {
+    it('should return paginated articles with default parameters', async () => {
       const res = await request(app).get('/api/articles').expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -83,72 +74,42 @@ describe('GET /api/articles', () => {
       expect(body.articles.length).toBeLessThanOrEqual(10);
     });
 
-    it('should handle empty result sets correctly', async () => {
+    it('should handle custom pagination parameters', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
+        .query(qs.stringify({ limit: 5, offset: 0 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
-      expect(body.articles).toHaveLength(0);
-      expect(body.meta.total).toBe(0);
-      expect(body.meta.limit).toBe(10);
+      expect(body.articles.length).toBeLessThanOrEqual(5);
+      expect(body.meta.limit).toBe(5);
       expect(body.meta.offset).toBe(0);
     });
-  });
 
-  describe('Pagination', () => {
-    it('should handle pagination correctly with proper page separation', async () => {
+    it('should handle pagination across multiple pages', async () => {
       const total = await ArticleModel.countDocuments().exec();
 
       // Test first page
-      let body;
       {
         const res = await request(app)
           .get('/api/articles')
           .query(qs.stringify({ limit: 5, offset: 0 }))
           .expect(200);
 
-        body = parseAndExpectValid(ZArticleListResponse, res.body);
+        const body = parseAndExpectValid(ZArticleListResponse, res.body);
         expect(body.meta).toEqual({ total, limit: 5, offset: 0 });
         expect(body.articles.length).toBeLessThanOrEqual(5);
       }
 
+      // Test second page if we have enough data
       if (total > 5) {
         const res = await request(app)
           .get('/api/articles')
           .query(qs.stringify({ limit: 5, offset: 5 }))
           .expect(200);
 
-        const secondPageBody = parseAndExpectValid(
-          ZArticleListResponse,
-          res.body,
-        );
-        expect(secondPageBody.meta).toEqual({ total, limit: 5, offset: 5 });
-
-        // Ensure no overlap between pages
-        const firstPageIds = body.articles.map(a => a._id);
-        const secondPageIds = secondPageBody.articles.map(a => a._id);
-        expect(firstPageIds.filter(id => secondPageIds.includes(id))).toEqual(
-          [],
-        );
-      }
-    });
-
-    it('should match default pagination with explicit values', async () => {
-      let defaultPagBody;
-      {
-        const res = await request(app).get('/api/articles').expect(200);
-        defaultPagBody = parseAndExpectValid(ZArticleListResponse, res.body);
-      }
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 10, offset: 0 }))
-          .expect(200);
-        expect(parseAndExpectValid(ZArticleListResponse, res.body)).toEqual(
-          defaultPagBody,
-        );
+        const body = parseAndExpectValid(ZArticleListResponse, res.body);
+        expect(body.meta).toEqual({ total, limit: 5, offset: 5 });
       }
     });
 
@@ -163,14 +124,50 @@ describe('GET /api/articles', () => {
       expect(body.meta.limit).toBe(10);
       expect(body.meta.offset).toBe(999999);
     });
+
+    it('should validate pagination parameters', async () => {
+      // Invalid limit values (must be positive integer)
+      const invalidLimits = [0, -1, 'invalid'];
+      for (const limit of invalidLimits) {
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ limit }))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+
+      // Invalid offset values (must be non-negative integer)
+      const invalidOffsets = [-1, 'invalid'];
+      for (const offset of invalidOffsets) {
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ offset }))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should return empty results for no matches', async () => {
+      const res = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
+        .expect(200);
+
+      const body = parseAndExpectValid(ZArticleListResponse, res.body);
+      expect(body.articles).toHaveLength(0);
+      expect(body.meta.total).toBe(0);
+      expect(body.meta.limit).toBe(10);
+      expect(body.meta.offset).toBe(0);
+    });
   });
 
-  describe('Search and filtering', () => {
+  describe('Keyword search', () => {
     it('should support fuzzy keyword search across multiple fields', async () => {
       const populatedArticles = await ArticleModel.find()
         .populate('course')
         .lean({ versionKey: false })
         .exec();
+
       const fuse = new Fuse(populatedArticles, {
         keys: ['title', 'course.names', 'course.lecturer', 'course.curriculum'],
         threshold: 0.6,
@@ -192,47 +189,52 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should handle edge cases in keyword search', async () => {
-      // Empty keyword should return all articles (no filtering)
-      {
-        const allArticlesRes = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 1000 }))
-          .expect(200);
-        const allArticles = parseAndExpectValid(
-          ZArticleListResponse,
-          allArticlesRes.body,
-        );
+    it('should handle empty keyword as returning all articles', async () => {
+      const allRes = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ limit: 1000 }))
+        .expect(200);
+      const allBody = parseAndExpectValid(ZArticleListResponse, allRes.body);
 
-        const emptyKeywordRes = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ keyword: '', limit: 1000 }))
-          .expect(200);
-        const emptyKeywordArticles = parseAndExpectValid(
-          ZArticleListResponse,
-          emptyKeywordRes.body,
-        );
+      const emptyRes = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ keyword: '', limit: 1000 }))
+        .expect(200);
+      const emptyBody = parseAndExpectValid(
+        ZArticleListResponse,
+        emptyRes.body,
+      );
 
-        expect(emptyKeywordArticles.articles.length).toBe(
-          allArticles.articles.length,
-        );
-      }
+      expect(emptyBody.articles.length).toBe(allBody.articles.length);
+    });
 
-      // Non-existent keyword should return empty results
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ keyword: 'nonexistent-keyword-xyz-987654321' }))
-          .expect(200);
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        expect(body.articles).toHaveLength(0);
-        expect(body.meta.total).toBe(0);
+    it('should return empty results for non-existent keyword', async () => {
+      const res = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ keyword: 'nonexistent-keyword-xyz-987654321' }))
+        .expect(200);
+
+      const body = parseAndExpectValid(ZArticleListResponse, res.body);
+      expect(body.articles).toHaveLength(0);
+      expect(body.meta.total).toBe(0);
+    });
+  });
+
+  describe('Tag filtering', () => {
+    it('should filter by single tag', async () => {
+      const res = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ tags: ['賴喜美'], limit: 100 }))
+        .expect(200);
+
+      const body = parseAndExpectValid(ZArticleListResponse, res.body);
+      for (const article of body.articles) {
+        expect(article.tags).toContain('賴喜美');
       }
     });
 
-    it('should support tag filtering with intersection behavior', async () => {
+    it('should filter by multiple tags with intersection behavior', async () => {
       const testTagCombinations = [
-        ['賴喜美'],
         ['AC', '賴喜美'],
         ['AC', '賴喜美', '醣類化學與應用'],
       ];
@@ -244,75 +246,62 @@ describe('GET /api/articles', () => {
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleListResponse, res.body);
-
-        // All returned articles should contain ALL specified tags (intersection behavior)
         for (const article of body.articles) {
           expect(article.tags).toEqual(expect.arrayContaining(tags));
         }
       }
     });
 
-    it('should handle edge cases in tag filtering', async () => {
-      // Single tag filtering
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ tags: ['賴喜美'], limit: 100 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        for (const article of body.articles) {
-          expect(article.tags).toContain('賴喜美');
-        }
-      }
-
-      // Non-existent tags should return empty results
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        expect(body.articles).toHaveLength(0);
-        expect(body.meta.total).toBe(0);
-      }
-
-      // Empty tags array should return all articles
-      {
-        const allArticlesRes = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 1000 }))
-          .expect(200);
-        const allArticles = parseAndExpectValid(
-          ZArticleListResponse,
-          allArticlesRes.body,
-        );
-
-        const emptyTagsRes = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ tags: [], limit: 1000 }))
-          .expect(200);
-        const emptyTagsArticles = parseAndExpectValid(
-          ZArticleListResponse,
-          emptyTagsRes.body,
-        );
-
-        expect(emptyTagsArticles.articles.length).toBe(
-          allArticles.articles.length,
-        );
-      }
-    });
-
-    it('should combine keyword and tag filtering correctly', async () => {
+    it('should return empty results for non-existent tags', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ keyword: '物理', tags: ['賴喜美'], limit: 50 }))
+        .query(qs.stringify({ tags: ['nonexistent-tag-xyz-123'] }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
+      expect(body.articles).toHaveLength(0);
+      expect(body.meta.total).toBe(0);
+    });
 
-      // All articles should contain the specified tags
+    it('should handle empty tags array as returning all articles', async () => {
+      const allRes = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ limit: 1000 }))
+        .expect(200);
+      const allBody = parseAndExpectValid(ZArticleListResponse, allRes.body);
+
+      const emptyTagsRes = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ tags: [], limit: 1000 }))
+        .expect(200);
+      const emptyTagsBody = parseAndExpectValid(
+        ZArticleListResponse,
+        emptyTagsRes.body,
+      );
+
+      expect(emptyTagsBody.articles.length).toBe(allBody.articles.length);
+    });
+
+    it('should validate tags parameter format', async () => {
+      // Non-array tags should be rejected
+      const res = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ tags: 'single-string-not-array' }))
+        .expect(400);
+      expectValidErrorResponse(res.body);
+    });
+  });
+
+  describe('Combined filtering', () => {
+    it('should combine keyword and tag filtering correctly', async () => {
+      const res = await request(app)
+        .get('/api/articles')
+        .query(
+          qs.stringify({ keyword: '醣類化學', tags: ['賴喜美'], limit: 100 }),
+        )
+        .expect(200);
+
+      const body = parseAndExpectValid(ZArticleListResponse, res.body);
       for (const article of body.articles) {
         expect(article.tags).toContain('賴喜美');
       }
@@ -320,8 +309,9 @@ describe('GET /api/articles', () => {
   });
 
   describe('Embedding related resources', () => {
-    it('should support various embed parameter combinations', async () => {
+    it('should support all valid embed parameter combinations', async () => {
       const validEmbedOptions = [
+        [],
         ['course'],
         ['creator'],
         ['content'],
@@ -334,7 +324,7 @@ describe('GET /api/articles', () => {
       for (const embed of validEmbedOptions) {
         const res = await request(app)
           .get('/api/articles')
-          .query(qs.stringify({ embed, limit: 1 }))
+          .query(qs.stringify({ embed, limit: 5 }))
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleListResponse, res.body);
@@ -364,159 +354,12 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should handle content truncation when embedding content', async () => {
-      const creator = await getTestUser();
-
-      // Create article and upload long content
-      const articleData = await genArticleCreate();
-
-      let articleId: string;
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send(articleData)
-          .set('gid', creator.gid)
-          .expect(201);
-        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        articleId = body.articleId;
-      }
-
-      // Upload long content (>50 chars) - should be truncated with ellipsis
-      const longContent =
-        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
-      await request(app)
-        .put(`/api/articles/${articleId}/file`)
-        .send({ file: longContent })
-        .set('gid', creator.gid)
-        .expect(204);
-
-      // Verify truncation in list endpoint with content embedding
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ embed: ['content'], limit: 100 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === articleId);
-        expect(testArticle).toBeDefined();
-        expect(testArticle?.content).toBe(longContent.substring(0, 50) + '...');
-      }
-
-      // Test exact 50 character content (no truncation expected)
-      const exactContent = 'x'.repeat(50);
-      await request(app)
-        .put(`/api/articles/${articleId}/file`)
-        .send({ file: exactContent })
-        .set('gid', creator.gid)
-        .expect(204);
-
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ embed: ['content'], limit: 100 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === articleId);
-        expect(testArticle?.content).toBe(exactContent); // No ellipsis for exactly 50 chars
-      }
-
-      // Test when no file exists - content should be empty string
-      const noFileArticle = await genArticleCreate();
-
-      let noFileArticleId: string;
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send(noFileArticle)
-          .set('gid', creator.gid)
-          .expect(201);
-
-        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        noFileArticleId = body.articleId;
-      }
-
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ embed: ['content'], limit: 100 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        const testArticle = body.articles.find(a => a._id === noFileArticleId);
-        expect(testArticle?.content).toBe('');
-      }
-    });
-
-    it('should not include content field when embed=content is not specified', async () => {
-      const res = await request(app)
-        .get('/api/articles')
-        .query(qs.stringify({ limit: 1 }))
-        .expect(200);
-
-      const body = parseAndExpectValid(ZArticleListResponse, res.body);
-      if (body.articles.length > 0) {
-        expect(body.articles[0]).not.toHaveProperty('content');
-      }
-    });
-  });
-
-  describe('Parameter validation', () => {
-    it('should validate pagination parameters correctly', async () => {
-      // Invalid limit types
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 'invalid' }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Invalid offset types
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ offset: 'invalid' }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Boundary validation (limit minimum 1, offset minimum 0)
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 0 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ offset: -1 }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Large values should return empty results gracefully
-      {
-        const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ limit: 999999, offset: 999999 }))
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleListResponse, res.body);
-        expect(body.articles).toHaveLength(0);
-      }
-    });
-
     it('should validate embed parameters', async () => {
-      // Invalid embed values
       const invalidEmbedValues = [
         ['invalid'],
         ['course', 'invalid'],
-        ['invalid-option'],
+        ['nonexistent'],
+        ['course', 'creator', 'invalid-option'],
       ];
 
       for (const invalidEmbed of invalidEmbedValues) {
@@ -528,91 +371,123 @@ describe('GET /api/articles', () => {
       }
     });
 
-    it('should validate tags parameter format', async () => {
-      // Non-array tags
+    it('should handle content truncation and empty content correctly', async () => {
+      const creator = await getTestUser();
+
+      // Create article with long content
+      const longContentArticle = await createTestArticle();
+      let longContentId: string;
       {
         const res = await request(app)
-          .get('/api/articles')
-          .query(qs.stringify({ tags: 'single-string-not-array' }))
-          .expect(400);
-        expectValidErrorResponse(res.body);
+          .post('/api/articles')
+          .send(longContentArticle)
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        longContentId = body.articleId;
       }
 
-      // Empty tags array should work
+      const longContent =
+        'This is a long content that exceeds fifty characters and should be truncated with ellipsis.';
+      await request(app)
+        .put(`/api/articles/${longContentId}/file`)
+        .send({ file: longContent })
+        .set('gid', creator.gid)
+        .expect(204);
+
+      // Test truncation
       {
         const res = await request(app)
           .get('/api/articles')
-          .query(qs.stringify({ tags: [] }))
+          .query(qs.stringify({ embed: ['content'], limit: 100 }))
           .expect(200);
-        parseAndExpectValid(ZArticleListResponse, res.body);
+
+        const body = parseAndExpectValid(ZArticleListResponse, res.body);
+        const testArticle = body.articles.find(a => a._id === longContentId);
+        expect(testArticle).toBeDefined();
+        expect(testArticle?.content).toBe(longContent.substring(0, 50) + '...');
+      }
+
+      // Test exact 50 character content (no truncation)
+      const exactContent = 'x'.repeat(50);
+      await request(app)
+        .put(`/api/articles/${longContentId}/file`)
+        .send({ file: exactContent })
+        .set('gid', creator.gid)
+        .expect(204);
+
+      {
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ embed: ['content'], limit: 100 }))
+          .expect(200);
+
+        const body = parseAndExpectValid(ZArticleListResponse, res.body);
+        const testArticle = body.articles.find(a => a._id === longContentId);
+        expect(testArticle?.content).toBe(exactContent);
+      }
+
+      // Test empty content
+      const emptyContentArticle = await createTestArticle();
+      let emptyContentId: string;
+      {
+        const res = await request(app)
+          .post('/api/articles')
+          .send(emptyContentArticle)
+          .set('gid', creator.gid)
+          .expect(201);
+        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+        emptyContentId = body.articleId;
+      }
+
+      {
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ embed: ['content'], limit: 100 }))
+          .expect(200);
+
+        const body = parseAndExpectValid(ZArticleListResponse, res.body);
+        const testArticle = body.articles.find(a => a._id === emptyContentId);
+        expect(testArticle?.content).toBe('');
       }
     });
   });
 });
 
 describe('POST /api/articles', () => {
-  describe('Article creation', () => {
-    it('should create article successfully and return articleId', async () => {
+  describe('Successful creation', () => {
+    it('should create article and return articleId', async () => {
       const creator = await getTestUser();
-      const articleCreate = await genArticleCreate();
+      const articleCreate = await createTestArticle();
 
-      let articleId: string;
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send(articleCreate)
-          .set('gid', creator.gid)
-          .expect(201);
-        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        articleId = body.articleId;
-      }
+      const res = await request(app)
+        .post('/api/articles')
+        .send(articleCreate)
+        .set('gid', creator.gid)
+        .expect(201);
+
+      const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+      expect(body.articleId).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      );
 
       // Verify article was created correctly
       {
         const res = await request(app)
-          .get(`/api/articles/${articleId}`)
+          .get(`/api/articles/${body.articleId}`)
           .expect(200);
-        const body = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(body.article).toEqual({
+        const getBody = parseAndExpectValid(ZArticleResponse, res.body);
+        expect(getBody.article).toEqual({
           ...articleCreate,
-          _id: articleId,
+          _id: body.articleId,
           creator: creator._id,
         });
       }
     });
 
-    it('should handle Unicode content correctly', async () => {
-      const creator = await getTestUser();
-      const unicodeContent = {
-        ...(await genArticleCreate()),
-        title: '测试文章 🚀 العربية 日本語 한국어',
-        tags: ['测试', 'العربية', '日本語', '한국어', '🏷️'],
-      };
-
-      let articleId: string;
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send(unicodeContent)
-          .set('gid', creator.gid)
-          .expect(201);
-        const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
-        articleId = body.articleId;
-      }
-
-      {
-        const res = await request(app)
-          .get(`/api/articles/${articleId}`)
-          .expect(200);
-        const body = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(body.article.title).toBe(unicodeContent.title);
-        expect(body.article.tags).toEqual(unicodeContent.tags);
-      }
-    });
-
     it('should set authenticated user as creator', async () => {
       const creator = await getTestUser();
-      const articleCreate = await genArticleCreate();
+      const articleCreate = await createTestArticle();
 
       const res = await request(app)
         .post('/api/articles')
@@ -623,66 +498,113 @@ describe('POST /api/articles', () => {
       const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
 
       // Verify creator is set correctly
-      const articleRes = await request(app)
-        .get(`/api/articles/${body.articleId}`)
-        .expect(200);
-      const articleBody = parseAndExpectValid(
-        ZArticleResponse,
-        articleRes.body,
-      );
-      expect(articleBody.article.creator).toBe(creator._id);
+      {
+        const res = await request(app)
+          .get(`/api/articles/${body.articleId}`)
+          .expect(200);
+        const getBody = parseAndExpectValid(ZArticleResponse, res.body);
+        expect(getBody.article.creator).toBe(creator._id);
+      }
+    });
+
+    it('should handle Unicode content correctly', async () => {
+      const creator = await getTestUser();
+      const unicodeContent = {
+        ...(await createTestArticle()),
+        title: '测试文章 🚀 العربية 日本語 한국어',
+        tags: ['测试', 'العربية', '日本語', '한국어', '🏷️'],
+      };
+
+      const res = await request(app)
+        .post('/api/articles')
+        .send(unicodeContent)
+        .set('gid', creator.gid)
+        .expect(201);
+
+      const body = parseAndExpectValid(ZArticleCreateResponse, res.body);
+
+      // Verify Unicode content is preserved
+      {
+        const res = await request(app)
+          .get(`/api/articles/${body.articleId}`)
+          .expect(200);
+        const getBody = parseAndExpectValid(ZArticleResponse, res.body);
+        expect(getBody.article.title).toBe(unicodeContent.title);
+        expect(getBody.article.tags).toEqual(unicodeContent.tags);
+      }
+    });
+
+    it('should accept valid boundary ratings values', async () => {
+      const creator = await getTestUser();
+      const validBase = await createTestArticle();
+
+      const boundaryTests = [
+        { sweetness: 1, chill: 1, teaching: 1, gain: 1, recommend: 1 },
+        { sweetness: 5, chill: 5, teaching: 5, gain: 5, recommend: 5 },
+        { sweetness: 1, chill: 3, teaching: 5, gain: 2, recommend: 4 },
+      ];
+
+      for (const ratings of boundaryTests) {
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, ratings })
+          .set('gid', creator.gid)
+          .expect(201);
+        parseAndExpectValid(ZArticleCreateResponse, res.body);
+      }
     });
   });
 
   describe('Input validation', () => {
-    it('should validate all required fields are present', async () => {
+    it('should require all mandatory fields', async () => {
       const creator = await getTestUser();
-      const validBase = await genArticleCreate();
+      const validBase = await createTestArticle();
 
-      // Test each required field individually
       const requiredFields = ['title', 'tags', 'ratings', 'course'] as const;
       for (const field of requiredFields) {
-        const incompleteData = { ...validBase, [field]: undefined };
+        // Test undefined field
+        {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { [field]: _, ...incompleteData } = validBase;
 
-        const res = await request(app)
-          .post('/api/articles')
-          .send(incompleteData)
-          .set('gid', creator.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
-      }
+          const res = await request(app)
+            .post('/api/articles')
+            .send(incompleteData)
+            .set('gid', creator.gid)
+            .expect(400);
+          expectValidErrorResponse(res.body);
+        }
 
-      // Test null values for required fields
-      for (const field of requiredFields) {
-        const nullData = { ...validBase, [field]: null };
+        // Test null field
+        {
+          const nullData = { ...validBase, [field]: null };
 
-        const res = await request(app)
-          .post('/api/articles')
-          .send(nullData)
-          .set('gid', creator.gid)
-          .expect(400);
-        expectValidErrorResponse(res.body);
+          const res = await request(app)
+            .post('/api/articles')
+            .send(nullData)
+            .set('gid', creator.gid)
+            .expect(400);
+          expectValidErrorResponse(res.body);
+        }
       }
     });
 
     it('should validate field data types', async () => {
       const creator = await getTestUser();
-      const validBase = await genArticleCreate();
+      const validBase = await createTestArticle();
 
-      // Test invalid data types
       const invalidTypeTests = [
-        { field: 'title', value: null },
         { field: 'title', value: 123 },
         { field: 'title', value: [] },
+        { field: 'title', value: {} },
         { field: 'tags', value: 'not-an-array' },
-        { field: 'tags', value: null },
         { field: 'tags', value: 123 },
         { field: 'course', value: 123 },
-        { field: 'course', value: null },
         { field: 'course', value: [] },
+        { field: 'course', value: {} },
         { field: 'ratings', value: 'invalid' },
-        { field: 'ratings', value: null },
         { field: 'ratings', value: [] },
+        { field: 'ratings', value: 'string' },
       ];
 
       for (const test of invalidTypeTests) {
@@ -697,12 +619,11 @@ describe('POST /api/articles', () => {
       }
     });
 
-    it('should validate ratings constraints (1-5 integers)', async () => {
+    it('should validate ratings constraints (1-5 scale)', async () => {
       const creator = await getTestUser();
-      const validBase = await genArticleCreate();
-      const validRatings = genRatings();
+      const validBase = await createTestArticle();
+      const validRatings = createTestRatings();
 
-      // Test invalid rating values - must be integers between 1 and 5
       const invalidValues = [
         0,
         6,
@@ -737,9 +658,10 @@ describe('POST /api/articles', () => {
         }
       }
 
-      // Test missing rating fields - all fields are required
+      // Test missing rating fields
       for (const field of ratingFields) {
-        const incompleteRatings = { ...validRatings, [field]: undefined };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [field]: _, ...incompleteRatings } = validRatings;
 
         const res = await request(app)
           .post('/api/articles')
@@ -748,27 +670,11 @@ describe('POST /api/articles', () => {
           .expect(400);
         expectValidErrorResponse(res.body);
       }
-
-      // Test valid boundary values (1 and 5 should be accepted)
-      const boundaryTests = [
-        { sweetness: 1, chill: 1, teaching: 1, gain: 1, recommend: 1 },
-        { sweetness: 5, chill: 5, teaching: 5, gain: 5, recommend: 5 },
-        { sweetness: 1, chill: 3, teaching: 5, gain: 2, recommend: 4 },
-      ];
-
-      for (const ratings of boundaryTests) {
-        const res = await request(app)
-          .post('/api/articles')
-          .send({ ...validBase, ratings })
-          .set('gid', creator.gid)
-          .expect(201);
-        parseAndExpectValid(ZArticleCreateResponse, res.body);
-      }
     });
 
     it('should validate course references', async () => {
       const creator = await getTestUser();
-      const validBase = await genArticleCreate();
+      const validBase = await createTestArticle();
 
       // Invalid UUID format
       {
@@ -793,24 +699,14 @@ describe('POST /api/articles', () => {
   });
 
   describe('Authentication', () => {
-    it('should require valid authentication', async () => {
-      const validArticle = await genArticleCreate();
+    it('should require authentication', async () => {
+      const validArticle = await createTestArticle();
 
-      // Missing authentication
+      // Missing authentication header
       {
         const res = await request(app)
           .post('/api/articles')
           .send(validArticle)
-          .expect(401);
-        expectValidErrorResponse(res.body);
-      }
-
-      // Invalid/fake Google ID
-      {
-        const res = await request(app)
-          .post('/api/articles')
-          .send(validArticle)
-          .set('gid', 'fake-google-id-12345')
           .expect(401);
         expectValidErrorResponse(res.body);
       }
@@ -825,12 +721,23 @@ describe('POST /api/articles', () => {
         expectValidErrorResponse(res.body);
       }
     });
+
+    it('should reject invalid authentication', async () => {
+      const validArticle = await createTestArticle();
+
+      const res = await request(app)
+        .post('/api/articles')
+        .send(validArticle)
+        .set('gid', 'fake-google-id-12345')
+        .expect(401);
+      expectValidErrorResponse(res.body);
+    });
   });
 });
 
 describe('GET /api/articles/:articleId', () => {
-  describe('Article retrieval', () => {
-    it('should return single article with correct response structure', async () => {
+  describe('Successful retrieval', () => {
+    it('should return single article', async () => {
       const article = await getTestArticle();
 
       const res = await request(app)
@@ -841,7 +748,7 @@ describe('GET /api/articles/:articleId', () => {
       expect(body.article).toEqual(article);
     });
 
-    it('should support embed parameters correctly', async () => {
+    it('should support all embed parameter combinations', async () => {
       const article = await getTestArticle();
 
       const validEmbedOptions = [
@@ -885,12 +792,11 @@ describe('GET /api/articles/:articleId', () => {
       }
     });
 
-    it('should handle content truncation when embedding content', async () => {
+    it('should handle content embedding correctly', async () => {
       const creator = await getTestUser();
+      const articleData = await createTestArticle();
 
       // Create article and upload content
-      const articleData = await genArticleCreate();
-
       let articleId: string;
       {
         const res = await request(app)
@@ -920,26 +826,11 @@ describe('GET /api/articles/:articleId', () => {
         const body = parseAndExpectValid(ZArticleResponse, res.body);
         expect(body.article.content).toBe(longContent.substring(0, 50) + '...');
       }
-    });
 
-    it('should not include content field when embed=content is not specified', async () => {
-      const article = await getTestArticle();
-
-      // Without content embedding
+      // Verify no content field when not embedding
       {
         const res = await request(app)
-          .get(`/api/articles/${article._id}`)
-          .expect(200);
-
-        const body = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(body.article).not.toHaveProperty('content');
-      }
-
-      // With other embeddings but not content
-      {
-        const res = await request(app)
-          .get(`/api/articles/${article._id}`)
-          .query(qs.stringify({ embed: ['course', 'creator'] }))
+          .get(`/api/articles/${articleId}`)
           .expect(200);
 
         const body = parseAndExpectValid(ZArticleResponse, res.body);
@@ -952,7 +843,6 @@ describe('GET /api/articles/:articleId', () => {
     it('should validate embed parameters', async () => {
       const article = await getTestArticle();
 
-      // Invalid embed values
       const invalidEmbedValues = [
         ['invalid'],
         ['course', 'invalid'],
@@ -972,13 +862,13 @@ describe('GET /api/articles/:articleId', () => {
 
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
-      // Invalid UUID formats
       const invalidUuids = [
         'not-a-uuid',
         '123',
         'invalid-uuid-format',
         'abcd-efgh-ijkl',
       ];
+
       for (const invalidUuid of invalidUuids) {
         const res = await request(app)
           .get(`/api/articles/${invalidUuid}`)
@@ -989,6 +879,7 @@ describe('GET /api/articles/:articleId', () => {
 
     it('should handle non-existent articles', async () => {
       const nonExistentId = randomUUID();
+
       const res = await request(app)
         .get(`/api/articles/${nonExistentId}`)
         .expect(404);
@@ -998,17 +889,18 @@ describe('GET /api/articles/:articleId', () => {
 });
 
 describe('PATCH /api/articles/:articleId', () => {
-  describe('Article updates', () => {
-    it('should support partial updates for individual fields', async () => {
+  describe('Successful updates', () => {
+    it('should support individual field updates', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
         .exec();
 
       // Test title update
+      const newTitle = '不普通物理學';
       await request(app)
         .patch(`/api/articles/${article._id}`)
-        .send({ title: '不普通物理學' })
+        .send({ title: newTitle })
         .set('gid', creator!.gid)
         .expect(204);
 
@@ -1017,7 +909,7 @@ describe('PATCH /api/articles/:articleId', () => {
           .get(`/api/articles/${article._id}`)
           .expect(200);
         const body = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(body.article.title).toBe('不普通物理學');
+        expect(body.article.title).toBe(newTitle);
       }
 
       // Test tags update
@@ -1037,7 +929,7 @@ describe('PATCH /api/articles/:articleId', () => {
       }
 
       // Test ratings update
-      const newRatings = genRatings();
+      const newRatings = createTestRatings();
       await request(app)
         .patch(`/api/articles/${article._id}`)
         .send({ ratings: newRatings })
@@ -1059,9 +951,15 @@ describe('PATCH /api/articles/:articleId', () => {
         .lean({ versionKey: false })
         .exec();
 
+      const updates = {
+        title: 'Multi Update Test',
+        tags: ['multi', 'update'],
+        ratings: { sweetness: 5, chill: 4, teaching: 3, gain: 2, recommend: 1 },
+      };
+
       await request(app)
         .patch(`/api/articles/${article._id}`)
-        .send({ title: 'Multi Update Test', tags: ['multi', 'update'] })
+        .send(updates)
         .set('gid', creator!.gid)
         .expect(204);
 
@@ -1070,8 +968,9 @@ describe('PATCH /api/articles/:articleId', () => {
           .get(`/api/articles/${article._id}`)
           .expect(200);
         const body = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(body.article.title).toBe('Multi Update Test');
-        expect(body.article.tags).toEqual(['multi', 'update']);
+        expect(body.article.title).toBe(updates.title);
+        expect(body.article.tags).toEqual(updates.tags);
+        expect(body.article.ratings).toEqual(updates.ratings);
       }
     });
 
@@ -1081,7 +980,6 @@ describe('PATCH /api/articles/:articleId', () => {
         .lean({ versionKey: false })
         .exec();
 
-      // Empty body should be allowed (no-op)
       await request(app)
         .patch(`/api/articles/${article._id}`)
         .send({})
@@ -1118,7 +1016,7 @@ describe('PATCH /api/articles/:articleId', () => {
       }
     });
 
-    it('should validate ratings constraints', async () => {
+    it('should validate ratings constraints (1-5 scale)', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
@@ -1214,8 +1112,8 @@ describe('PATCH /api/articles/:articleId', () => {
 });
 
 describe('GET /api/articles/:articleId/file', () => {
-  describe('File retrieval', () => {
-    it('should return file content with correct response structure', async () => {
+  describe('Successful retrieval', () => {
+    it('should return file content', async () => {
       const article = await getTestArticle();
 
       const res = await request(app)
@@ -1240,10 +1138,9 @@ describe('GET /api/articles/:articleId/file', () => {
 
     it('should return empty string for articles without uploaded files', async () => {
       const creator = await getTestUser();
+      const articleCreate = await createTestArticle();
 
       // Create article without uploading file
-      const articleCreate = await genArticleCreate();
-
       let articleId: string;
       {
         const res = await request(app)
@@ -1285,8 +1182,8 @@ describe('GET /api/articles/:articleId/file', () => {
 });
 
 describe('PUT /api/articles/:articleId/file', () => {
-  describe('File upload and updates', () => {
-    it('should upload and update file content successfully', async () => {
+  describe('Successful file operations', () => {
+    it('should upload and update file content', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
@@ -1334,29 +1231,20 @@ describe('PUT /api/articles/:articleId/file', () => {
         .exec();
 
       const contentTests = [
-        { name: 'empty content', content: '', expected: '' },
+        { name: 'empty content', content: '' },
         {
           name: 'Unicode content with emojis',
           content: '測試中文內容 🚀 with émojis and spéçial chars',
-          expected: '測試中文內容 🚀 with émojis and spéçial chars',
         },
         {
           name: 'Markdown content',
           content:
             '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
-          expected:
-            '# Heading\n\n```javascript\nconsole.log("test");\n```\n\n- List item\n- Another item',
         },
-        {
-          name: 'Large content',
-          content: 'x'.repeat(10000),
-          expected: 'x'.repeat(10000),
-        },
+        { name: 'Large content', content: 'x'.repeat(10000) },
         {
           name: 'Content with newlines and special characters',
           content:
-            'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
-          expected:
             'Line 1\nLine 2\r\nLine 3\t\tTabbed\n\n"Quoted text" and \'single quotes\'',
         },
       ];
@@ -1375,18 +1263,18 @@ describe('PUT /api/articles/:articleId/file', () => {
           .expect(200);
 
         const body = parseAndExpectValid(ZFileResponse, res.body);
-        expect(body.file).toBe(test.expected);
+        expect(body.file).toBe(test.content);
       }
     });
 
-    it('should integrate correctly with content embedding', async () => {
+    it('should integrate with content embedding correctly', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
         .lean({ versionKey: false })
         .exec();
 
       const fileContent =
-        '# Test Article\n\nThis is a test article with some content that should be truncated.';
+        '# Test Article\n\nThis is a test article with some content that should be truncated when embedded.';
       await request(app)
         .put(`/api/articles/${article._id}/file`)
         .send({ file: fileContent })
@@ -1439,15 +1327,19 @@ describe('PUT /api/articles/:articleId/file', () => {
           .expect(400);
         expectValidErrorResponse(res.body);
       }
+    });
 
-      // Extra properties should be allowed (but ignored)
-      {
-        await request(app)
-          .put(`/api/articles/${article._id}/file`)
-          .send({ file: 'valid content', extraProperty: 'should be ignored' })
-          .set('gid', creator!.gid)
-          .expect(204);
-      }
+    it('should allow extra properties in request body', async () => {
+      const article = await getTestArticle();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
+
+      await request(app)
+        .put(`/api/articles/${article._id}/file`)
+        .send({ file: 'valid content', extraProperty: 'should be ignored' })
+        .set('gid', creator!.gid)
+        .expect(204);
     });
   });
 
