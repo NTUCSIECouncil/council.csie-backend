@@ -45,7 +45,6 @@ describe('POST /api/users', () => {
         .expect(201);
 
       parseAndExpectValid(ZUserCreateResponse, res.body);
-      expect(res.body.userId).toBeDefined();
     });
 
     it('should handle Unicode content correctly', async () => {
