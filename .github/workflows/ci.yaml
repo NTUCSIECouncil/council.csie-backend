@@ -14,7 +14,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -26,13 +26,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run lint:check
+      - name: Run linting
         run: npm run lint:check
 
   format:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -44,13 +44,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run format:check
+      - name: Run code formatting check
         run: npm run format:check
 
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -62,16 +62,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run type-check
+      - name: Check TypeScript types
         run: npm run type-check
 
   prepare-samples:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Restore cached samples
+      - name: Cache sample data
         id: samples-cache
         uses: actions/cache@v4
         with:
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare-samples
     steps:
-      - name: Check out repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -113,7 +113,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Restore cached samples
+      - name: Restore sample data cache
         id: samples-cache
         uses: actions/cache@v4
         with:
@@ -121,5 +121,5 @@ jobs:
           key: ${{ runner.os }}-samples-${{ hashFiles('package-lock.json', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
           fail-on-cache-miss: true
 
-      - name: Run test
+      - name: Run tests
         run: npm run test
