@@ -27,7 +27,7 @@ articles:
           type: string
       - name: tags
         in: query
-        description: Filter articles by specific tags (supports multiple values)
+        description: Tag(s) to filter articles by
         schema:
           type: array
           items:

@@ -47,7 +47,7 @@ ArticleBase:
           example: 4
         chill:
           type: integer
-          description: Course workload intensity (how relaxed and manageable the pace is)
+          description: Course workload chillness (how relaxed and manageable the pace is)
           minimum: 1
           maximum: 5
           example: 5
