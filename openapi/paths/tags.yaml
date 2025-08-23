@@ -35,14 +35,12 @@ tags:
                     type: string
                   description: Array of tag names sorted alphabetically
                   example:
-                    [
-                      'DSA',
-                      'GOAT',
-                      'algorithms',
-                      'computer-science',
-                      'cool',
-                      'data-structures',
-                    ]
+                    - 'DSA'
+                    - 'GOAT'
+                    - 'algorithms'
+                    - 'computer-science'
+                    - 'cool'
+                    - 'data-structures'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
               required: [tags, meta]
