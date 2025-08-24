@@ -1,36 +1,106 @@
 # council.csie 後端
 
-國立臺灣大學資訊工程學系學生會網站的後端。
+國立臺灣大學資訊工程學系學生會網站的後端服務。
 
-## API
+## 需求
 
-支援的 API 請參考[這裡](https://hackmd.io/@seantsao00/council_csie)。
+- Node.js 22（專案提供 `.nvmrc`）
+- 本機可用的 MongoDB（預設 `mongodb://127.0.0.1:27017`）
+- Firebase service account JSON 憑證檔
 
-## Usage
+## 快速開始
 
-- 使用 `npm ci` 安裝 packages。
-- 使用 `npm run dev` 跑起來。
-  - 可以使用 `npm run dev:watch` 變種，這樣除了 `./node_modules`，所有檔案都會被監聽；當有變更時會自動重新啟動。
-  - 在終端機中按下 `Enter` 來手動重新啟動。
-  - 在終端機中按下 `Ctrl+C` 來關閉。
-- 使用 `npm run format` 來在整個專案上運行 Prettier 並修復所有可自動修復的問題。
-  - 使用 `npm run format:check` 來檢查整個專案的格式是否符合 Prettier 的規範。
-- 使用 `npm run lint` 來在整個專案的 TypeScript 檔案上運行 ESLint 並修復所有可自動修復的問題。
-  - 使用 `npm run lint:check` 修復所有可自動修復的問題。
-- 使用 `npm run type-check` 來檢查 TypeScript 檔案的型別。
-- 為了初始化開發用資料庫：
-  - 使用 `npm run fetch-courses` 來從課程系統抓取課程資料，並儲存在 `samples/course-original.json`。
-  - 使用 `npm run generate-samples` 來產生開發用的資料，並儲存在 `samples/`。
-  - 使用 `npm run setup-dev-db` 來建立開發用資料庫，並將測試用考古題與評價文放置在 `uploads/`。
-  - 以上步驟需要按照順序執行。
-- 使用 `npm run test` 來運行測試。
-  - 開發用資料（`sample/`）需要在測試前建立。
-  - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
+1. 安裝相依
 
-## `.env` 相關
+```bash
+npm ci
+```
 
-`git clone` 下來會有一個 `.env.default` 檔案，其中有一些環境變數的預設值。請建立一個叫做 `.env` 的空白檔案，並且將任何你想要覆蓋或新定義的環境變數寫入其中，參考 `default.env` 的格式。
+1. 設定環境變數
 
-## Firebase service account 相關
+- 版本庫提供 `.env.default` 預設值；建立 `.env` 覆蓋需要的變數（見下方）。
 
-為了安全因素，存取 `firebase-admin` 使用的密鑰不應該離開本機。[這裡](https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments)的密鑰應該被放進 `./service-account-file.json`。這個檔名用環境變數 `FIREBASE_CERT_PATH` 指定。
+1. 啟動開發伺服器
+
+```bash
+# 一次性啟動
+npm run dev
+
+# 監聽 src/ 和 openapi/ 檔案變更
+# 在終端機按 Enter 可手動重啟；Ctrl+C 結束。
+npm run dev:watch
+```
+
+## API 文件
+
+- 規格：`openapi/`
+- Swagger UI：`http://localhost:3010/api-docs`（或依 `.env` 的 PORT）
+
+## 常用指令
+
+```bash
+# 型別檢查
+npm run type-check
+
+# 程式碼格式（Prettier）
+npm run format
+npm run format:check
+
+# 程式碼品質（ESLint）
+npm run lint
+npm run lint:check
+
+# 測試（Vitest）
+npm run test
+npm run test:watch
+```
+
+## 初始化開發資料與檔案
+
+按順序執行：
+
+```bash
+npm run fetch-courses     # 下載課程資料到 samples/course-original.json
+npm run generate-samples  # 產生樣本資料到 samples/
+npm run setup-dev-db      # 建立 dev 資料庫並放置檔案到 uploads/
+```
+
+測試前請先完成上述資料建立（資料位於 `samples/`）。
+
+## 環境變數
+
+專案會讀取 `.env.default` 與 `.env`，並以 `.env` 覆蓋預設值。
+
+- MONGODB_URI（預設 `mongodb://127.0.0.1:27017`）
+- MONGODB_DB_NAME（預設 `csie-council-dev`）
+- PORT（預設 `3010`）
+- FIREBASE_CERT_PATH（預設 `./service-account-file.json`）
+- UPLOADS_DIR（預設 `./uploads`）
+- SAMPLES_DIR（預設 `./samples`）
+
+## Firebase service account
+
+為了安全，`firebase-admin` 的密鑰只放在本機。[官方說明](https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments) 下載後，放在 `./service-account-file.json`，或以 `FIREBASE_CERT_PATH` 指定路徑。
+
+## 日誌與資料夾
+
+- 伺服器與 HTTP 日誌：`logs/combined.log`, `logs/error.log`
+- 資料庫查詢日誌：`logs/database.log`
+- 測試日誌：`logs/test/`
+- 上傳檔案：`uploads/`
+
+## 專案結構
+
+- `src/` 伺服器程式碼（Express, Mongoose 等）
+- `openapi/` OpenAPI 規格與路徑
+- `scripts/` 初始化與資料產生腳本（tsx 執行）
+- `samples/` 開發與測試用資料
+- `uploads/` 測試題庫/評價文等檔案
+- `test/` 端點測試（Vitest + Supertest）
+- `logs/` 伺服器/DB 日誌
+
+## 疑難排解
+
+- 連線不到 MongoDB：確認本機 MongoDB 已啟動或調整 `MONGODB_URI`。
+- Firebase 初始化失敗：確認 `FIREBASE_CERT_PATH` 指向正確的 service account 檔案。
+- Swagger UI 無法開啟：確認服務已啟動與 `PORT` 未被占用。
