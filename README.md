@@ -37,9 +37,8 @@ Tests also read dedicated files at `test/.env.default` and `test/.env`. `test/.e
 UPLOADS_DIR='./test/uploads' # Directory for uploaded files in tests
 ```
 
-Note:
-
-- `UPLOADS_DIR` is used in tests will be cleaned up before and after each test run.
+> [!IMPORTANT]
+> `UPLOADS_DIR` used in tests will be cleaned up before and after each test run.
 
 ### Start the dev server
 
@@ -80,7 +79,7 @@ npm run test:watch
 Notes:
 
 - Tests use `test/.env.default` to set `UPLOADS_DIR` to `./test/uploads`.
-- It is required to run at least first two commands in [Sample data (optional)](#sample-data-optional).
+- It's required to run at least the first two commands in [Sample data (optional)](#sample-data-optional).
 
 ## Code quality
 
