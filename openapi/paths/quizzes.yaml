@@ -13,6 +13,7 @@ quizzes:
           type: integer
           default: 10
           minimum: 1
+          maximum: 100
       - name: offset
         in: query
         description: Number of quizzes to skip for pagination
@@ -20,6 +21,7 @@ quizzes:
           type: integer
           default: 0
           minimum: 0
+          maximum: 100
       - name: embed
         in: query
         description: Related resources to include in the response (when omitted, only UUID references are returned)

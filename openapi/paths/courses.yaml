@@ -13,6 +13,7 @@ courses:
           type: integer
           default: 10
           minimum: 1
+          maximum: 100
       - name: offset
         in: query
         description: Number of courses to skip for pagination
@@ -20,6 +21,7 @@ courses:
           type: integer
           default: 0
           minimum: 0
+          maximum: 100
       - name: keyword
         in: query
         description: Search term for fuzzy matching against course names and lecturer names
@@ -108,6 +110,7 @@ courses_courseId_quizzes:
           type: integer
           default: 10
           minimum: 1
+          maximum: 100
       - name: offset
         in: query
         description: Number of quizzes to skip for pagination
@@ -115,6 +118,7 @@ courses_courseId_quizzes:
           type: integer
           default: 0
           minimum: 0
+          maximum: 100
       - name: embed
         in: query
         description: Related resources to include in the response (when omitted, only UUID references are returned)

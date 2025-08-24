@@ -90,12 +90,12 @@ describe('GET /api/articles', () => {
     it('should handle large offset gracefully', async () => {
       const res = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ limit: 10, offset: 999999 }))
+        .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZArticleListResponse, res.body);
       expect(body.articles).toHaveLength(0);
-      expect(body.meta.offset).toBe(999999);
+      expect(body.meta.offset).toBe(100);
     });
 
     it('should validate pagination parameters', async () => {
@@ -103,8 +103,10 @@ describe('GET /api/articles', () => {
         { limit: 0 },
         { limit: -1 },
         { limit: 'invalid' },
+        { limit: 101 }, // Above maximum
         { offset: -1 },
         { offset: 'invalid' },
+        { offset: 101 }, // Above maximum
       ];
 
       for (const params of invalidParams) {
@@ -148,13 +150,13 @@ describe('GET /api/articles', () => {
     it('should return all articles when keyword is empty', async () => {
       const allRes = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
       const allBody = parseAndExpectValid(ZArticleListResponse, allRes.body);
 
       const emptyRes = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ keyword: '', limit: 1000 }))
+        .query(qs.stringify({ keyword: '', limit: 100 }))
         .expect(200);
       const emptyBody = parseAndExpectValid(
         ZArticleListResponse,
@@ -222,13 +224,13 @@ describe('GET /api/articles', () => {
     it('should return all articles when tags array is empty', async () => {
       const allRes = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
       const allBody = parseAndExpectValid(ZArticleListResponse, allRes.body);
 
       const emptyTagsRes = await request(app)
         .get('/api/articles')
-        .query(qs.stringify({ tags: [], limit: 1000 }))
+        .query(qs.stringify({ tags: [], limit: 100 }))
         .expect(200);
       const emptyTagsBody = parseAndExpectValid(
         ZArticleListResponse,

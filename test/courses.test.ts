@@ -68,12 +68,12 @@ describe('GET /api/courses', () => {
     it('should handle large offset gracefully', async () => {
       const res = await request(app)
         .get('/api/courses')
-        .query(qs.stringify({ limit: 10, offset: 999999 }))
+        .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZCourseListResponse, res.body);
       expect(body.courses).toHaveLength(0);
-      expect(body.meta.offset).toBe(999999);
+      expect(body.meta.offset).toBe(100);
     });
 
     it('should validate pagination parameters', async () => {
@@ -81,8 +81,10 @@ describe('GET /api/courses', () => {
         { limit: 0 },
         { limit: -1 },
         { limit: 'invalid' },
+        { limit: 101 }, // Above maximum
         { offset: -1 },
         { offset: 'invalid' },
+        { offset: 101 }, // Above maximum
       ];
 
       for (const params of invalidParams) {
@@ -122,13 +124,13 @@ describe('GET /api/courses', () => {
     it('should return all courses when keyword is empty', async () => {
       const allRes = await request(app)
         .get('/api/courses')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
       const allBody = parseAndExpectValid(ZCourseListResponse, allRes.body);
 
       const emptyRes = await request(app)
         .get('/api/courses')
-        .query(qs.stringify({ keyword: '', limit: 1000 }))
+        .query(qs.stringify({ keyword: '', limit: 100 }))
         .expect(200);
       const emptyBody = parseAndExpectValid(ZCourseListResponse, emptyRes.body);
 
@@ -174,7 +176,7 @@ describe('GET /api/courses/:courseId', () => {
       // Get from list endpoint
       const listRes = await request(app)
         .get('/api/courses')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
       const listBody = parseAndExpectValid(ZCourseListResponse, listRes.body);
 
@@ -244,12 +246,12 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       const res = await request(app)
         .get(`/api/courses/${course._id}/quizzes`)
-        .query(qs.stringify({ limit: 10, offset: 999999 }))
+        .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
-      expect(body.meta.offset).toBe(999999);
+      expect(body.meta.offset).toBe(100);
     });
 
     it('should validate pagination parameters', async () => {
@@ -259,8 +261,10 @@ describe('GET /api/courses/:courseId/quizzes', () => {
         { limit: 0 },
         { limit: -1 },
         { limit: 'invalid' },
+        { limit: 101 }, // Above maximum
         { offset: -1 },
         { offset: 'invalid' },
+        { offset: 101 }, // Above maximum
       ];
 
       for (const params of invalidParams) {
