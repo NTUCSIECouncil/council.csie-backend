@@ -50,7 +50,7 @@ expressApp.use(async (req, res, next) => {
   next();
 });
 
-expressApp.use(express.json());
+expressApp.use(express.json({ limit: '2mb' }));
 expressApp.use('/api', APIController);
 
 export default expressApp;

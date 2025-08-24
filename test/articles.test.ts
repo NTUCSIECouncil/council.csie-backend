@@ -247,6 +247,60 @@ describe('GET /api/articles', () => {
         .expect(400);
       expectValidErrorResponse(res.body);
     });
+
+    it('should validate keyword length constraints', async () => {
+      // Test exact limit - 100 characters
+      {
+        const maxKeyword = 'a'.repeat(100);
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ keyword: maxKeyword }))
+          .expect(200);
+        parseAndExpectValid(ZArticleListResponse, res.body);
+      }
+
+      // Keyword too long (101 characters)
+      {
+        const tooLongKeyword = 'a'.repeat(101);
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ keyword: tooLongKeyword }))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should validate tags query parameter constraints', async () => {
+      // Test reasonable limits - 20 tags with 50 characters each to avoid URL length issues
+      {
+        const maxTags = Array(20).fill('a'.repeat(50));
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ tags: maxTags, limit: 10 }))
+          .expect(200);
+        parseAndExpectValid(ZArticleListResponse, res.body);
+      }
+
+      // Too many tags (51)
+      {
+        const tooManyTags = Array(51).fill('valid');
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ tags: tooManyTags }))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+
+      // Tag too long (51 characters)
+      {
+        const tooLongTag = ['a'.repeat(51)];
+        const res = await request(app)
+          .get('/api/articles')
+          .query(qs.stringify({ tags: tooLongTag }))
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
   });
 
   describe('Combined filtering', () => {
@@ -577,6 +631,44 @@ describe('POST /api/articles', () => {
         const res = await request(app)
           .post('/api/articles')
           .send({ ...validBase, title: toLong })
+          .set('gid', creator.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should validate tags constraints', async () => {
+      const creator = await getTestUser();
+      const validBase = await createTestArticle();
+
+      // Test exact limits - 50 tags with 50 characters each
+      {
+        const maxTags = Array(50).fill('a'.repeat(50));
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, tags: maxTags })
+          .set('gid', creator.gid)
+          .expect(201);
+        parseAndExpectValid(ZArticleCreateResponse, res.body);
+      }
+
+      // Too many tags (51)
+      {
+        const tooManyTags = Array(51).fill('valid');
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, tags: tooManyTags })
+          .set('gid', creator.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+
+      // Tag too long (51 characters)
+      {
+        const tooLongTag = ['a'.repeat(51)];
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, tags: tooLongTag })
           .set('gid', creator.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -1209,6 +1301,34 @@ describe('PUT /api/articles/:articleId/file', () => {
           .put(`/api/articles/${article._id}/file`)
           .send(invalidBody)
           .set('gid', creator.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should validate file content length constraints', async () => {
+      const article = await getTestArticle();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
+
+      // Test exact limit - 1,000,000 characters
+      {
+        const maxContent = 'a'.repeat(1000000);
+        await request(app)
+          .put(`/api/articles/${article._id}/file`)
+          .send({ file: maxContent })
+          .set('gid', creator!.gid)
+          .expect(204);
+      }
+
+      // Content too long (1,000,001 characters)
+      {
+        const tooLongContent = 'a'.repeat(1000001);
+        const res = await request(app)
+          .put(`/api/articles/${article._id}/file`)
+          .send({ file: tooLongContent })
+          .set('gid', creator!.gid)
           .expect(400);
         expectValidErrorResponse(res.body);
       }
