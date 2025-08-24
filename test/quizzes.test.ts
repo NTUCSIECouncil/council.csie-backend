@@ -59,12 +59,12 @@ describe('GET /api/quizzes', () => {
     it('should handle large offset gracefully', async () => {
       const res = await request(app)
         .get('/api/quizzes')
-        .query(qs.stringify({ limit: 10, offset: 999999 }))
+        .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
-      expect(body.meta.offset).toBe(999999);
+      expect(body.meta.offset).toBe(100);
     });
 
     it('should validate pagination parameters', async () => {
@@ -72,8 +72,10 @@ describe('GET /api/quizzes', () => {
         { limit: 0 },
         { limit: -1 },
         { limit: 'invalid' },
+        { limit: 101 }, // Above maximum
         { offset: -1 },
         { offset: 'invalid' },
+        { offset: 101 }, // Above maximum
       ];
 
       for (const params of invalidParams) {

@@ -52,18 +52,18 @@ describe('GET /api/tags', () => {
     it('should handle large offset gracefully', async () => {
       const res = await request(app)
         .get('/api/tags')
-        .query(qs.stringify({ limit: 10, offset: 999999 }))
+        .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
       expect(body.tags).toHaveLength(0);
-      expect(body.meta.offset).toBe(999999);
+      expect(body.meta.offset).toBe(100);
     });
 
     it('should return tags sorted alphabetically', async () => {
       const res = await request(app)
         .get('/api/tags')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
@@ -74,7 +74,7 @@ describe('GET /api/tags', () => {
     it('should return unique tags only', async () => {
       const res = await request(app)
         .get('/api/tags')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);
@@ -99,8 +99,10 @@ describe('GET /api/tags', () => {
         { limit: 0 },
         { limit: -1 },
         { limit: 'invalid' },
+        { limit: 101 }, // Above maximum
         { offset: -1 },
         { offset: 'invalid' },
+        { offset: 101 }, // Above maximum
       ];
 
       for (const params of invalidParams) {
@@ -124,7 +126,7 @@ describe('GET /api/tags', () => {
       {
         const res = await request(app)
           .get('/api/tags')
-          .query(qs.stringify({ limit: 100, offset: 1000 }))
+          .query(qs.stringify({ limit: 100, offset: 100 }))
           .expect(200);
         parseAndExpectValid(ZTagsListResponse, res.body);
       }
@@ -140,7 +142,7 @@ describe('GET /api/tags', () => {
 
       const res = await request(app)
         .get('/api/tags')
-        .query(qs.stringify({ limit: 1000 }))
+        .query(qs.stringify({ limit: 100 }))
         .expect(200);
 
       const body = parseAndExpectValid(ZTagsListResponse, res.body);

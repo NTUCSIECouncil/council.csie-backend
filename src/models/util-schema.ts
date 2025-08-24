@@ -7,15 +7,15 @@ const ZUuidSchema = z.custom<UUID>(val => {
 });
 
 const ZPaginationQueryParam = z.object({
-  offset: z.coerce.number().int().nonnegative().optional(),
-  limit: z.coerce.number().int().positive().optional(),
+  offset: z.coerce.number().int().nonnegative().max(100).optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
 });
 
 interface PaginationQueryParam extends z.infer<typeof ZPaginationQueryParam> {}
 
 const ZArticleSearchQueryParam = z.object({
-  tags: z.string().array().optional(),
-  keyword: z.string().trim().optional(),
+  tags: z.string().max(50).array().max(50).optional(),
+  keyword: z.string().trim().max(100).optional(),
 });
 
 interface ArticleSearchQueryParam
@@ -29,7 +29,7 @@ interface ArticleEmbedQueryParam
   extends z.infer<typeof ZArticleEmbedQueryParam> {}
 
 const ZCourseSearchQueryParam = z.object({
-  keyword: z.string().trim().optional(),
+  keyword: z.string().trim().max(100).optional(),
 });
 
 interface CourseSearchQueryParam

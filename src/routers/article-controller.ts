@@ -277,7 +277,7 @@ router.put('/:articleId/file', async (req, res) => {
 
   let content;
   try {
-    content = z.object({ file: z.string() }).parse(req.body);
+    content = z.object({ file: z.string().max(1000000) }).parse(req.body);
   } catch (err) {
     logger.warn(
       'Failed to parse request body in PUT /articles/:articleId/file: ',

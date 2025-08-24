@@ -10,7 +10,7 @@ const ZUserSchema = z.object({
   gid: z.string(),
   email: z.email(),
   name: z.string(),
-  nickname: z.string(),
+  nickname: z.string().max(30),
 });
 
 interface User extends z.infer<typeof ZUserSchema> {}
@@ -22,7 +22,7 @@ const userSchema = new Schema<User, UserModel>({
   gid: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  nickname: { type: String, required: true },
+  nickname: { type: String, required: true, maxLength: 30 },
 });
 
 const UserModel = model<User>('User', userSchema);

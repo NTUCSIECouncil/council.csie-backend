@@ -111,6 +111,30 @@ describe('POST /api/users', () => {
 
       expectValidErrorResponse(res.body);
     });
+
+    it('should validate nickname length constraints', async () => {
+      // Test exact limit - 30 characters
+      {
+        const maxNickname = 'a'.repeat(30);
+        const res = await request(app)
+          .post('/api/users')
+          .set('gid', 'GID_MAX_NICKNAME')
+          .send({ nickname: maxNickname })
+          .expect(201);
+        parseAndExpectValid(ZUserCreateResponse, res.body);
+      }
+
+      // Nickname too long (31 characters)
+      {
+        const tooLongNickname = 'a'.repeat(31);
+        const res = await request(app)
+          .post('/api/users')
+          .set('gid', 'GID_LONG_NICKNAME')
+          .send({ nickname: tooLongNickname })
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
   });
 
   describe('Authentication', () => {
@@ -239,6 +263,31 @@ describe('PATCH /api/users/:userId', () => {
         .expect(400);
 
       expectValidErrorResponse(res.body);
+    });
+
+    it('should validate nickname length constraints', async () => {
+      const testUser = await getTestUser();
+
+      // Test exact limit - 30 characters
+      {
+        const maxNickname = 'a'.repeat(30);
+        await request(app)
+          .patch(`/api/users/${testUser._id}`)
+          .set('gid', testUser.gid)
+          .send({ nickname: maxNickname })
+          .expect(204);
+      }
+
+      // Nickname too long (31 characters)
+      {
+        const tooLongNickname = 'a'.repeat(31);
+        const res = await request(app)
+          .patch(`/api/users/${testUser._id}`)
+          .set('gid', testUser.gid)
+          .send({ nickname: tooLongNickname })
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
     });
   });
 
@@ -403,6 +452,30 @@ describe('PATCH /api/users/me', () => {
         .expect(400);
 
       expectValidErrorResponse(res.body);
+    });
+
+    it('should reject nickname exceeding 30 characters', async () => {
+      const testUser = await getTestUser();
+      const longNickname = 'A'.repeat(31); // 31 characters, exceeds limit
+
+      const res = await request(app)
+        .patch('/api/users/me')
+        .set('gid', testUser.gid)
+        .send({ nickname: longNickname })
+        .expect(400);
+
+      expectValidErrorResponse(res.body);
+    });
+
+    it('should accept nickname at maximum length of 30 characters', async () => {
+      const testUser = await getTestUser();
+      const maxLengthNickname = 'A'.repeat(30); // Exactly 30 characters
+
+      await request(app)
+        .patch('/api/users/me')
+        .set('gid', testUser.gid)
+        .send({ nickname: maxLengthNickname })
+        .expect(204);
     });
   });
 

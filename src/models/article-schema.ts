@@ -24,8 +24,8 @@ const ZRatingSchema = z.object({
 
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
-  title: z.string(),
-  tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
+  title: z.string().max(40),
+  tags: z.string().max(50).array().max(50), // e.g. ['資料結構', '演算法', '田涼']
   ratings: ZRatingSchema,
   course: ZUuidSchema, // foreign key to Course
   creator: ZUuidSchema, // foreign key to User
@@ -53,8 +53,25 @@ interface ArticleModel extends Model<Article> {
 const articleSchema = new Schema<Article, ArticleModel>(
   {
     _id: { type: String, default: randomUUID },
-    title: { type: String, required: true },
-    tags: { type: [String], default: [] },
+    title: { type: String, required: true, maxLength: 40 },
+    tags: {
+      type: [String],
+      default: [],
+      validate: [
+        {
+          validator: function (tags: string[]) {
+            return tags.length <= 50;
+          },
+          message: 'Maximum 50 tags allowed',
+        },
+        {
+          validator: function (tags: string[]) {
+            return tags.every(tag => tag.length <= 50);
+          },
+          message: 'Each tag must be 50 characters or less',
+        },
+      ],
+    },
     ratings: {
       sweetness: {
         type: Number,
