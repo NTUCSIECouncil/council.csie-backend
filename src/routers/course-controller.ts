@@ -23,6 +23,7 @@ router.get('/', paginationParser, async (req, res) => {
   const [offset, limit] = [req.offset!, req.limit!];
   let param: CourseSearchQueryParam;
   try {
+    // The parse is not supposed to failed as we want an optional string field from a string dict.
     param = ZCourseSearchQueryParam.parse(req.query);
   } catch (err) {
     logger.warn('Failed to parse query in GET /courses/search: ', err);

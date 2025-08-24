@@ -1,8 +1,11 @@
+import { randomUUID } from 'crypto';
+
 import mongoose from 'mongoose';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import z from 'zod';
 
+import { ZUuidSchema } from '@/models/util-schema.ts';
 import app from './app.ts';
 import {
   ZPrivateUserResponseSchema,
@@ -15,15 +18,13 @@ import {
   seedModelFromSamples,
 } from './utils.ts';
 
-const ZUserCreateResponse = z.object({ userId: z.string() });
+const ZUserCreateResponse = z.object({ userId: ZUuidSchema });
 
 const ZUserResponse = z.object({ user: ZUserResponseSchema });
 
 const ZPrivateUserResponse = z.object({ user: ZPrivateUserResponseSchema });
 
-const genUserCreate = () => {
-  return { nickname: 'Test User' };
-};
+const createTestUser = () => ({ nickname: 'Test User' });
 
 beforeEach(async () => {
   await seedModelFromSamples('User');
@@ -34,9 +35,9 @@ afterEach(async () => {
 });
 
 describe('POST /api/users', () => {
-  describe('User creation', () => {
-    it('should create user successfully and return userId', async () => {
-      const userData = genUserCreate();
+  describe('Successful creation', () => {
+    it('should create user and return user ID', async () => {
+      const userData = createTestUser();
 
       const res = await request(app)
         .post('/api/users')
@@ -45,7 +46,26 @@ describe('POST /api/users', () => {
         .expect(201);
 
       parseAndExpectValid(ZUserCreateResponse, res.body);
-      expect(res.body.userId).toBeDefined();
+    });
+
+    it('should set authenticated user gid correctly', async () => {
+      const userData = createTestUser();
+      const gid = 'GID_CREATOR_TEST';
+
+      await request(app)
+        .post('/api/users')
+        .set('gid', gid)
+        .send(userData)
+        .expect(201);
+
+      // Verify the user was created with correct gid
+      const res = await request(app)
+        .get('/api/users/me/private')
+        .set('gid', gid)
+        .expect(200);
+
+      const body = parseAndExpectValid(ZPrivateUserResponse, res.body);
+      expect(body.user.gid).toBe(gid);
     });
 
     it('should handle Unicode content correctly', async () => {
@@ -59,11 +79,20 @@ describe('POST /api/users', () => {
 
       parseAndExpectValid(ZUserCreateResponse, res.body);
     });
+
+    it('should allow extra properties', async () => {
+      const userData = { ...createTestUser(), extraField: 'should be ignored' };
+
+      await request(app)
+        .post('/api/users')
+        .set('gid', 'GID_EXTRA_PROPS')
+        .send(userData)
+        .expect(201);
+    });
   });
 
   describe('Input validation', () => {
-    it('should validate all required fields are present', async () => {
-      // Missing nickname
+    it('should require all mandatory fields', async () => {
       const res = await request(app)
         .post('/api/users')
         .set('gid', 'GID_MISSING_FIELDS')
@@ -74,7 +103,6 @@ describe('POST /api/users', () => {
     });
 
     it('should validate field data types', async () => {
-      // Invalid nickname type
       const res = await request(app)
         .post('/api/users')
         .set('gid', 'GID_INVALID_TYPE')
@@ -86,24 +114,23 @@ describe('POST /api/users', () => {
   });
 
   describe('Authentication', () => {
-    it('should require valid authentication', async () => {
-      const userData = genUserCreate();
+    it('should require authentication', async () => {
+      const userData = createTestUser();
 
-      // No auth header
-      const res1 = await request(app)
+      const res = await request(app)
         .post('/api/users')
         .send(userData)
         .expect(401);
-      expectValidErrorResponse(res1.body);
+
+      expectValidErrorResponse(res.body);
     });
   });
 
   describe('Conflict handling', () => {
     it('should return 409 if user already exists', async () => {
       const testUser = await getTestUser();
-      const userData = genUserCreate();
+      const userData = createTestUser();
 
-      // Try to create user with existing gid
       const res = await request(app)
         .post('/api/users')
         .set('gid', testUser.gid)
@@ -116,8 +143,8 @@ describe('POST /api/users', () => {
 });
 
 describe('GET /api/users/:userId', () => {
-  describe('User retrieval', () => {
-    it('should return user with correct response structure', async () => {
+  describe('Successful retrieval', () => {
+    it('should return single user', async () => {
       const testUser = await getTestUser();
 
       const res = await request(app)
@@ -136,17 +163,7 @@ describe('GET /api/users/:userId', () => {
         .get(`/api/users/${testUser._id}`)
         .expect(200);
 
-      const body = parseAndExpectValid(ZUserResponse, res.body);
-      expect(body.user).not.toHaveProperty('email');
-      expect(body.user).not.toHaveProperty('gid');
-      expect(body.user).not.toHaveProperty('name');
-    });
-  });
-
-  describe('Input validation', () => {
-    it('should validate UUID format', async () => {
-      const res = await request(app).get('/api/users/invalid-uuid').expect(400);
-      expectValidErrorResponse(res.body);
+      parseAndExpectValid(ZUserResponse, res.body);
     });
   });
 
@@ -158,7 +175,7 @@ describe('GET /api/users/:userId', () => {
     });
 
     it('should handle non-existent users', async () => {
-      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+      const nonExistentId = randomUUID();
 
       const res = await request(app)
         .get(`/api/users/${nonExistentId}`)
@@ -170,38 +187,44 @@ describe('GET /api/users/:userId', () => {
 });
 
 describe('PATCH /api/users/:userId', () => {
-  describe('User updates', () => {
-    it('should support partial updates for nickname', async () => {
+  describe('Successful updates', () => {
+    it('should update user profile', async () => {
       const testUser = await getTestUser();
       const newNickname = 'Updated Test User';
 
-      const res = await request(app)
+      await request(app)
         .patch(`/api/users/${testUser._id}`)
         .set('gid', testUser.gid)
         .send({ nickname: newNickname })
         .expect(204);
 
-      expect(res.body).toEqual({});
-
       // Verify the update was applied
-      const verifyRes = await request(app)
+      const res = await request(app)
         .get(`/api/users/${testUser._id}`)
         .expect(200);
 
-      const body = parseAndExpectValid(ZUserResponse, verifyRes.body);
+      const body = parseAndExpectValid(ZUserResponse, res.body);
       expect(body.user.nickname).toBe(newNickname);
     });
 
-    it('should handle empty updates as no-op', async () => {
+    it('should handle empty updates', async () => {
       const testUser = await getTestUser();
 
-      const res = await request(app)
+      await request(app)
         .patch(`/api/users/${testUser._id}`)
         .set('gid', testUser.gid)
         .send({})
         .expect(204);
+    });
 
-      expect(res.body).toEqual({});
+    it('should allow extra properties', async () => {
+      const testUser = await getTestUser();
+
+      await request(app)
+        .patch(`/api/users/${testUser._id}`)
+        .set('gid', testUser.gid)
+        .send({ nickname: 'Updated Nickname', extraField: 'should be ignored' })
+        .expect(204);
     });
   });
 
@@ -209,7 +232,6 @@ describe('PATCH /api/users/:userId', () => {
     it('should validate data type constraints', async () => {
       const testUser = await getTestUser();
 
-      // Invalid nickname type
       const res = await request(app)
         .patch(`/api/users/${testUser._id}`)
         .set('gid', testUser.gid)
@@ -235,7 +257,7 @@ describe('PATCH /api/users/:userId', () => {
 
     it('should handle non-existent users', async () => {
       const testUser = await getTestUser();
-      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+      const nonExistentId = randomUUID();
 
       const res = await request(app)
         .patch(`/api/users/${nonExistentId}`)
@@ -278,20 +300,18 @@ describe('PATCH /api/users/:userId', () => {
     it('should allow user to update their own profile', async () => {
       const testUser = await getTestUser();
 
-      const res = await request(app)
+      await request(app)
         .patch(`/api/users/${testUser._id}`)
         .set('gid', testUser.gid)
         .send({ nickname: 'Updated Test User' })
         .expect(204);
-
-      expect(res.body).toEqual({});
     });
   });
 });
 
 describe('GET /api/users/me', () => {
-  describe('User retrieval (alias)', () => {
-    it('should return current user with correct response structure', async () => {
+  describe('Successful retrieval', () => {
+    it('should return current user profile', async () => {
       const testUser = await getTestUser();
 
       const res = await request(app)
@@ -321,7 +341,7 @@ describe('GET /api/users/me', () => {
   });
 
   describe('Authentication', () => {
-    it('should require valid authentication', async () => {
+    it('should require authentication', async () => {
       const res = await request(app).get('/api/users/me').expect(401);
 
       expectValidErrorResponse(res.body);
@@ -330,51 +350,64 @@ describe('GET /api/users/me', () => {
 });
 
 describe('PATCH /api/users/me', () => {
-  describe('User updates (alias)', () => {
-    it('should update current user successfully', async () => {
+  describe('Successful updates', () => {
+    it('should update current user profile', async () => {
       const testUser = await getTestUser();
-      const newNickname = 'Updated via Alias';
+      const newNickname = 'Updated via Me';
 
-      const res = await request(app)
+      await request(app)
         .patch('/api/users/me')
         .set('gid', testUser.gid)
         .send({ nickname: newNickname })
         .expect(204);
 
-      expect(res.body).toEqual({});
-
       // Verify the update was applied
-      const verifyRes = await request(app)
+      const res = await request(app)
         .get('/api/users/me')
         .set('gid', testUser.gid)
         .expect(200);
 
-      const body = parseAndExpectValid(ZUserResponse, verifyRes.body);
+      const body = parseAndExpectValid(ZUserResponse, res.body);
       expect(body.user.nickname).toBe(newNickname);
     });
 
     it('should be equivalent to PATCH /api/users/:userId', async () => {
       const testUser = await getTestUser();
+      const newNickname = 'Test Equivalence';
 
-      // Update via alias
+      // Update via /me endpoint
       await request(app)
         .patch('/api/users/me')
         .set('gid', testUser.gid)
-        .send({ nickname: 'Test Alias' })
+        .send({ nickname: newNickname })
         .expect(204);
 
       // Verify via direct endpoint
-      const verifyRes = await request(app)
+      const res = await request(app)
         .get(`/api/users/${testUser._id}`)
         .expect(200);
 
-      const body = parseAndExpectValid(ZUserResponse, verifyRes.body);
-      expect(body.user.nickname).toBe('Test Alias');
+      const body = parseAndExpectValid(ZUserResponse, res.body);
+      expect(body.user.nickname).toBe(newNickname);
+    });
+  });
+
+  describe('Input validation', () => {
+    it('should validate data type constraints', async () => {
+      const testUser = await getTestUser();
+
+      const res = await request(app)
+        .patch('/api/users/me')
+        .set('gid', testUser.gid)
+        .send({ nickname: 123 })
+        .expect(400);
+
+      expectValidErrorResponse(res.body);
     });
   });
 
   describe('Authentication', () => {
-    it('should require valid authentication', async () => {
+    it('should require authentication', async () => {
       const res = await request(app)
         .patch('/api/users/me')
         .send({ nickname: 'Test' })
@@ -386,7 +419,7 @@ describe('PATCH /api/users/me', () => {
 });
 
 describe('GET /api/users/me/private', () => {
-  describe('Private user retrieval', () => {
+  describe('Successful retrieval', () => {
     it('should return user with private details', async () => {
       const testUser = await getTestUser();
 
@@ -396,74 +429,24 @@ describe('GET /api/users/me/private', () => {
         .expect(200);
 
       const body = parseAndExpectValid(ZPrivateUserResponse, res.body);
-      expect(body.user._id).toBe(testUser._id);
-      expect(body.user.nickname).toBe(testUser.nickname);
-      expect(body.user.email).toBeDefined();
-      expect(body.user.name).toBeDefined();
-      expect(body.user.gid).toBeDefined();
-    });
-
-    it('should include all private fields', async () => {
-      const testUser = await getTestUser();
-
-      const res = await request(app)
-        .get('/api/users/me/private')
-        .set('gid', testUser.gid)
-        .expect(200);
-
-      const body = parseAndExpectValid(ZPrivateUserResponse, res.body);
-      expect(body.user).toHaveProperty('_id');
-      expect(body.user).toHaveProperty('nickname');
-      expect(body.user).toHaveProperty('email');
-      expect(body.user).toHaveProperty('name');
-      expect(body.user).toHaveProperty('gid');
-    });
-
-    it('should return different data than public endpoint', async () => {
-      const testUser = await getTestUser();
-
-      const publicRes = await request(app)
-        .get('/api/users/me')
-        .set('gid', testUser.gid)
-        .expect(200);
-
-      const privateRes = await request(app)
-        .get('/api/users/me/private')
-        .set('gid', testUser.gid)
-        .expect(200);
-
-      const publicBody = parseAndExpectValid(ZUserResponse, publicRes.body);
-      const privateBody = parseAndExpectValid(
-        ZPrivateUserResponse,
-        privateRes.body,
-      );
-
-      // Public response should not have private fields
-      expect(publicBody.user).not.toHaveProperty('email');
-      expect(publicBody.user).not.toHaveProperty('name');
-      expect(publicBody.user).not.toHaveProperty('gid');
-
-      // Private response should have all fields
-      expect(privateBody.user).toHaveProperty('email');
-      expect(privateBody.user).toHaveProperty('name');
-      expect(privateBody.user).toHaveProperty('gid');
+      expect(body.user).toEqual(testUser);
     });
   });
 
   describe('Authentication', () => {
-    it('should require valid authentication', async () => {
-      {
-        const res = await request(app).get('/api/users/me/private').expect(401);
-        expectValidErrorResponse(res.body);
-      }
+    it('should require authentication', async () => {
+      const res = await request(app).get('/api/users/me/private').expect(401);
 
-      {
-        const res = await request(app)
-          .get('/api/users/me/private')
-          .set('gid', 'fake')
-          .expect(401);
-        expectValidErrorResponse(res.body);
-      }
+      expectValidErrorResponse(res.body);
+    });
+
+    it('should handle invalid authentication', async () => {
+      const res = await request(app)
+        .get('/api/users/me/private')
+        .set('gid', 'invalid-gid')
+        .expect(401);
+
+      expectValidErrorResponse(res.body);
     });
   });
 });

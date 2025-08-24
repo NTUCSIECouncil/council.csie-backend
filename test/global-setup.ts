@@ -8,6 +8,7 @@ let originalUploadsDir: string | undefined;
 export async function setup() {
   dotenv.config({
     path: ['test/.env', 'test/.env.default', '.env', '.env.default'],
+    quiet: true,
   });
 
   if (!process.env.UPLOADS_DIR) {

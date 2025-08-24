@@ -10,7 +10,7 @@ import { models } from '@models/index.ts';
 import { ZQuizSchema } from '@models/quiz-schema.ts';
 import { ZUserSchema } from '@models/user-schema.ts';
 
-dotenv.config({ path: ['.env', '.env.default'] });
+dotenv.config({ path: ['.env', '.env.default'], quiet: true });
 
 if (
   process.env.MONGODB_URI === undefined

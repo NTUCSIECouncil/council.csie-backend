@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import logger from '@utils/logger.ts';
 
-dotenv.config({ path: ['.env', '.env.default'] });
+dotenv.config({ path: ['.env', '.env.default'], quiet: true });
 
 const EnvSchema = z.object({
   FIREBASE_CERT_PATH: z.string(),
