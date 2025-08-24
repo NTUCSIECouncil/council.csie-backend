@@ -1,19 +1,28 @@
 quizzes:
   get:
     tags: [quizzes]
-    summary: Get or search quizzes
+    summary: List quiz files
     description: |
-      Retrieves a paginated list of quizzes. Supports filtering and searching by query parameters. Optionally embeds related resources (course, uploader).
+      Retrieves a paginated list of quiz and exam files. 
+      Can optionally embed related resources like course details and uploader information.
     parameters:
       - name: limit
         in: query
-        schema: { type: integer, default: 10, minimum: 1 }
+        description: Maximum number of quizzes to return per page
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
       - name: offset
         in: query
-        schema: { type: integer, default: 0, minimum: 0 }
+        description: Number of quizzes to skip for pagination
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
+        description: Related resources to include in the response (when omitted, only UUID references are returned)
         schema:
           type: array
           items:
@@ -23,23 +32,23 @@ quizzes:
         explode: true
     responses:
       '200':
-        description: |-
-          Success. Returns a paginated list of quizzes matching the query parameters. Each quiz may include embedded resources if requested.
+        description: Quizzes retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: List response for quizzes
+              description: Paginated list of quizzes
               properties:
                 quizzes:
                   type: array
-                  description: List of quizzes
+                  description: Array of available quiz files
                   items:
                     $ref: '../components/schemas.yaml#/QuizResponse'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
+              required: [quizzes, meta]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid request parameters
         content:
           application/json:
             schema:
@@ -50,15 +59,18 @@ quizzes_quizId:
     tags: [quizzes]
     summary: Get quiz by ID
     description: |
-      Retrieves a single quiz by its unique ID. Optionally embeds related resources (course, uploader).
+      Retrieves detailed information about a specific quiz using its unique identifier. 
+      Can optionally embed related resources like course details and uploader information.
     parameters:
       - name: quizId
         in: path
         required: true
-        schema: { type: string }
+        description: Unique identifier of the quiz to retrieve
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
+        description: Related resources to include in the response (when omitted, only UUID references are returned)
         schema:
           type: array
           items:
@@ -68,24 +80,24 @@ quizzes_quizId:
         explode: true
     responses:
       '200':
-        description: |-
-          Success. Returns the quiz with the specified ID. May include embedded resources if requested.
+        description: Quiz retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: Quiz response
+              description: Single quiz response
               properties:
                 quiz:
                   $ref: '../components/schemas.yaml#/QuizResponse'
+              required: [quiz]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid quiz ID or request parameters
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No quiz exists with the specified ID.
+        description: Quiz not found
         content:
           application/json:
             schema:
@@ -94,32 +106,33 @@ quizzes_quizId:
 quizzes_quizId_file:
   get:
     tags: [quizzes]
-    summary: Get quiz PDF file
+    summary: Download quiz PDF file
     description: |
-      Retrieves the PDF file content for the specified quiz.
+      Downloads the actual PDF file content for the specified quiz or exam.
     parameters:
       - name: quizId
         in: path
         required: true
-        schema: { type: string }
+        description: Unique identifier of the quiz whose file to download
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
     responses:
       '200':
-        description: |-
-          Success. Returns the PDF file for the specified quiz.
+        description: Quiz PDF file retrieved successfully
         content:
           application/pdf:
             schema:
               type: string
               format: binary
-              description: PDF file content
+              description: Binary PDF file content ready for download
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query, path, or body parameters. Returns a standard error object.
+        description: Invalid quiz ID
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No quiz exists with the specified ID or file is missing.
+        description: Quiz or file not found
         content:
           application/json:
             schema:

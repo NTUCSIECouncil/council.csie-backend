@@ -1,40 +1,49 @@
 courses:
   get:
     tags: [courses]
-    summary: Get or search courses
+    summary: List and search courses
     description: |
-      Retrieves a paginated list of courses. Supports keyword search in course name or lecturer. Includes pagination metadata.
+      Retrieves a paginated list of academic courses with keyword search support 
+      for course names and lecturer information.
     parameters:
       - name: limit
         in: query
-        description: Maximum number of courses to return per page.
-        schema: { type: integer, default: 10, minimum: 1 }
+        description: Maximum number of courses to return per page
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
       - name: offset
         in: query
-        description: Number of courses to skip before starting to collect the result set.
-        schema: { type: integer, default: 0, minimum: 0 }
+        description: Number of courses to skip for pagination
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
       - name: keyword
         in: query
-        description: Fuzzy search term applied to course name or lecturer.
-        schema: { type: string }
+        description: Search term for fuzzy matching against course names and lecturer names
+        schema:
+          type: string
     responses:
       '200':
-        description: |-
-          Success. Returns a paginated list of courses matching the query parameters. Each course includes basic information.
+        description: Courses retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: List response for courses
+              description: Paginated list of courses
               properties:
                 courses:
                   type: array
+                  description: Array of courses matching the search criteria
                   items:
                     $ref: '../components/schemas.yaml#/CourseResponse'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
+              required: [courses, meta]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
+        description: Invalid request parameters
         content:
           application/json:
             schema:
@@ -45,32 +54,34 @@ courses_courseId:
     tags: [courses]
     summary: Get course by ID
     description: |
-      Retrieves a single course by its unique ID.
+      Retrieves detailed information about a specific course using its unique identifier.
     parameters:
       - name: courseId
         in: path
         required: true
-        description: The unique identifier of the course to retrieve.
-        schema: { type: string }
+        description: Unique identifier of the course to retrieve
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
     responses:
       '200':
-        description: |-
-          Success. Returns the course with the specified ID.
+        description: Course retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: Course response
+              description: Single course response
               properties:
-                course: { $ref: '../components/schemas.yaml#/CourseResponse' }
+                course:
+                  $ref: '../components/schemas.yaml#/CourseResponse'
+              required: [course]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
+        description: Invalid course ID
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No course exists with the specified ID.
+        description: Course not found
         content:
           application/json:
             schema:
@@ -79,26 +90,34 @@ courses_courseId:
 courses_courseId_quizzes:
   get:
     tags: [courses, quizzes]
-    summary: Get quizzes for a course
+    summary: Get quizzes for a specific course
     description: |
-      Retrieves a paginated list of quizzes for the specified course. Supports embedding related resources (course, uploader). Includes pagination metadata.
+      Retrieves a paginated list of quiz files associated with a specific course. 
+      Can optionally embed related resources like course details and uploader information.
     parameters:
       - name: courseId
         in: path
         required: true
-        description: The unique identifier of the course.
-        schema: { type: string }
+        description: Unique identifier of the course
+        schema:
+          $ref: '../components/schemas.yaml#/UUID'
       - name: limit
         in: query
-        description: Maximum number of quizzes to return per page.
-        schema: { type: integer, default: 10, minimum: 1 }
+        description: Maximum number of quizzes to return per page
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
       - name: offset
         in: query
-        description: Number of quizzes to skip before starting to collect the result set.
-        schema: { type: integer, default: 0, minimum: 0 }
+        description: Number of quizzes to skip for pagination
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
       - name: embed
         in: query
-        description: Specifies which related resources to include in the response. If omitted, only their UUIDs are returned.
+        description: Related resources to include in the response (when omitted, only UUID references are returned)
         schema:
           type: array
           items:
@@ -108,29 +127,29 @@ courses_courseId_quizzes:
         explode: true
     responses:
       '200':
-        description: |-
-          Success. Returns a paginated list of quizzes for the specified course. Each quiz may include embedded resources if requested.
+        description: Quizzes retrieved successfully
         content:
           application/json:
             schema:
               type: object
-              description: List response for quizzes for a course
+              description: Paginated list of quizzes for a course
               properties:
                 quizzes:
                   type: array
-                  description: List of quizzes for the course
+                  description: Array of quizzes associated with this course
                   items:
                     $ref: '../components/schemas.yaml#/QuizResponse'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
+              required: [quizzes, meta]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query or path parameters. Returns a standard error object.
+        description: Invalid course ID or request parameters
         content:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '404':
-        description: Not Found. No course exists with the specified ID.
+        description: Course not found
         content:
           application/json:
             schema:

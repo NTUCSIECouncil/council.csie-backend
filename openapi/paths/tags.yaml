@@ -1,36 +1,51 @@
 tags:
   get:
     tags: [tags]
-    summary: Get all tags
+    summary: List all available tags
     description: |
-      Retrieves a paginated list of all available tags sorted. Includes pagination metadata.
+      Retrieves a paginated list of all tags used throughout the platform. 
+      Results are sorted alphabetically for easy browsing.
     parameters:
       - name: limit
         in: query
-        schema: { type: integer, default: 10, minimum: 1 }
-        description: Maximum number of tags to return
+        description: Maximum number of tags to return per page
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
       - name: offset
         in: query
-        schema: { type: integer, default: 0, minimum: 0 }
-        description: Number of tags to skip before starting to collect the result set
+        description: Number of tags to skip for pagination
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
     responses:
       '200':
-        description: |-
-          Success. Returns a paginated list of all available tags.
+        description: Tags retrieved successfully
         content:
           application/json:
             schema:
               type: object
+              description: Paginated list of tags
               properties:
                 tags:
                   type: array
                   items:
                     type: string
-                  description: List of tag names
+                  description: Array of tag names sorted alphabetically
+                  example:
+                    - 'DSA'
+                    - 'GOAT'
+                    - 'algorithms'
+                    - 'computer-science'
+                    - 'cool'
+                    - 'data-structures'
                 meta:
                   $ref: '../components/schemas.yaml#/Meta'
+              required: [tags, meta]
       '400':
-        description: Bad Request. The request could not be processed due to invalid or missing query parameters. Returns a standard error object.
+        description: Invalid request parameters
         content:
           application/json:
             schema:

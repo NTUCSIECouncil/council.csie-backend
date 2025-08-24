@@ -1,88 +1,104 @@
 UUID:
   type: string
   format: uuid
-  description: Unique identifier in UUID format.
+  description: Universally unique identifier in UUID v4 format
+  example: '550e8400-e29b-41d4-a716-446655440000'
 
 Meta:
   type: object
-  description: Metadata for paginated responses.
+  description: Pagination metadata for list responses
   properties:
-    total: { type: integer, description: Total number of items. }
-    offset: { type: integer, description: Pagination offset. }
-    limit: { type: integer, description: Maximum items per page. }
+    total:
+      type: integer
+      description: Total number of items available across all pages
+      example: 150
+    offset:
+      type: integer
+      description: Number of items skipped from the beginning
+      example: 20
+    limit:
+      type: integer
+      description: Maximum number of items returned in this response
+      example: 10
   required: [total, offset, limit]
 
 ArticleBase:
   type: object
-  description: Base attributes of an article.
+  description: Common properties shared by article creation and update operations
   properties:
     title:
       type: string
-      description: Article title.
+      description: Title of the course review article
       example: "I'm totally obsessed with DSA"
     tags:
       type: array
       items: { type: string }
-      description: Tags associated with the article.
+      description: Descriptive tags associated with this article
       example: ['DSA', 'GOAT', 'cool']
     ratings:
       type: object
-      description: Ratings for the related course.
+      description: Numerical ratings for different course aspects (1-5 scale)
       properties:
         sweetness:
           type: integer
-          description: Sweetness rating.
+          description: Grade distribution generosity (how lenient the grading is)
           minimum: 1
           maximum: 5
           example: 4
         chill:
           type: integer
-          description: Chill rating.
+          description: Course workload chillness (how relaxed and manageable the pace is)
           minimum: 1
           maximum: 5
           example: 5
         teaching:
           type: integer
-          description: Teaching quality rating.
+          description: Quality of instruction and teaching effectiveness
           minimum: 1
           maximum: 5
           example: 3
         gain:
           type: integer
-          description: Gain rating.
+          description: Learning value and knowledge gained from the course
           minimum: 1
           maximum: 5
           example: 4
         recommend:
           type: integer
-          description: Recommendation rating.
+          description: Overall recommendation score for taking this course
           minimum: 1
           maximum: 5
           example: 5
 
 ArticleCreate:
   type: object
-  description: Payload to create a new article.
+  description: Request payload for creating a new course review article
   allOf:
     - $ref: '#/ArticleBase'
     - type: object
       properties:
-        course: { $ref: '#/UUID' }
+        course:
+          allOf:
+            - $ref: '#/UUID'
+          description: UUID of the course this article reviews
   required: [title, tags, ratings, course]
 
 ArticleUpdate:
   type: object
-  description: Payload to update an article.
+  description: Request payload for updating an existing article (all fields optional)
   allOf:
     - $ref: '#/ArticleBase'
 
 ArticleResponse:
   type: object
-  description: Article information with optional embedding related data.
+  description: Article data returned by the API with optional embedded related resources
   allOf:
     - type: object
       properties:
-        _id: { $ref: '#/UUID' }
+        _id:
+          allOf:
+            - $ref: '#/UUID'
+          description: Unique identifier of the article
     - $ref: '#/ArticleBase'
     - type: object
       properties:
@@ -90,130 +106,148 @@ ArticleResponse:
           oneOf:
             - $ref: '#/UUID'
             - $ref: '#/CourseResponse'
+          description: Course information - UUID reference or full course object when embedded
         creator:
           oneOf:
             - $ref: '#/UUID'
             - $ref: '#/UserResponse'
+          description: Article author information - UUID reference or full user object when embedded
         content:
           type: string
-          description: First 50 characters of the article content, truncated with an ellipsis if longer. May be an empty string if no file content has been uploaded.
-          example: 'This is a sample article content that is very long and goes on and on...'
+          description: |
+            Article content preview (first 50 characters). Returns empty string 
+            if no content file has been uploaded. Use the file endpoint to retrieve full content.
+          example: 'This is a sample article content that is very...'
   required: [_id, title, tags, ratings, course, creator]
 
 CourseResponse:
   type: object
-  description: Course information.
+  description: Academic course information and metadata
   properties:
-    _id: { $ref: '#/UUID' }
+    _id:
+      allOf:
+        - $ref: '#/UUID'
+      description: Unique identifier of the course
     curriculum:
       type: string
-      description: Course code.
+      description: Official course code from the curriculum
       example: 'CSIE1212'
     lecturer:
       type: string
-      description: Course lecturer name.
+      description: Name of the primary course instructor
       example: 'HT Lin'
     class:
       type: string
-      description: Class name or number.
+      description: Class section identifier or number
       example: '1'
     names:
       type: array
       items: { type: string }
-      description: Course names.
+      description: Course names in different languages or alternative titles
       example: ['Data Structures and Algorithms']
     credit:
       type: integer
-      description: Course credit count.
+      description: Number of academic credits awarded for this course
       minimum: 0
       example: 3
     semester:
       type: string
-      description: Semester code.
+      description: 'Academic semester when the course is offered (format: year-semester)'
       example: '113-2'
   required: [_id, curriculum, lecturer, names, credit, semester]
 
 QuizResponse:
   type: object
-  description: Quiz information.
+  description: Quiz or exam file information with associated metadata
   properties:
-    _id: { $ref: '#/UUID' }
+    _id:
+      allOf:
+        - $ref: '#/UUID'
+      description: Unique identifier of the quiz
     session:
       type: string
       enum: [midterm, final, first, second, other]
-      description: Quiz session type.
+      description: Type of examination or quiz session
       example: 'midterm'
     course:
       oneOf:
         - $ref: '#/UUID'
         - $ref: '#/CourseResponse'
+      description: Associated course information - UUID reference or full course object when embedded
     uploader:
       oneOf:
         - $ref: '#/UUID'
         - $ref: '#/UserResponse'
+      description: User who uploaded this quiz - UUID reference or full user object when embedded
   required: [_id, session, course, uploader]
 
 UserBase:
   type: object
-  description: Base user attributes.
+  description: Common user properties shared across different user operations
   properties:
     nickname:
       type: string
-      description: User nickname.
+      description: Display name chosen by the user
       example: 'Boss Wang'
 
 UserCreate:
   type: object
-  description: Payload to create a user.
+  description: Request payload for creating a new user account
   allOf:
     - $ref: '#/UserBase'
   required: [nickname]
 
 UserResponse:
   type: object
-  description: Public user information.
+  description: Public user profile information visible to other users
   allOf:
     - type: object
       properties:
-        _id: { $ref: '#/UUID' }
+        _id:
+          allOf:
+            - $ref: '#/UUID'
+          description: Unique identifier of the user
     - $ref: '#/UserBase'
-    - type: object
   required: [_id, nickname]
 
 PrivateUserResponse:
   type: object
-  description: User information with private details.
+  description: Complete user profile including private information, accessible only by the user themselves
   allOf:
     - type: object
       properties:
-        _id: { $ref: '#/UUID' }
+        _id:
+          allOf:
+            - $ref: '#/UUID'
+          description: Unique identifier of the user
         gid:
           type: string
-          description: User Google ID.
+          description: Google account identifier used for authentication
           example: '1234567890'
         email:
           type: string
           format: email
-          description: User email address.
+          description: Email address associated with the user's Google account
           example: 'boss-wang@example.com'
         name:
           type: string
-          description: User full name.
+          description: Full name from the user's Google account
           example: 'Claud Wang'
     - $ref: '#/UserBase'
   required: [_id, nickname, email, name, gid]
 
 Error:
   type: object
-  description: Standard error response.
+  description: Standard error response format used across all API endpoints
   properties:
     message:
       type: string
-      description: Human-readable error message.
-      example: "Validation failed: 'title' is required."
+      description: Human-readable error description
+      example: "Validation failed: 'title' is required"
     details:
       type: object
-      description: Additional error information.
+      description: Additional context and technical details about the error
       example:
         field: title
-        reason: 'This field is required.'
+        reason: 'This field is required'
+  required: [message]
