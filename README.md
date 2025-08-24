@@ -8,27 +8,49 @@ Backend service for the NTU CSIE Student Council website.
 - MongoDB available locally (default `mongodb://127.0.0.1:27017`)
 - Firebase service account JSON credentials
 
-## Quick start
+## Getting started
 
-1. Install dependencies
+### Install dependencies
 
-   ```bash
-   npm ci
-   ```
+```bash
+npm ci
+```
 
-1. Configure environment variables
-   - `.env.default` provides defaults; create `.env` to override values (see “Environment variables”).
+### Configuration (environment variables)
 
-1. Start the dev server
+Runtime loads both `.env.default` and `.env`, with `.env` overriding defaults. The environment variables and their defaults are:
 
-   ```bash
-   # One-off start
-   npm run dev
+```ini
+# .env.default
+MONGODB_URI='mongodb://127.0.0.1:27017' # MongoDB connection URI
+MONGODB_DB_NAME='csie-council-dev' # Database name
+PORT='3010' # Server port
+FIREBASE_CERT_PATH='./service-account-file.json' # Firebase service account key file path
+UPLOADS_DIR='./uploads' # Directory for uploaded files
+SAMPLES_DIR='./samples' # Directory for sample data files
+```
 
-   # Watch src/ and openapi/ for changes
-   # Press Enter in the terminal to restart; Ctrl+C to stop
-   npm run dev:watch
-   ```
+Tests also read dedicated files at `test/.env.default` and `test/.env`. `test/.env.default` sets a test-only uploads directory:
+
+```ini
+# test/.env.default
+UPLOADS_DIR='./test/uploads' # Directory for uploaded files in tests
+```
+
+Note:
+
+- `UPLOADS_DIR` is used in tests will be cleaned up before and after each test run.
+
+### Start the dev server
+
+```bash
+# One-off start
+npm run dev
+
+# Watch src/ and openapi/ for changes
+# Press Enter in the terminal to restart; Ctrl+C to stop
+npm run dev:watch
+```
 
 ## API docs
 
@@ -45,35 +67,28 @@ npm run generate-samples  # Generate sample data to samples/
 npm run setup-dev-db      # Create dev DB and place files under uploads/
 ```
 
-## Environment variables
+## Tests
 
-Runtime loads both `.env.default` and `.env`, with `.env` overriding defaults.
+```bash
+# One-off start
+npm run test
 
-- MONGODB_URI (default `mongodb://127.0.0.1:27017`)
-- MONGODB_DB_NAME (default `csie-council-dev`)
-- PORT (default `3010`)
-- FIREBASE_CERT_PATH (default `./service-account-file.json`)
-- UPLOADS_DIR (default `./uploads`)
-- SAMPLES_DIR (default `./samples`)
-
-Tests also read dedicated files at `test/.env.default` and `test/.env`. `test/.env.default` sets a test-only uploads directory:
-
-```ini
-# test/.env.default
-UPLOADS_DIR='./test/uploads'
+# Watch for changes
+npm run test:watch
 ```
 
-## Development
+Notes:
 
-In addition to the steps in [Quick start](#quick-start) and [Sample data (optional)](#sample-data-optional), you can run the following commands during development.
+- Tests use `test/.env.default` to set `UPLOADS_DIR` to `./test/uploads`.
+- It is required to run at least first two commands in [Sample data (optional)](#sample-data-optional).
 
-### TypeScript type-checking
+## Code quality
+
+Type checking:
 
 ```bash
 npm run type-check
 ```
-
-### Code quality
 
 Linting (fix or check only):
 
@@ -95,36 +110,16 @@ npm run format
 npm run format:check
 ```
 
-### Tests
-
-```bash
-# One-off start
-npm run test
-
-# Watch for changes
-npm run test:watch
-```
-
 Notes:
 
-- Tests use `test/.env.default` to set `UPLOADS_DIR` to `./test/uploads`.
-- Run the data initialization steps before tests if they rely on sample data.
+- There are Git precommit hooks checking linting and formatting.
+- CI runs all checks on PRs to `main` and `develop`.
 
 ## Logs
 
 - Server & HTTP logs: `logs/combined.log`, `logs/error.log`
 - Database query logs: `logs/database.log`
 - Test logs: `logs/test/`
-
-## Project structure
-
-- `src/` Server code (Express, Mongoose, etc.)
-- `openapi/` OpenAPI spec and paths
-- `scripts/` Setup and data-generation scripts (run with tsx)
-- `samples/` Dev and test sample data
-- `uploads/` Files for quizzes/reviews, etc.
-- `test/` Endpoint tests (Vitest + Supertest)
-- `logs/` Server/DB logs
 
 ## Firebase service account
 
@@ -137,3 +132,10 @@ and place it at `./service-account-file.json`, or point `FIREBASE_CERT_PATH` to 
 - Cannot connect to MongoDB: ensure MongoDB is running locally or adjust `MONGODB_URI`.
 - Firebase init fails: verify `FIREBASE_CERT_PATH` points to a valid service account file.
 - Swagger UI not reachable: ensure the server is running and `PORT` is free.
+
+## Contribution
+
+- `main` and `develop` branches are protected. Please open a PR against `develop`.
+- Linear history is required for PRs.
+- Commit messages should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+- Squash commits are used to keep the history clean. Use same style as commit messages in title and description of PRs.
