@@ -30,7 +30,7 @@ const expressApp = express();
 
 expressApp.set('query parser', 'extended');
 
-expressApp.use(express.json({ limit: '2mb' }));
+expressApp.use(express.json({ limit: '10mb' }));
 
 const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
