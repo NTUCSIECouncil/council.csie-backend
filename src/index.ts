@@ -1,5 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import express from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
@@ -42,6 +43,16 @@ const morganMiddleware = morgan(
 );
 
 expressApp.use(morganMiddleware);
+
+// Limit each IP to 100 requests per minute
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+});
+
+expressApp.use(limiter);
 
 expressApp.use(async (req, res, next) => {
   const token = req.headers.authorization;
