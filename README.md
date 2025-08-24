@@ -1,36 +1,140 @@
-# council.csie 後端
+# council.csie backend
 
-國立臺灣大學資訊工程學系學生會網站的後端。
+Backend service for the NTU CSIE Student Council website.
 
-## API
+## Prerequisites
 
-支援的 API 請參考[這裡](https://hackmd.io/@seantsao00/council_csie)。
+- Node.js 22 (repo includes `.nvmrc`)
+- MongoDB available locally (default `mongodb://127.0.0.1:27017`)
+- Firebase service account JSON credentials
 
-## Usage
+## Getting started
 
-- 使用 `npm ci` 安裝 packages。
-- 使用 `npm run dev` 跑起來。
-  - 可以使用 `npm run dev:watch` 變種，這樣除了 `./node_modules`，所有檔案都會被監聽；當有變更時會自動重新啟動。
-  - 在終端機中按下 `Enter` 來手動重新啟動。
-  - 在終端機中按下 `Ctrl+C` 來關閉。
-- 使用 `npm run format` 來在整個專案上運行 Prettier 並修復所有可自動修復的問題。
-  - 使用 `npm run format:check` 來檢查整個專案的格式是否符合 Prettier 的規範。
-- 使用 `npm run lint` 來在整個專案的 TypeScript 檔案上運行 ESLint 並修復所有可自動修復的問題。
-  - 使用 `npm run lint:check` 修復所有可自動修復的問題。
-- 使用 `npm run type-check` 來檢查 TypeScript 檔案的型別。
-- 為了初始化開發用資料庫：
-  - 使用 `npm run fetch-courses` 來從課程系統抓取課程資料，並儲存在 `samples/course-original.json`。
-  - 使用 `npm run generate-samples` 來產生開發用的資料，並儲存在 `samples/`。
-  - 使用 `npm run setup-dev-db` 來建立開發用資料庫，並將測試用考古題與評價文放置在 `uploads/`。
-  - 以上步驟需要按照順序執行。
-- 使用 `npm run test` 來運行測試。
-  - 開發用資料（`sample/`）需要在測試前建立。
-  - 使用 `npm run test:watch` 來在測試檔案變更時自動運行測試。
+### Install dependencies
 
-## `.env` 相關
+```bash
+npm ci
+```
 
-`git clone` 下來會有一個 `.env.default` 檔案，其中有一些環境變數的預設值。請建立一個叫做 `.env` 的空白檔案，並且將任何你想要覆蓋或新定義的環境變數寫入其中，參考 `default.env` 的格式。
+### Configuration (environment variables)
 
-## Firebase service account 相關
+Runtime loads both `.env.default` and `.env`, with `.env` overriding defaults. The environment variables and their defaults are:
 
-為了安全因素，存取 `firebase-admin` 使用的密鑰不應該離開本機。[這裡](https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments)的密鑰應該被放進 `./service-account-file.json`。這個檔名用環境變數 `FIREBASE_CERT_PATH` 指定。
+```ini
+# .env.default
+MONGODB_URI='mongodb://127.0.0.1:27017' # MongoDB connection URI
+MONGODB_DB_NAME='csie-council-dev' # Database name
+PORT='3010' # Server port
+FIREBASE_CERT_PATH='./service-account-file.json' # Firebase service account key file path
+UPLOADS_DIR='./uploads' # Directory for uploaded files
+SAMPLES_DIR='./samples' # Directory for sample data files
+```
+
+Tests also read dedicated files at `test/.env.default` and `test/.env`. `test/.env.default` sets a test-only uploads directory:
+
+```ini
+# test/.env.default
+UPLOADS_DIR='./test/uploads' # Directory for uploaded files in tests
+```
+
+> [!IMPORTANT]
+> `UPLOADS_DIR` used in tests will be cleaned up before and after each test run.
+
+### Start the dev server
+
+```bash
+# One-off start
+npm run dev
+
+# Watch src/ and openapi/ for changes
+# Press Enter in the terminal to restart; Ctrl+C to stop
+npm run dev:watch
+```
+
+## API docs
+
+- Spec: `openapi/`
+- Swagger UI: `http://localhost:3010/api-docs` (or your `PORT` in `.env`)
+
+## Sample data (optional)
+
+Run in order if you want prefilled data locally:
+
+```bash
+npm run fetch-courses     # Fetch course data to samples/course-original.json
+npm run generate-samples  # Generate sample data to samples/
+npm run setup-dev-db      # Create dev DB and place files under uploads/
+```
+
+## Tests
+
+```bash
+# One-off start
+npm run test
+
+# Watch for changes
+npm run test:watch
+```
+
+Notes:
+
+- Tests use `test/.env.default` to set `UPLOADS_DIR` to `./test/uploads`.
+- It's required to run at least the first two commands in [Sample data (optional)](#sample-data-optional).
+
+## Code quality
+
+Type checking:
+
+```bash
+npm run type-check
+```
+
+Linting (fix or check only):
+
+```bash
+# Report all linting issues and fix all auto-fixable ones
+npm run lint
+
+# Check only
+npm run lint:check
+```
+
+Formatting (write or check only):
+
+```bash
+# Report all formatting issues and fix all auto-fixable ones
+npm run format
+
+# Check only
+npm run format:check
+```
+
+Notes:
+
+- There are Git precommit hooks checking linting and formatting.
+- CI runs all checks on PRs to `main` and `develop`.
+
+## Logs
+
+- Server & HTTP logs: `logs/combined.log`, `logs/error.log`
+- Database query logs: `logs/database.log`
+- Test logs: `logs/test/`
+
+## Firebase service account
+
+For security, keep the `firebase-admin` credential only on your machine. Download it per the
+[official guide](https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments)
+and place it at `./service-account-file.json`, or point `FIREBASE_CERT_PATH` to your file.
+
+## Troubleshooting
+
+- Cannot connect to MongoDB: ensure MongoDB is running locally or adjust `MONGODB_URI`.
+- Firebase init fails: verify `FIREBASE_CERT_PATH` points to a valid service account file.
+- Swagger UI not reachable: ensure the server is running and `PORT` is free.
+
+## Contribution
+
+- `main` and `develop` branches are protected. Please open a PR against `develop`.
+- Linear history is required for PRs.
+- Commit messages should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+- Squash commits are used to keep the history clean. Use same style as commit messages in title and description of PRs.
