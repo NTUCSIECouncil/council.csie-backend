@@ -29,6 +29,7 @@ ArticleBase:
     title:
       type: string
       description: Title of the course review article
+      maxLength: 40
       example: "I'm totally obsessed with DSA"
     tags:
       type: array

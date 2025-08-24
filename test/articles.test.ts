@@ -556,6 +556,32 @@ describe('POST /api/articles', () => {
         expectValidErrorResponse(res.body);
       }
     });
+
+    it('should validate title length constraints', async () => {
+      const creator = await getTestUser();
+      const validBase = await createTestArticle();
+
+      {
+        const exact = '='.repeat(40);
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, title: exact })
+          .set('gid', creator.gid)
+          .expect(201);
+        parseAndExpectValid(ZArticleCreateResponse, res.body);
+      }
+
+      // Title longer than 40 characters
+      {
+        const toLong = '='.repeat(41);
+        const res = await request(app)
+          .post('/api/articles')
+          .send({ ...validBase, title: toLong })
+          .set('gid', creator.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
   });
 
   describe('Authentication', () => {
@@ -843,6 +869,32 @@ describe('PATCH /api/articles/:articleId', () => {
         const res = await request(app)
           .patch(`/api/articles/${article._id}`)
           .send(invalidUpdate)
+          .set('gid', creator!.gid)
+          .expect(400);
+        expectValidErrorResponse(res.body);
+      }
+    });
+
+    it('should validate title length constraints', async () => {
+      const article = await getTestArticle();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
+
+      {
+        const exact = '='.repeat(40);
+        await request(app)
+          .patch(`/api/articles/${article._id}`)
+          .send({ title: exact })
+          .set('gid', creator!.gid)
+          .expect(204);
+      }
+
+      {
+        const toLong = '='.repeat(41);
+        const res = await request(app)
+          .patch(`/api/articles/${article._id}`)
+          .send({ title: toLong })
           .set('gid', creator!.gid)
           .expect(400);
         expectValidErrorResponse(res.body);

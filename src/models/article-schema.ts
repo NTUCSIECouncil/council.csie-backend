@@ -24,7 +24,7 @@ const ZRatingSchema = z.object({
 
 const ZArticleSchema = z.object({
   _id: ZUuidSchema,
-  title: z.string(),
+  title: z.string().max(40),
   tags: z.string().array(), // e.g. ['資料結構', '演算法', '田涼']
   ratings: ZRatingSchema,
   course: ZUuidSchema, // foreign key to Course
