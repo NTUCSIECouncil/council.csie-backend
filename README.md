@@ -88,7 +88,10 @@ npm run lint:check
 Formatting (write or check only):
 
 ```bash
+# Report all formatting issues and fix all auto-fixable ones
 npm run format
+
+# Check only
 npm run format:check
 ```
 
