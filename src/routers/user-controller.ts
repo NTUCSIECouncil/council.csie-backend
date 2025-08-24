@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 
   let userCreate;
   try {
-    userCreate = z.object({ nickname: z.string() }).parse(req.body);
+    userCreate = z.object({ nickname: z.string().max(30) }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in POST /users: ', err);
     res.status(400).json({ message: 'Invalid request body' });
@@ -98,7 +98,10 @@ router.patch('/:userId', async (req, res) => {
   let userUpdates;
   try {
     userId = ZUuidSchema.parse(req.params.userId);
-    userUpdates = z.object({ nickname: z.string() }).partial().parse(req.body);
+    userUpdates = z
+      .object({ nickname: z.string().max(30) })
+      .partial()
+      .parse(req.body);
   } catch (err) {
     logger.warn(
       'Failed to parse userId or request body in PATCH /users/:userId: ',

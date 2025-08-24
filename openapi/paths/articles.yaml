@@ -27,6 +27,7 @@ articles:
         description: Search term for fuzzy matching against article titles, content, course names, lecturers, and curriculum codes
         schema:
           type: string
+          maxLength: 100
       - name: tags
         in: query
         description: Tag(s) to filter articles by
@@ -34,6 +35,8 @@ articles:
           type: array
           items:
             type: string
+            maxLength: 50
+          maxItems: 50
         style: form
         explode: true
       - name: embed
@@ -274,6 +277,7 @@ articles_articleId_file:
               file:
                 type: string
                 format: markdown
+                maxLength: 1000000
                 description: Markdown content to upload for this article
             required: [file]
     responses:

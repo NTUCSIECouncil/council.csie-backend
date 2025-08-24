@@ -33,7 +33,10 @@ ArticleBase:
       example: "I'm totally obsessed with DSA"
     tags:
       type: array
-      items: { type: string }
+      items:
+        type: string
+        maxLength: 50
+      maxItems: 50
       description: Descriptive tags associated with this article
       example: ['DSA', 'GOAT', 'cool']
     ratings:
@@ -188,6 +191,7 @@ UserBase:
   properties:
     nickname:
       type: string
+      maxLength: 30
       description: Display name chosen by the user
       example: 'Boss Wang'
 

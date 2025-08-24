@@ -27,6 +27,7 @@ courses:
         description: Search term for fuzzy matching against course names and lecturer names
         schema:
           type: string
+          maxLength: 100
     responses:
       '200':
         description: Courses retrieved successfully
