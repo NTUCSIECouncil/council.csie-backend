@@ -6,8 +6,8 @@ Backend service for the NTU CSIE Student Council website.
 
 - Node.js (see [Manage Node.js version](#manage-nodejs-version) below)
 - pnpm (see [Setup pnpm](#setup-pnpm) below)
-- MongoDB running locally
-- Firebase service account JSON credentials
+- MongoDB 8.x running locally (see [official documentation](https://www.mongodb.com/docs/manual/installation/))
+- Firebase service account JSON credentials (see [Firebase service account](#firebase-service-account) below)
 
 ### Manage Node.js version
 
