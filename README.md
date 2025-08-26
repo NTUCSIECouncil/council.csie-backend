@@ -6,7 +6,7 @@ Backend service for the NTU CSIE Student Council website.
 
 - Node.js (see [Manage Node.js version](#manage-nodejs-version) below)
 - pnpm (see [Setup pnpm](#setup-pnpm) below)
-- MongoDB available locally
+- MongoDB running locally
 - Firebase service account JSON credentials
 
 ### Manage Node.js version
@@ -38,7 +38,7 @@ Alternatively, you can install pnpm directly with `npm install -g pnpm` or other
 ### Install dependencies
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
 ### Configuration (environment variables)
@@ -156,10 +156,11 @@ and place it at `./service-account-file.json`, or point `FIREBASE_CERT_PATH` to 
 - Cannot connect to MongoDB: ensure MongoDB is running locally or adjust `MONGODB_URI`.
 - Firebase init fails: verify `FIREBASE_CERT_PATH` points to a valid service account file.
 - Swagger UI not reachable: ensure the server is running and `PORT` is free.
+- Downloading MongoDB and tests fail: run `pnpm rebuild` to ensure `mongodb-memory-server` is properly installed.
 
 ## Contribution
 
-- `main` and `develop` branches are protected. Please open a PR against `develop`.
+- `main` branch is protected. Please open a PR against `develop`.
 - Linear history is required for PRs.
 - Commit messages should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 - Squash commits are used to keep the history clean. Use same style as commit messages in title and description of PRs.
