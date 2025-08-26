@@ -4,16 +4,41 @@ Backend service for the NTU CSIE Student Council website.
 
 ## Prerequisites
 
-- Node.js 22 (repo includes `.nvmrc`)
-- MongoDB available locally (default `mongodb://127.0.0.1:27017`)
+- Node.js (see [Manage Node.js version](#manage-nodejs-version) below)
+- pnpm (see [Setup pnpm](#setup-pnpm) below)
+- MongoDB available locally
 - Firebase service account JSON credentials
+
+### Manage Node.js version
+
+This project requires Node.js with the version specified in `.nvmrc`. We recommend using a Node.js version manager for easy switching between projects:
+
+- **fnm** (preferred for speed): Install and enable `--use-on-cd` to automatically switch to the correct version when entering the project directory.
+- **nvm**: Install and run `nvm use` when entering the project directory.
+
+Both tools automatically detect and use the Node.js version specified in `.nvmrc`.
+
+### Setup pnpm
+
+This project uses pnpm as the package manager. The recommended way to install pnpm is using corepack (included with Node.js):
+
+```bash
+corepack enable
+
+# In project directory - automatic installation will be triggered
+pnpm install
+```
+
+Corepack automatically detects and updates pnpm every time `pnpm` is run.
+
+Alternatively, you can install pnpm directly with `npm install -g pnpm` or other methods, but you'll be responsible for ensuring the correct version is used.
 
 ## Getting started
 
 ### Install dependencies
 
 ```bash
-npm ci
+pnpm install
 ```
 
 ### Configuration (environment variables)
@@ -44,11 +69,11 @@ UPLOADS_DIR='./test/uploads' # Directory for uploaded files in tests
 
 ```bash
 # One-off start
-npm run dev
+pnpm run dev
 
 # Watch src/ and openapi/ for changes
 # Press Enter in the terminal to restart; Ctrl+C to stop
-npm run dev:watch
+pnpm run dev:watch
 ```
 
 ## API docs
@@ -61,19 +86,19 @@ npm run dev:watch
 Run in order if you want prefilled data locally:
 
 ```bash
-npm run fetch-courses     # Fetch course data to samples/course-original.json
-npm run generate-samples  # Generate sample data to samples/
-npm run setup-dev-db      # Create dev DB and place files under uploads/
+pnpm run fetch-courses     # Fetch course data to samples/course-original.json
+pnpm run generate-samples  # Generate sample data to samples/
+pnpm run setup-dev-db      # Create dev DB and place files under uploads/
 ```
 
 ## Tests
 
 ```bash
 # One-off start
-npm run test
+pnpm run test
 
 # Watch for changes
-npm run test:watch
+pnpm run test:watch
 ```
 
 Notes:
@@ -86,27 +111,27 @@ Notes:
 Type checking:
 
 ```bash
-npm run type-check
+pnpm run type-check
 ```
 
 Linting (fix or check only):
 
 ```bash
 # Report all linting issues and fix all auto-fixable ones
-npm run lint
+pnpm run lint
 
 # Check only
-npm run lint:check
+pnpm run lint:check
 ```
 
 Formatting (write or check only):
 
 ```bash
 # Report all formatting issues and fix all auto-fixable ones
-npm run format
+pnpm run format
 
 # Check only
-npm run format:check
+pnpm run format:check
 ```
 
 Notes:
