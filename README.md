@@ -148,7 +148,7 @@ Notes:
 ## Firebase service account
 
 For security, keep the `firebase-admin` credential only on your machine. Download it per the
-[official guide](https://firebase.google.com/docs/admin/setup?hl=zh-tw#initialize_the_sdk_in_non-google_environments)
+[official guide](https://firebase.google.com/docs/admin/setup#initialize_the_sdk_in_non-google_environments)
 and place it at `./service-account-file.json`, or point `FIREBASE_CERT_PATH` to your file.
 
 ## Troubleshooting
