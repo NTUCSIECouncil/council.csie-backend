@@ -29,17 +29,10 @@ export default defineConfig(
         'warn',
         { fixStyle: 'inline-type-imports' },
       ],
-      // Leverage Node.js 24 performance improvements
-      '@typescript-eslint/prefer-promise-reject-errors': 'error',
-      '@typescript-eslint/prefer-readonly': 'warn',
-      '@typescript-eslint/prefer-readonly-parameter-types': 'off', // Can be too strict for some cases
     },
   },
   {
     files: ['test/**/*.ts'],
-    rules: {
-      '@typescript-eslint/no-non-null-assertion': ['off'],
-      '@typescript-eslint/prefer-readonly-parameter-types': 'off',
-    },
+    rules: { '@typescript-eslint/no-non-null-assertion': ['off'] },
   },
 );
