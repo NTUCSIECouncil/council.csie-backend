@@ -1,8 +1,8 @@
 import eslint from '@eslint/js';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
-import tseslint from 'typescript-eslint';
+import tseslint, { defineConfig } from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig(
   {
     files: ['src/**/*.ts', 'test/**/*.ts', 'scripts/**/*.ts'],
     languageOptions: {
@@ -28,10 +28,17 @@ export default tseslint.config(
         'warn',
         { fixStyle: 'inline-type-imports' },
       ],
+      // Leverage Node.js 24 performance improvements
+      '@typescript-eslint/prefer-promise-reject-errors': 'error',
+      '@typescript-eslint/prefer-readonly': 'warn',
+      '@typescript-eslint/prefer-readonly-parameter-types': 'off', // Can be too strict for some cases
     },
   },
   {
     files: ['test/**/*.ts'],
-    rules: { '@typescript-eslint/no-non-null-assertion': ['off'] },
+    rules: {
+      '@typescript-eslint/no-non-null-assertion': ['off'],
+      '@typescript-eslint/prefer-readonly-parameter-types': 'off',
+    },
   },
 );
