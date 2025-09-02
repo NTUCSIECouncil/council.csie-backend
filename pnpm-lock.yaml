@@ -48,9 +48,9 @@ importers:
       '@ianvs/prettier-plugin-sort-imports':
         specifier: ^4.7.0
         version: 4.7.0(prettier@3.6.2)
-      '@tsconfig/node22':
-        specifier: ^22.0.2
-        version: 22.0.2
+      '@tsconfig/node24':
+        specifier: ^24.0.1
+        version: 24.0.1
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
@@ -683,8 +683,8 @@ packages:
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
 
-  '@tsconfig/node22@22.0.2':
-    resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
+  '@tsconfig/node24@24.0.1':
+    resolution: {integrity: sha512-3+IXshza3bIrT0tbHBr9CixQDVf4iBf0HTR0hCYowhpLqkzJjswu3UY8aZWjRXZep31kYB+o2SQeD8KwIoUHYw==}
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
@@ -3203,7 +3203,7 @@ snapshots:
   '@tootallnate/once@2.0.0':
     optional: true
 
-  '@tsconfig/node22@22.0.2': {}
+  '@tsconfig/node24@24.0.1': {}
 
   '@types/body-parser@1.19.6':
     dependencies:
