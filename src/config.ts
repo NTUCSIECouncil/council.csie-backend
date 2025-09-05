@@ -8,7 +8,7 @@ import logger from '@utils/logger.ts';
 dotenv.config({ path: ['.env', '.env.default'], quiet: true });
 
 const EnvSchema = z.object({
-  FIREBASE_CERT_PATH: z.string(),
+  GOOGLE_APPLICATION_CREDENTIALS: z.string(),
   MONGODB_URI: z.string(),
   MONGODB_DB_NAME: z.string(),
   PORT: z.string(),
