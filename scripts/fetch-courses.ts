@@ -4,7 +4,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-import { ZUuidSchema } from '@/models/util-schema.ts';
+import { ZUuidSchema } from '@models/util-schema.ts';
 import { type Course } from '@models/course-schema.ts';
 
 dotenv.config({ path: ['.env', '.env.default'], quiet: true });

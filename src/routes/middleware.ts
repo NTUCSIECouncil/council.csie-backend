@@ -1,7 +1,7 @@
 import { type RequestHandler } from 'express';
 import { z } from 'zod';
 
-import logger from '@/utils/logger.ts';
+import logger from '@utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const paginationParser: RequestHandler = (req, res, next) => {

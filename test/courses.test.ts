@@ -7,8 +7,8 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { CourseModel } from '@/models/course-schema.ts';
-import { QuizModel } from '@/models/quiz-schema.ts';
+import { CourseModel } from '@models/course-schema.ts';
+import { QuizModel } from '@models/quiz-schema.ts';
 import app from './app.ts';
 import {
   ZCourseResponseSchema,
