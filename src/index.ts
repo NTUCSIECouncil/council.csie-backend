@@ -73,7 +73,7 @@ expressApp.use(async (req, res, next) => {
 
 expressApp.use('/api', APIController);
 
-const api = await SwaggerParser.dereference('./openapi/openapi.yaml');
+const api = await SwaggerParser.dereference('./api-spec/openapi.yaml');
 await SwaggerParser.validate(api);
 expressApp.use('/api-docs', swaggerUi.serve, swaggerUi.setup(api));
 
