@@ -72,7 +72,7 @@
       "",
       "<THIRD_PARTY_MODULES>",
       "",
-      "^@(models|routers|scripts|type|utils)?/",
+      "^@(models|routes|scripts|type|utils)?/",
       "^[.]"
     ],
     "importOrderTypeScriptVersion": "5.9.2",
