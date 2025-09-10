@@ -8,7 +8,7 @@ import morgan, { type StreamOptions } from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
 import { UserModel } from '@models/user-schema.ts';
-import APIRouter from '@routes/API-route.ts';
+import APIRouter from '@routes/API-routes.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
 import { env } from './config.ts';

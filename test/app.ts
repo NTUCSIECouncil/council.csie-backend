@@ -2,7 +2,7 @@ import express from 'express';
 import { type UserRecord } from 'firebase-admin/auth';
 
 import { UserModel } from '@models/user-schema.ts';
-import APIRouter from '@routes/API-route.ts';
+import APIRouter from '@routes/API-routes.ts';
 
 const expressApp = express();
 
