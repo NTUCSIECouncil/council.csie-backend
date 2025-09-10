@@ -1,7 +1,7 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { cert, initializeApp } from 'firebase-admin/app';
+import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
@@ -15,9 +15,7 @@ import { env } from './config.ts';
 
 let auth;
 try {
-  const firebaseApp = initializeApp({
-    credential: cert(env.FIREBASE_CERT_PATH),
-  });
+  const firebaseApp = initializeApp({ credential: applicationDefault() });
   logger.info('Connected to Firebase');
   auth = getAuth(firebaseApp);
   logger.info('Initialized Firebase Auth');
