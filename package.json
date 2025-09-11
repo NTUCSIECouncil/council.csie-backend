@@ -4,7 +4,7 @@
     "prepare": "node .husky/install.mjs",
     "preinstall": "npx only-allow pnpm",
     "dev": "tsx src/index.ts",
-    "dev:watch": "tsx watch --include openapi --clear-screen=false src/index.ts",
+    "dev:watch": "tsx watch --include api-spec/ --clear-screen=false src/index.ts",
     "build": "tsdown src/index.ts",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",

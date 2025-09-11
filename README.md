@@ -71,14 +71,14 @@ UPLOADS_DIR='./test/uploads' # Directory for uploaded files in tests
 # One-off start
 pnpm run dev
 
-# Watch src/ and openapi/ for changes
+# Watch src/ and api-spec/ for changes
 # Press Enter in the terminal to restart; Ctrl+C to stop
 pnpm run dev:watch
 ```
 
 ## API docs
 
-- Spec: `openapi/`
+- Spec: `api-spec/`
 - Swagger UI: `http://localhost:3010/api-docs` (or your `PORT` in `.env`)
 
 ## Sample data (optional)
