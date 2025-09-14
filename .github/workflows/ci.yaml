@@ -10,14 +10,15 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout repository
         uses: actions/checkout@v5
 
       - name: Set up pnpm
@@ -31,13 +32,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint code
+      - name: Run lint check
         run: pnpm run lint:check
 
   format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout repository
         uses: actions/checkout@v5
 
       - name: Set up pnpm
@@ -51,13 +53,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Check code formatting
+      - name: Check formatting
         run: pnpm run format:check
 
-  typecheck:
+  type-check:
+    name: Type Check
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout repository
         uses: actions/checkout@v5
 
       - name: Set up pnpm
@@ -71,13 +74,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Check TypeScript types
+      - name: Run type check
         run: pnpm run type-check
 
   test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout repository
         uses: actions/checkout@v5
 
       - name: Set up pnpm
@@ -91,7 +95,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Cache sample data
+      - name: Restore sample data cache
         id: samples-cache
         uses: actions/cache@v4
         with:
