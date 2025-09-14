@@ -1,12 +1,9 @@
 name: 'Setup Node.js and pnpm'
-description: 'Checkout repository, setup pnpm, Node.js, and install dependencies'
+description: 'Setup pnpm, Node.js, and install dependencies'
 
 runs:
   using: 'composite'
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v5
-
     - name: Set up pnpm
       uses: pnpm/action-setup@v4
 

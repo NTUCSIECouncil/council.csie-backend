@@ -18,6 +18,9 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
@@ -28,6 +31,9 @@ jobs:
     name: Format
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
@@ -38,6 +44,9 @@ jobs:
     name: Type Check
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
@@ -48,6 +57,9 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
 
