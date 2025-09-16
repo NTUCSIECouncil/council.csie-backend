@@ -1,0 +1,82 @@
+name: CI Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Run lint check
+        run: pnpm run lint:check
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Run type check
+        run: pnpm run type-check
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Restore sample data cache
+        id: samples-cache
+        uses: actions/cache@v4
+        with:
+          path: ./samples/
+          key: ${{ runner.os }}-samples-${{ hashFiles('pnpm-lock.yaml', 'package.json', 'scripts/fetch-courses.ts', 'scripts/generate-samples.ts', '.env.default', 'src/models/**/*.ts') }}
+
+      - name: Fetch course data
+        if: steps.samples-cache.outputs.cache-hit != 'true'
+        run: pnpm run fetch-courses
+
+      - name: Generate sample data
+        if: steps.samples-cache.outputs.cache-hit != 'true'
+        run: pnpm run generate-samples
+
+      - name: Run tests
+        run: pnpm run test
