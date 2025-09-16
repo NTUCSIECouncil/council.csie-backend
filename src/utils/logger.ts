@@ -3,6 +3,8 @@ import path from 'path';
 
 import winston from 'winston';
 
+import { env } from '@/config.ts';
+
 const logFormat = winston.format.printf(
   (info: winston.Logform.TransformableInfo) => {
     const log = `${info.timestamp as string} [${info.level}]: ${info.message as string}`;
@@ -14,7 +16,7 @@ const logFormat = winston.format.printf(
   },
 );
 
-const logDir = 'logs';
+const logDir = env.LOGS_DIR;
 const testLogDir = path.join(logDir, 'test');
 
 if (process.env.NODE_ENV === 'test') {

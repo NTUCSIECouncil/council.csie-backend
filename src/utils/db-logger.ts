@@ -1,4 +1,8 @@
+import path from 'path';
+
 import winston from 'winston';
+
+import { env } from '@/config.ts';
 
 const logFormat = winston.format.printf(
   (info: winston.Logform.TransformableInfo) => {
@@ -14,7 +18,7 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.File({
-      filename: 'logs/database.log',
+      filename: path.join(env.LOGS_DIR, 'database.log'),
       level: 'silly',
     }),
   ],
