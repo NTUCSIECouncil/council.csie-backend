@@ -1,0 +1,20 @@
+name: Docker Build
+
+on:
+  workflow_run:
+    workflows: [CI Checks]
+    types:
+      - completed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Image
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hello World
+        run: echo "Hello, world!"
