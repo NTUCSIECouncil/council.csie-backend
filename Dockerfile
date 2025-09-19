@@ -1,7 +1,7 @@
 FROM node:24.7.0-alpine AS base
 
-ENV PNPM_HOME="/pnpm" \
-    PATH="$PNPM_HOME:$PATH"
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 FROM base AS build
@@ -44,5 +44,4 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
 EXPOSE 3010
 
 USER node
-# CMD [ "node", "dist/index.js" ]
-CMD [ "sh" ]
+CMD [ "node", "dist/index.js" ]
