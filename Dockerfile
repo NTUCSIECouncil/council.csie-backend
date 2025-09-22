@@ -24,7 +24,7 @@ RUN pnpm run build
 
 RUN pnpm prune --prod
 
-FROM base AS prod
+FROM base AS runner
 
 WORKDIR /app
 
@@ -34,14 +34,6 @@ COPY --from=build /app/dist ./dist
 
 RUN mkdir -p /app/var && chown -R node:node /app/var
 ENV NODE_ENV=production
-ENV GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
-    MONGODB_URI=mongodb://127.0.0.1:27017 \
-    MONGODB_DB_NAME=csie-council-dev \
-    PORT=3010 \
-    UPLOADS_DIR=./var/uploads \
-    LOGS_DIR=./var/logs
-
-EXPOSE 3010
 
 USER node
 CMD [ "node", "dist/index.js" ]
