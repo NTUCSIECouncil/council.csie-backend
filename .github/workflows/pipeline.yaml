@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
