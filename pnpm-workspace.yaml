@@ -1,12 +1,14 @@
 engineStrict: true
 
-sideEffectsCache: false
-
-onlyBuiltDependencies:
-  - mongodb-memory-server
-
 ignoredBuiltDependencies:
   - '@firebase/util'
   - '@scarf/scarf'
-  - esbuild
   - protobufjs
+
+onlyBuiltDependencies:
+  - esbuild
+  - mongodb-memory-server
+
+sideEffectsCache: false
+
+verifyDepsBeforeRun: prompt
