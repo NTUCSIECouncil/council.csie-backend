@@ -38,7 +38,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   cleanup:
-    name: Delete untagged images
+    name: Delete Untagged Images
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
