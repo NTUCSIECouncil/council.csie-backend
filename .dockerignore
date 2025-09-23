@@ -1,35 +1,39 @@
-.github/
-
-.vscode/
-
-dist/
-
-logs/
-
-node_modules/
-
-samples/
-
-scripts/
-
-test/
-
-.dockerignore
-
-.env
-.env.*
-
+# Git
 .git/
 .gitignore
 
-.prettierignore
+# IDE and editor files
+.vscode/
 
-Dockerfile
+# Build artifacts and temporary files
+dist/
+logs/
 
-eslint.config.js
+# Dependencies
+node_modules/
 
-LICENSE
+# Environment and secrets
+.env
+.env.*
 
+# Documentation
 README.md
 
+# Development and testing
+tests/
+
+# Linting and formatting
+eslint.config.js
+.prettierignore
+
+# Test config files
 vitest.config.ts
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Misc
+samples/
+scripts/
+.github/
