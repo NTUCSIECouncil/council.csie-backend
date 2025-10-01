@@ -1,0 +1,39 @@
+# Git
+.git/
+.gitignore
+
+# IDE and editor files
+.vscode/
+
+# Build artifacts and temporary files
+dist/
+logs/
+
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+
+# Documentation
+README.md
+
+# Development and testing
+tests/
+
+# Linting and formatting
+eslint.config.js
+.prettierignore
+
+# Test config files
+vitest.config.ts
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Misc
+samples/
+scripts/
+.github/
