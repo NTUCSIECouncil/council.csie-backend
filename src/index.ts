@@ -1,4 +1,5 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
+import cors from 'cors';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
@@ -30,6 +31,9 @@ const expressApp = express();
 expressApp.set('query parser', 'extended');
 
 expressApp.use(express.json({ limit: '10mb' }));
+
+const corsOptions = { origin: env.FRONTEND_URL };
+expressApp.use(cors(corsOptions));
 
 const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
