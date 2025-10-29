@@ -120,6 +120,8 @@ function generateArticles(
       title: course.names[0],
       tags: [lecturer, course.names[0], dep],
       ratings,
+      updatedAt: new Date(),
+      createdAt: new Date(),
     };
     articles.push(article);
   }

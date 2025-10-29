@@ -469,11 +469,16 @@ describe('POST /api/articles', () => {
           .get(`/api/articles/${body.articleId}`)
           .expect(200);
         const getBody = parseAndExpectValid(ZArticleResponse, res.body);
-        expect(getBody.article).toEqual({
+        expect(getBody.article).toMatchObject({
           ...articleData,
           _id: body.articleId,
           creator: creator._id,
         });
+        const createdAt = new Date(getBody.article.createdAt);
+        const updatedAt = new Date(getBody.article.updatedAt);
+        expect(updatedAt.getTime()).toBe(createdAt.getTime());
+        expect(() => createdAt.toISOString()).not.toThrow();
+        expect(() => updatedAt.toISOString()).not.toThrow();
       }
     });
 
@@ -929,6 +934,47 @@ describe('PATCH /api/articles/:articleId', () => {
       }
     });
 
+    it('should update updatedAt timestamp', async () => {
+      const article = await getTestArticle();
+      const creator = await UserModel.findById(article.creator)
+        .lean({ versionKey: false })
+        .exec();
+
+      const initialRes = await request(app)
+        .get(`/api/articles/${article._id}`)
+        .expect(200);
+
+      const initialBody = parseAndExpectValid(
+        ZArticleResponse,
+        initialRes.body,
+      );
+      const initialTimestamp = new Date(
+        initialBody.article.updatedAt,
+      ).getTime();
+
+      const updates = {
+        title: 'Multi Update Test',
+        tags: ['multi', 'update'],
+        ratings: { sweetness: 5, chill: 4, teaching: 3, gain: 2, recommend: 1 },
+      };
+
+      await request(app)
+        .patch(`/api/articles/${article._id}`)
+        .send(updates)
+        .set('gid', creator!.gid)
+        .expect(204);
+
+      {
+        const res = await request(app)
+          .get(`/api/articles/${article._id}`)
+          .expect(200);
+        const body = parseAndExpectValid(ZArticleResponse, res.body);
+        expect(new Date(body.article.updatedAt).getTime()).toBeGreaterThan(
+          initialTimestamp,
+        );
+      }
+    });
+
     it('should handle empty updates', async () => {
       const article = await getTestArticle();
       const creator = await UserModel.findById(article.creator)
@@ -1148,7 +1194,7 @@ describe('GET /api/articles/:articleId/file', () => {
 
 describe('PUT /api/articles/:articleId/file', () => {
   describe('Successful file operations', () => {
-    it('should upload and update file content', async () => {
+    it('should upload and update file content and timestamp', async () => {
       const creator = await getTestUser();
 
       let articleId: string;
@@ -1162,6 +1208,18 @@ describe('PUT /api/articles/:articleId/file', () => {
         articleId = body.articleId;
       }
 
+      const initialRes = await request(app)
+        .get(`/api/articles/${articleId}`)
+        .expect(200);
+
+      const initialBody = parseAndExpectValid(
+        ZArticleResponse,
+        initialRes.body,
+      );
+      const initialTimestamp = new Date(
+        initialBody.article.updatedAt,
+      ).getTime();
+
       // Upload content
       const initialContent =
         '# Initial Content\n\nThis is the initial content.';
@@ -1171,13 +1229,27 @@ describe('PUT /api/articles/:articleId/file', () => {
         .set('gid', creator.gid)
         .expect(204);
 
+      // sleep for 1 second to ensure timestamp difference
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Verify content
       {
-        const res = await request(app)
+        const fileRes = await request(app)
           .get(`/api/articles/${articleId}/file`)
           .expect(200);
-        const body = parseAndExpectValid(ZFileResponse, res.body);
+        const body = parseAndExpectValid(ZFileResponse, fileRes.body);
         expect(body.file).toBe(initialContent);
+
+        const articleRes = await request(app)
+          .get(`/api/articles/${articleId}`)
+          .expect(200);
+        const articleBody = parseAndExpectValid(
+          ZArticleResponse,
+          articleRes.body,
+        );
+        expect(
+          new Date(articleBody.article.updatedAt).getTime(),
+        ).toBeGreaterThan(initialTimestamp);
       }
 
       // Update content
