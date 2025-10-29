@@ -1,8 +1,8 @@
 import express from 'express';
 import { type UserRecord } from 'firebase-admin/auth';
 
-import { UserModel } from '@/models/user-schema.ts';
-import APIController from '@routers/API-controller.ts';
+import { UserModel } from '@models/user-schema.ts';
+import APIRouter from '@routes/API-routes.ts';
 
 const expressApp = express();
 
@@ -51,6 +51,6 @@ expressApp.use(async (req, res, next) => {
 });
 
 expressApp.use(express.json({ limit: '10mb' }));
-expressApp.use('/api', APIController);
+expressApp.use('/api', APIRouter);
 
 export default expressApp;

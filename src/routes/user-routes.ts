@@ -3,8 +3,8 @@ import { type UUID } from 'crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 
-import { ZUuidSchema } from '@/models/util-schema.ts';
 import { models } from '@models/index.ts';
+import { ZUuidSchema } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
 
 const router = Router();

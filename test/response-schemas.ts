@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { ZQuizSessionSchema } from '@/models/quiz-schema.ts';
-import { ZUuidSchema } from '@/models/util-schema.ts';
+import { ZQuizSessionSchema } from '@models/quiz-schema.ts';
+import { ZUuidSchema } from '@models/util-schema.ts';
 
 const ZErrorSchema = z.object({
   message: z.string(),
