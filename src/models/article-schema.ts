@@ -131,7 +131,13 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (
 
   if (params.keyword) {
     const fuseOptions = {
-      keys: ['title', 'course.names', 'course.lecturer', 'course.curriculum'],
+      keys: [
+        'title',
+        'course.names',
+        'course.lecturer',
+        'course.curriculum',
+        'course.semester',
+      ],
       threshold: 0.6,
     };
     const fuse = new Fuse(articles, fuseOptions);

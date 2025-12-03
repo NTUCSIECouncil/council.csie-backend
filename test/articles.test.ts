@@ -127,11 +127,17 @@ describe('GET /api/articles', () => {
         .exec();
 
       const fuse = new Fuse(populatedArticles, {
-        keys: ['title', 'course.names', 'course.lecturer', 'course.curriculum'],
+        keys: [
+          'title',
+          'course.names',
+          'course.lecturer',
+          'course.curriculum',
+          'course.semester',
+        ],
         threshold: 0.6,
       });
 
-      const testKeywords = ['醣類化學與應用', '賴喜美', 'AC5057'];
+      const testKeywords = ['醣類化學與應用', '賴喜美', 'AC5057', '113-2'];
       for (const keyword of testKeywords) {
         const fuseResult = fuse.search(keyword);
         const expectedIds = fuseResult.map(item => item.item._id);

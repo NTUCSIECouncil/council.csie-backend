@@ -103,11 +103,11 @@ describe('GET /api/courses', () => {
         .lean({ versionKey: false })
         .exec();
       const fuse = new Fuse(courses, {
-        keys: ['names', 'lecturer'],
+        keys: ['names', 'lecturer', 'semester'],
         threshold: 0.6,
       });
 
-      const testKeywords = ['服務學習', '羅凱尹', '普通微生物學'];
+      const testKeywords = ['服務學習', '羅凱尹', '普通微生物學', '113-2'];
       for (const keyword of testKeywords) {
         const res = await request(app)
           .get('/api/courses')
