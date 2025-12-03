@@ -13,6 +13,7 @@ const EnvSchema = z.object({
   PORT: z.string(),
   UPLOADS_DIR: z.string(),
   LOGS_DIR: z.string(),
+  FRONTEND_URL: z.url(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
