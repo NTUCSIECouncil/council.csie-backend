@@ -122,7 +122,15 @@ ArticleResponse:
             Article content preview (first 50 characters). Returns empty string 
             if no content file has been uploaded. Use the file endpoint to retrieve full content.
           example: 'This is a sample article content that is very...'
-  required: [_id, title, tags, ratings, course, creator]
+        createdAt:
+          type: string
+          description: Article created time (ISO 8601)
+          example: '2025-10-29T16:37:48.244Z'
+        updatedAt:
+          type: string
+          description: Article last updated time (ISO 8601)
+          example: '2025-10-30T16:37:48.244Z'
+  required: [_id, title, tags, ratings, course, creator, createdAt, updatedAt]
 
 CourseResponse:
   type: object

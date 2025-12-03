@@ -57,6 +57,7 @@ const limiter = rateLimit({
 expressApp.use(limiter);
 
 expressApp.use(async (req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
   const token = req.headers.authorization;
 
   if (token?.startsWith('Bearer ')) {
@@ -64,9 +65,11 @@ expressApp.use(async (req, res, next) => {
       const decodedToken = await auth.verifyIdToken(token.slice(7));
       const userRecord = await auth.getUser(decodedToken.uid);
       req.guser = userRecord;
-      const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())
+      const userId = (await UserModel.findOne({ gid: decodedToken.uid }).exec())
         ?._id;
       req.userId = userId;
+      console.log(`Authenticated user: ${userRecord.uid}`);
+      // okay
     } catch (err) {
       logger.error('Error verifying Firebase token: ', err);
     }

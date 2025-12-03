@@ -49,6 +49,8 @@ const ZArticleResponseSchema = z.object({
   course: z.union([ZUuidSchema, ZCourseResponseSchema]),
   creator: z.union([ZUuidSchema, ZUserResponseSchema]),
   content: z.string().optional(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 const ZQuizResponseSchema = z.object({

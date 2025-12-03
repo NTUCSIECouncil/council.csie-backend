@@ -4,6 +4,7 @@ import Fuse from 'fuse.js';
 import {
   model,
   Schema,
+  type Date,
   type FilterQuery,
   type HydratedDocument,
   type Model,
@@ -29,13 +30,18 @@ const ZArticleSchema = z.object({
   ratings: ZRatingSchema,
   course: ZUuidSchema, // foreign key to Course
   creator: ZUuidSchema, // foreign key to User
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
 });
 
 interface Article extends z.infer<typeof ZArticleSchema> {}
 
-interface PopulatedArticle extends Omit<Article, 'course' | 'creator'> {
+interface PopulatedArticle
+  extends Omit<Article, 'course' | 'creator' | 'createdAt' | 'updatedAt'> {
   course: Course;
   creator: User;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ArticleModel extends Model<Article> {
@@ -112,7 +118,7 @@ const articleSchema = new Schema<Article, ArticleModel>(
     course: { type: String, ref: 'Course', required: true, immutable: true },
     creator: { type: String, ref: 'User', required: true, immutable: true },
   },
-  { toObject: { versionKey: false } },
+  { toObject: { versionKey: false }, timestamps: true },
 );
 
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (
@@ -127,6 +133,8 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (
   let articles = await this.find(query).populate<{
     course: Course;
     creator: User;
+    createdAt: Date;
+    updatedAt: Date;
   }>(['course', 'creator']);
 
   if (params.keyword) {
