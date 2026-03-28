@@ -7,6 +7,7 @@ declare global {
     export interface Request {
       guser?: UserRecord;
       userId?: UUID;
+      rawToken?: string;
       limit?: number;
       offset?: number;
     }

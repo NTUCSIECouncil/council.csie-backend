@@ -17,6 +17,14 @@ router.all('/me{/*splat}', (req, res, next) => {
     res.status(401).json({ message: 'Authentication required' });
     return;
   }
+  if (req.rawToken !== undefined) {
+    res.cookie('token', req.rawToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000,
+    });
+  }
   req.url = req.url.replace(/^\/me/, `/${req.userId}`);
   next();
 });
@@ -61,6 +69,14 @@ router.post('/', async (req, res) => {
   const userDoc = new UserModel(userData);
   await userDoc.save();
   const userId = userDoc._id;
+  if (req.rawToken !== undefined) {
+    res.cookie('token', req.rawToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000,
+    });
+  }
   res.status(201).json({ userId });
 });
 

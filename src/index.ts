@@ -1,4 +1,5 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
@@ -32,8 +33,9 @@ expressApp.set('query parser', 'extended');
 
 expressApp.use(express.json({ limit: '10mb' }));
 
-const corsOptions = { origin: env.FRONTEND_URL };
+const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
 expressApp.use(cors(corsOptions));
+expressApp.use(cookieParser());
 
 const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
@@ -57,13 +59,18 @@ const limiter = rateLimit({
 expressApp.use(limiter);
 
 expressApp.use(async (req, res, next) => {
-  const token = req.headers.authorization;
+  const authHeader = req.headers.authorization;
+  const cookieToken = (req.cookies as Record<string, string | undefined>).token;
+  const rawToken = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice(7)
+    : cookieToken;
 
-  if (token?.startsWith('Bearer ')) {
+  if (rawToken !== undefined) {
     try {
-      const decodedToken = await auth.verifyIdToken(token.slice(7));
+      const decodedToken = await auth.verifyIdToken(rawToken);
       const userRecord = await auth.getUser(decodedToken.uid);
       req.guser = userRecord;
+      req.rawToken = rawToken;
       const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())
         ?._id;
       req.userId = userId;
