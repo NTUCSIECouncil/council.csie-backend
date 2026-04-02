@@ -99,11 +99,17 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  let articleCreate: Omit<Article, '_id' | 'creator'>;
+  let articleCreate: Omit<
+    Article,
+    '_id' | 'creator' | 'createdAt' | 'updatedAt'
+  >;
   try {
-    articleCreate = ZArticleSchema.omit({ _id: true, creator: true }).parse(
-      req.body,
-    );
+    articleCreate = ZArticleSchema.omit({
+      _id: true,
+      creator: true,
+      createdAt: true,
+      updatedAt: true,
+    }).parse(req.body);
   } catch (err) {
     logger.warn('Failed to parse request body in POST /articles: ', err);
     res.status(400).json({ message: 'Invalid request body' });
@@ -187,6 +193,8 @@ router.patch('/:articleId', async (req, res) => {
       _id: true,
       course: true,
       creator: true,
+      createdAt: true,
+      updatedAt: true,
     })
       .extend({ ratings: ZRatingSchema.partial() })
       .partial()
@@ -287,7 +295,7 @@ router.put('/:articleId/file', async (req, res) => {
     return;
   }
 
-  const article = await ArticleModel.findById(articleId).lean().exec();
+  const article = await ArticleModel.findById(articleId).exec();
   if (article === null) {
     res.status(404).json({ message: 'Article not found' });
     return;
@@ -311,6 +319,7 @@ router.put('/:articleId/file', async (req, res) => {
     res.status(500).json({ message: 'Failed to write article file' });
     return;
   }
+  await article.updateOne({ updatedAt: true });
   res.sendStatus(204);
 });
 

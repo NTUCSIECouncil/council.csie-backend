@@ -59,6 +59,7 @@ const limiter = rateLimit({
 expressApp.use(limiter);
 
 expressApp.use(async (req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
   const authHeader = req.headers.authorization;
   const cookieToken = (req.cookies as Record<string, string | undefined>).token;
   const rawToken = authHeader?.startsWith('Bearer ')
@@ -74,6 +75,8 @@ expressApp.use(async (req, res, next) => {
       const userId = (await UserModel.findOne({ gid: decodedToken.uid }).exec())
         ?._id;
       req.userId = userId;
+      console.log(`Authenticated user: ${userRecord.uid}`);
+      // okay
     } catch (err) {
       logger.error('Error verifying Firebase token: ', err);
     }
