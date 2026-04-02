@@ -14,7 +14,7 @@ const UserModel = models.User;
 router.all('/me{/*splat}', (req, res, next) => {
   if (req.userId === undefined) {
     logger.warn('Unauthorized access to /me route - no authenticated user');
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
   if (req.rawToken !== undefined) {
@@ -32,7 +32,7 @@ router.all('/me{/*splat}', (req, res, next) => {
 router.post('/', async (req, res) => {
   if (req.guser === undefined) {
     logger.warn('Unauthorized access to POST /users');
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -106,7 +106,7 @@ router.get('/:userId', async (req, res) => {
 router.patch('/:userId', async (req, res) => {
   if (req.userId === undefined) {
     logger.warn('Unauthorized access to PATCH /users/:userId');
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
@@ -150,7 +150,7 @@ router.patch('/:userId', async (req, res) => {
 router.get('/:userId/private', async (req, res) => {
   if (req.userId === undefined) {
     logger.warn('Unauthorized access to GET /users/:userId/private');
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 

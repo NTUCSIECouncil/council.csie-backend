@@ -4,6 +4,20 @@ import { z } from 'zod';
 import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
+const requireCsie: RequestHandler = (req, res, next) => {
+  const email = req.guser?.email ?? '';
+  if (!email.endsWith('@csie.ntu.edu.tw')) {
+    logger.warn(
+      `Access denied for non-csie user: ${email || 'unauthenticated'}`,
+    );
+    res
+      .status(403)
+      .json({ message: 'Access restricted to csie.ntu.edu.tw accounts' });
+    return;
+  }
+  next();
+};
+
 const paginationParser: RequestHandler = (req, res, next) => {
   req.limit = 10;
   req.offset = 0;
@@ -23,4 +37,4 @@ const paginationParser: RequestHandler = (req, res, next) => {
   next();
 };
 
-export { paginationParser };
+export { paginationParser, requireCsie };

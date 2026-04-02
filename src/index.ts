@@ -71,7 +71,7 @@ expressApp.use(async (req, res, next) => {
       const userRecord = await auth.getUser(decodedToken.uid);
       req.guser = userRecord;
       req.rawToken = rawToken;
-      const userId = (await UserModel.findOne({ _id: decodedToken.uid }).exec())
+      const userId = (await UserModel.findOne({ gid: decodedToken.uid }).exec())
         ?._id;
       req.userId = userId;
     } catch (err) {

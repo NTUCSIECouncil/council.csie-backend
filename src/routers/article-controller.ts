@@ -95,7 +95,7 @@ router.get('/', paginationParser, async (req, res) => {
 router.post('/', async (req, res) => {
   if (!req.userId) {
     logger.warn('Unauthorized access to POST /articles');
-    res.status(401).json({ message: 'Authentication required' });
+    res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 

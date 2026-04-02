@@ -153,6 +153,12 @@ courses_courseId_quizzes:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
+      '403':
+        description: Access restricted to csie.ntu.edu.tw accounts
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/Error'
       '404':
         description: Course not found
         content:

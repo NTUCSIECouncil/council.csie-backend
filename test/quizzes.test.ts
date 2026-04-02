@@ -10,7 +10,9 @@ import { QuizModel } from '@models/quiz-schema.ts';
 import app from './app.ts';
 import { ZMetaSchema, ZQuizResponseSchema } from './response-schemas.ts';
 import {
+  authedRequest,
   expectValidErrorResponse,
+  getTestCourse,
   getTestQuiz,
   parseAndExpectValid,
   seedModelFromSamples,
@@ -33,10 +35,32 @@ afterEach(async () => {
   await mongoose.connection.db?.dropDatabase();
 });
 
+describe('Authorization', () => {
+  it('should allow csie users to access all quiz endpoints', async () => {
+    const testQuiz = await getTestQuiz();
+    const testCourse = await getTestCourse();
+    await authedRequest('/api/quizzes').expect(200);
+    await authedRequest(`/api/quizzes/${testQuiz._id}`).expect(200);
+    await authedRequest(`/api/quizzes/${testQuiz._id}/file`).expect(200);
+    await authedRequest(`/api/courses/${testCourse._id}/quizzes`).expect(200);
+  });
+
+  it('should block non-csie users from all quiz endpoints', async () => {
+    const testQuiz = await getTestQuiz();
+    const testCourse = await getTestCourse();
+    await request(app).get('/api/quizzes').expect(403);
+    await request(app).get(`/api/quizzes/${testQuiz._id}`).expect(403);
+    await request(app).get(`/api/quizzes/${testQuiz._id}/file`).expect(403);
+    await request(app)
+      .get(`/api/courses/${testCourse._id}/quizzes`)
+      .expect(403);
+  });
+});
+
 describe('GET /api/quizzes', () => {
   describe('Basic retrieval', () => {
     it('should return quizzes list with default pagination', async () => {
-      const res = await request(app).get('/api/quizzes').expect(200);
+      const res = await authedRequest('/api/quizzes').expect(200);
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
 
       expect(body.meta.limit).toBe(10);
@@ -45,8 +69,7 @@ describe('GET /api/quizzes', () => {
     });
 
     it('should respect custom pagination parameters', async () => {
-      const res = await request(app)
-        .get('/api/quizzes')
+      const res = await authedRequest('/api/quizzes')
         .query(qs.stringify({ limit: 5, offset: 2 }))
         .expect(200);
 
@@ -57,8 +80,7 @@ describe('GET /api/quizzes', () => {
     });
 
     it('should handle large offset gracefully', async () => {
-      const res = await request(app)
-        .get('/api/quizzes')
+      const res = await authedRequest('/api/quizzes')
         .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
@@ -79,8 +101,7 @@ describe('GET /api/quizzes', () => {
       ];
 
       for (const params of invalidParams) {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify(params))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -90,7 +111,7 @@ describe('GET /api/quizzes', () => {
     it('should return empty results when no quizzes exist', async () => {
       await QuizModel.deleteMany({});
 
-      const res = await request(app).get('/api/quizzes').expect(200);
+      const res = await authedRequest('/api/quizzes').expect(200);
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
 
       expect(body.quizzes).toHaveLength(0);
@@ -102,8 +123,7 @@ describe('GET /api/quizzes', () => {
     it('should support all embed combinations', async () => {
       // No embedding (default)
       {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ limit: 1 }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
@@ -117,8 +137,7 @@ describe('GET /api/quizzes', () => {
 
       // Course embedding
       {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['course'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
@@ -132,8 +151,7 @@ describe('GET /api/quizzes', () => {
 
       // Uploader embedding
       {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['uploader'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
@@ -147,8 +165,7 @@ describe('GET /api/quizzes', () => {
 
       // Both embeddings
       {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ limit: 1, embed: ['course', 'uploader'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
@@ -165,8 +182,7 @@ describe('GET /api/quizzes', () => {
       const invalidEmbeds = ['invalid', 'nonexistent', 'content'];
 
       for (const embed of invalidEmbeds) {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ embed: [embed] }))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -174,8 +190,7 @@ describe('GET /api/quizzes', () => {
 
       // Mix of valid and invalid
       {
-        const res = await request(app)
-          .get('/api/quizzes')
+        const res = await authedRequest('/api/quizzes')
           .query(qs.stringify({ embed: ['course', 'invalid'] }))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -183,8 +198,7 @@ describe('GET /api/quizzes', () => {
     });
 
     it('should handle empty embed array', async () => {
-      const res = await request(app)
-        .get('/api/quizzes')
+      const res = await authedRequest('/api/quizzes')
         .query(qs.stringify({ embed: [], limit: 1 }))
         .expect(200);
 
@@ -203,9 +217,9 @@ describe('GET /api/quizzes/:quizId', () => {
     it('should return single quiz', async () => {
       const testQuiz = await getTestQuiz();
 
-      const res = await request(app)
-        .get(`/api/quizzes/${testQuiz._id}`)
-        .expect(200);
+      const res = await authedRequest(`/api/quizzes/${testQuiz._id}`).expect(
+        200,
+      );
 
       const body = parseAndExpectValid(ZQuizResponse, res.body);
       expect(body.quiz).toEqual(testQuiz);
@@ -216,9 +230,9 @@ describe('GET /api/quizzes/:quizId', () => {
 
       // No embedding (default)
       {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
-          .expect(200);
+        const res = await authedRequest(`/api/quizzes/${testQuiz._id}`).expect(
+          200,
+        );
         const body = parseAndExpectValid(ZQuizResponse, res.body);
 
         expect(body.quiz.course).toBeTypeOf('string');
@@ -227,8 +241,7 @@ describe('GET /api/quizzes/:quizId', () => {
 
       // Course embedding
       {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
+        const res = await authedRequest(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['course'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizResponse, res.body);
@@ -239,8 +252,7 @@ describe('GET /api/quizzes/:quizId', () => {
 
       // Uploader embedding
       {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
+        const res = await authedRequest(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['uploader'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizResponse, res.body);
@@ -251,8 +263,7 @@ describe('GET /api/quizzes/:quizId', () => {
 
       // Both embeddings
       {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
+        const res = await authedRequest(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: ['course', 'uploader'] }))
           .expect(200);
         const body = parseAndExpectValid(ZQuizResponse, res.body);
@@ -269,8 +280,7 @@ describe('GET /api/quizzes/:quizId', () => {
 
       const invalidEmbeds = ['invalid', 'nonexistent', 'content'];
       for (const embed of invalidEmbeds) {
-        const res = await request(app)
-          .get(`/api/quizzes/${testQuiz._id}`)
+        const res = await authedRequest(`/api/quizzes/${testQuiz._id}`)
           .query(qs.stringify({ embed: [embed] }))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -280,16 +290,14 @@ describe('GET /api/quizzes/:quizId', () => {
 
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
-      const res = await request(app)
-        .get('/api/quizzes/invalid-uuid')
-        .expect(400);
+      const res = await authedRequest('/api/quizzes/invalid-uuid').expect(400);
       expectValidErrorResponse(res.body);
     });
 
     it('should handle non-existent quizzes', async () => {
-      const res = await request(app)
-        .get(`/api/quizzes/${randomUUID()}`)
-        .expect(404);
+      const res = await authedRequest(`/api/quizzes/${randomUUID()}`).expect(
+        404,
+      );
       expectValidErrorResponse(res.body);
     });
   });
@@ -300,9 +308,9 @@ describe('GET /api/quizzes/:quizId/file', () => {
     it('should return PDF file content', async () => {
       const testQuiz = await getTestQuiz();
 
-      const res = await request(app)
-        .get(`/api/quizzes/${testQuiz._id}/file`)
-        .expect(200);
+      const res = await authedRequest(
+        `/api/quizzes/${testQuiz._id}/file`,
+      ).expect(200);
 
       expect(res.headers['content-type']).toMatch(/application\/pdf/);
       expect(res.body).toBeDefined();
@@ -312,16 +320,16 @@ describe('GET /api/quizzes/:quizId/file', () => {
 
   describe('Error handling', () => {
     it('should validate UUID format', async () => {
-      const res = await request(app)
-        .get('/api/quizzes/invalid-uuid/file')
-        .expect(400);
+      const res = await authedRequest('/api/quizzes/invalid-uuid/file').expect(
+        400,
+      );
       expectValidErrorResponse(res.body);
     });
 
     it('should handle non-existent quizzes', async () => {
-      const res = await request(app)
-        .get(`/api/quizzes/${randomUUID()}/file`)
-        .expect(404);
+      const res = await authedRequest(
+        `/api/quizzes/${randomUUID()}/file`,
+      ).expect(404);
       expectValidErrorResponse(res.body);
     });
   });
