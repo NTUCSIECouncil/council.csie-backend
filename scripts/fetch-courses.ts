@@ -123,7 +123,7 @@ const getBatchCourseData = async (
   const allProcessedCourses: Course[] = [];
   let currentPageIndex = 0;
   let totalCount = 0;
-  let fetchedCoursesOnPage;
+  let fetchedCoursesOnPage: number;
 
   console.log(
     `Starting to fetch all courses for keyword: "${keyword}", Semester: ${semester}`,
