@@ -6,7 +6,7 @@
     "dev": "tsx src/index.ts",
     "dev:watch": "tsx watch --include openapi --clear-screen=false src/index.ts",
     "build": "tsdown src/index.ts",
-    "start": "node dist/index.js",
+    "start": "node dist/index.mjs",
     "type-check": "tsc --noEmit",
     "lint": "eslint --fix 'src/**/*.ts' 'scripts/**/*.ts' 'test/**/*.ts'",
     "lint:check": "eslint 'src/**/*.ts' 'scripts/**/*.ts' 'test/**/*.ts'",
