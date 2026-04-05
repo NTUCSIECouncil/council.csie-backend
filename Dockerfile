@@ -35,4 +35,4 @@ RUN mkdir -p /app/var && chown -R node:node /app/var
 ENV NODE_ENV=production
 
 USER node
-CMD [ "node", "dist/index.js" ]
+CMD [ "node", "dist/index.mjs" ]
