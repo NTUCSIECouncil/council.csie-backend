@@ -80,6 +80,15 @@ router.post('/', async (req, res) => {
   res.status(201).json({ userId });
 });
 
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  });
+  res.sendStatus(204);
+});
+
 router.get('/:userId', async (req, res) => {
   let userId;
   try {
