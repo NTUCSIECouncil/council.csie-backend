@@ -13,7 +13,7 @@ expressApp.use(async (req, res, next) => {
   if (typeof gidHeader == 'string') {
     const guser: UserRecord = {
       uid: gidHeader,
-      email: 'mock@gmail.com',
+      email: 'mock@csie.ntu.edu.tw',
       emailVerified: true,
       displayName: 'Mock Person',
       photoURL: 'https://mock.com/photo.jpg',
@@ -29,7 +29,7 @@ expressApp.use(async (req, res, next) => {
         {
           uid: '106273168733193938381',
           displayName: 'Mock Person',
-          email: 'mock@gmail.com',
+          email: 'mock@csie.ntu.edu.tw',
           photoURL: 'https://mock.com/photo.jpg',
           providerId: 'google.com',
           phoneNumber: '+886912345678',

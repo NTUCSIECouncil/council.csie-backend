@@ -11,7 +11,7 @@ import {
   type QuizEmbedQueryParam,
 } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
-import { paginationParser } from './middleware.ts';
+import { paginationParser, requireCsie } from './middleware.ts';
 
 const router = Router();
 
@@ -60,43 +60,50 @@ router.get('/:courseId', async (req, res) => {
   }
 });
 
-router.get('/:courseId/quizzes', paginationParser, async (req, res) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
-  const [offset, limit] = [req.offset!, req.limit!];
-  let courseId: UUID;
-  let embedParam: QuizEmbedQueryParam;
-  try {
-    courseId = ZUuidSchema.parse(req.params.courseId);
-    embedParam = ZQuizEmbedQueryParam.parse(req.query);
-  } catch (err) {
-    logger.warn(
-      'Failed to parse courseId or query parameters in GET /courses/:courseId/quizzes: ',
-      err,
-    );
-    res.status(400).json({ message: 'Invalid course ID or query parameters' });
-    return;
-  }
+router.get(
+  '/:courseId/quizzes',
+  requireCsie,
+  paginationParser,
+  async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- paginationParser() checked
+    const [offset, limit] = [req.offset!, req.limit!];
+    let courseId: UUID;
+    let embedParam: QuizEmbedQueryParam;
+    try {
+      courseId = ZUuidSchema.parse(req.params.courseId);
+      embedParam = ZQuizEmbedQueryParam.parse(req.query);
+    } catch (err) {
+      logger.warn(
+        'Failed to parse courseId or query parameters in GET /courses/:courseId/quizzes: ',
+        err,
+      );
+      res
+        .status(400)
+        .json({ message: 'Invalid course ID or query parameters' });
+      return;
+    }
 
-  const course = await CourseModel.findById(courseId).lean().exec();
-  if (course === null) {
-    res.status(404).json({ message: 'Course not found' });
-    return;
-  }
+    const course = await CourseModel.findById(courseId).lean().exec();
+    if (course === null) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
 
-  const totalCount = await QuizModel.countDocuments({
-    course: courseId,
-  }).exec();
+    const totalCount = await QuizModel.countDocuments({
+      course: courseId,
+    }).exec();
 
-  let query = QuizModel.find({ course: courseId }).skip(offset).limit(limit);
-  if (embedParam.embed?.includes('course')) {
-    query = query.populate('course');
-  }
-  if (embedParam.embed?.includes('uploader')) {
-    query = query.populate('uploader');
-  }
+    let query = QuizModel.find({ course: courseId }).skip(offset).limit(limit);
+    if (embedParam.embed?.includes('course')) {
+      query = query.populate('course');
+    }
+    if (embedParam.embed?.includes('uploader')) {
+      query = query.populate('uploader');
+    }
 
-  const quizzes = await query.lean({ versionKey: false }).exec();
-  res.json({ quizzes, meta: { total: totalCount, offset, limit } });
-});
+    const quizzes = await query.lean({ versionKey: false }).exec();
+    res.json({ quizzes, meta: { total: totalCount, offset, limit } });
+  },
+);
 
 export default router;

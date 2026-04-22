@@ -33,7 +33,7 @@ users:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Authentication required
+        description: Unauthorized
         content:
           application/json:
             schema:
@@ -113,7 +113,7 @@ users_userId:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Authentication required
+        description: Unauthorized
         content:
           application/json:
             schema:
@@ -152,7 +152,7 @@ users_me:
                   $ref: '../components/schemas.yaml#/UserResponse'
               required: [user]
       '401':
-        description: Authentication required
+        description: Unauthorized
         content:
           application/json:
             schema:
@@ -182,7 +182,7 @@ users_me:
             schema:
               $ref: '../components/schemas.yaml#/Error'
       '401':
-        description: Authentication required
+        description: Unauthorized
         content:
           application/json:
             schema:
@@ -211,7 +211,7 @@ users_me_private:
                   $ref: '../components/schemas.yaml#/PrivateUserResponse'
               required: [user]
       '401':
-        description: Authentication required
+        description: Unauthorized
         content:
           application/json:
             schema:

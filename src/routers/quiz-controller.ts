@@ -12,9 +12,11 @@ import {
   type QuizEmbedQueryParam,
 } from '@models/util-schema.ts';
 import logger from '@utils/logger.ts';
-import { paginationParser } from './middleware.ts';
+import { paginationParser, requireCsie } from './middleware.ts';
 
 const router = Router();
+
+router.use(requireCsie);
 
 const QuizModel = models.Quiz;
 

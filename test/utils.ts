@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 
 import type mongoose from 'mongoose';
+import request from 'supertest';
 import { expect } from 'vitest';
 import z from 'zod';
 
@@ -18,6 +19,7 @@ import {
 import { models } from '@models/index.ts';
 import { QuizModel, ZQuizSchema, type Quiz } from '@models/quiz-schema.ts';
 import { UserModel, ZUserSchema, type User } from '@models/user-schema.ts';
+import app from './app.ts';
 import { ZErrorSchema } from './response-schemas.ts';
 
 const ZSchema = {
@@ -85,6 +87,9 @@ const getTestCourse = async (): Promise<Course> => {
   return getTestDoc(CourseModel);
 };
 
+const authedRequest = (path: string) =>
+  request(app).get(path).set('gid', 'mock-gid');
+
 export {
   expectValidErrorResponse,
   parseAndExpectValid,
@@ -93,4 +98,5 @@ export {
   getTestUser,
   getTestQuiz,
   getTestCourse,
+  authedRequest,
 };

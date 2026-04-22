@@ -44,7 +44,10 @@ const staticSearchCourses: CourseModel['searchCourses'] = async function (
   let courses = await this.find().exec();
 
   if (params.keyword) {
-    const fuseOptions = { keys: ['lecturer', 'names'], threshold: 0.6 };
+    const fuseOptions = {
+      keys: ['lecturer', 'names', 'semester'],
+      threshold: 0.6,
+    };
 
     const fuse = new Fuse(courses, fuseOptions);
 

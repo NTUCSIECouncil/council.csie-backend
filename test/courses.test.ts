@@ -16,6 +16,7 @@ import {
   ZQuizResponseSchema,
 } from './response-schemas.ts';
 import {
+  authedRequest,
   expectValidErrorResponse,
   getTestCourse,
   parseAndExpectValid,
@@ -103,11 +104,11 @@ describe('GET /api/courses', () => {
         .lean({ versionKey: false })
         .exec();
       const fuse = new Fuse(courses, {
-        keys: ['names', 'lecturer'],
+        keys: ['names', 'lecturer', 'semester'],
         threshold: 0.6,
       });
 
-      const testKeywords = ['服務學習', '羅凱尹', '普通微生物學'];
+      const testKeywords = ['服務學習', '羅凱尹', '普通微生物學', '113-2'];
       for (const keyword of testKeywords) {
         const res = await request(app)
           .get('/api/courses')
@@ -214,9 +215,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     it('should return quizzes with default pagination', async () => {
       const course = await getTestCourse();
 
-      const res = await request(app)
-        .get(`/api/courses/${course._id}/quizzes`)
-        .expect(200);
+      const res = await authedRequest(
+        `/api/courses/${course._id}/quizzes`,
+      ).expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.meta.limit).toBe(10);
@@ -230,8 +231,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     it('should respect custom pagination parameters', async () => {
       const course = await getTestCourse();
 
-      const res = await request(app)
-        .get(`/api/courses/${course._id}/quizzes`)
+      const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
         .query(qs.stringify({ limit: 5, offset: 2 }))
         .expect(200);
 
@@ -244,8 +244,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     it('should handle large offset gracefully', async () => {
       const course = await getTestCourse();
 
-      const res = await request(app)
-        .get(`/api/courses/${course._id}/quizzes`)
+      const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
         .query(qs.stringify({ limit: 10, offset: 100 }))
         .expect(200);
 
@@ -268,8 +267,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
       ];
 
       for (const params of invalidParams) {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
+        const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify(params))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -280,9 +278,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
       const course = await getTestCourse();
       await QuizModel.deleteMany({ course: course._id }).exec();
 
-      const res = await request(app)
-        .get(`/api/courses/${course._id}/quizzes`)
-        .expect(200);
+      const res = await authedRequest(
+        `/api/courses/${course._id}/quizzes`,
+      ).expect(200);
 
       const body = parseAndExpectValid(ZQuizListResponse, res.body);
       expect(body.quizzes).toHaveLength(0);
@@ -296,9 +294,9 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       // Test no embed (default - should return UUIDs)
       {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
-          .expect(200);
+        const res = await authedRequest(
+          `/api/courses/${course._id}/quizzes`,
+        ).expect(200);
 
         const body = parseAndExpectValid(ZQuizListResponse, res.body);
         for (const quiz of body.quizzes) {
@@ -309,8 +307,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       // Test embed=course
       {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
+        const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify({ embed: ['course'] }))
           .expect(200);
 
@@ -323,8 +320,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       // Test embed=uploader
       {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
+        const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify({ embed: ['uploader'] }))
           .expect(200);
 
@@ -337,8 +333,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
 
       // Test multiple embeds
       {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
+        const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify({ embed: ['course', 'uploader'] }))
           .expect(200);
 
@@ -360,8 +355,7 @@ describe('GET /api/courses/:courseId/quizzes', () => {
       ];
 
       for (const embed of invalidEmbeds) {
-        const res = await request(app)
-          .get(`/api/courses/${course._id}/quizzes`)
+        const res = await authedRequest(`/api/courses/${course._id}/quizzes`)
           .query(qs.stringify({ embed }))
           .expect(400);
         expectValidErrorResponse(res.body);
@@ -373,18 +367,18 @@ describe('GET /api/courses/:courseId/quizzes', () => {
     it('should validate UUID format', async () => {
       const invalidUuids = ['invalid-uuid', '123', 'not-a-uuid'];
       for (const invalidUuid of invalidUuids) {
-        const res = await request(app)
-          .get(`/api/courses/${invalidUuid}/quizzes`)
-          .expect(400);
+        const res = await authedRequest(
+          `/api/courses/${invalidUuid}/quizzes`,
+        ).expect(400);
         expectValidErrorResponse(res.body);
       }
     });
 
     it('should handle non-existent courses', async () => {
       const nonExistentId = randomUUID();
-      const res = await request(app)
-        .get(`/api/courses/${nonExistentId}/quizzes`)
-        .expect(404);
+      const res = await authedRequest(
+        `/api/courses/${nonExistentId}/quizzes`,
+      ).expect(404);
       expectValidErrorResponse(res.body);
     });
   });

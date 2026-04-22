@@ -55,6 +55,12 @@ quizzes:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
+      '403':
+        description: Access restricted to csie.ntu.edu.tw accounts
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/Error'
 
 quizzes_quizId:
   get:
@@ -98,6 +104,12 @@ quizzes_quizId:
           application/json:
             schema:
               $ref: '../components/schemas.yaml#/Error'
+      '403':
+        description: Access restricted to csie.ntu.edu.tw accounts
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/Error'
       '404':
         description: Quiz not found
         content:
@@ -129,6 +141,12 @@ quizzes_quizId_file:
               description: Binary PDF file content ready for download
       '400':
         description: Invalid quiz ID
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas.yaml#/Error'
+      '403':
+        description: Access restricted to csie.ntu.edu.tw accounts
         content:
           application/json:
             schema:
