@@ -27,7 +27,7 @@ interface CourseModel extends Model<Course> {
 
 const courseSchema = new Schema<Course, CourseModel>(
   {
-    _id: { type: String, default: randomUUID },
+    _id: { type: String, default: () => randomUUID() },
     curriculum: { type: String, required: true },
     lecturer: { type: String, required: true },
     class: { type: String },

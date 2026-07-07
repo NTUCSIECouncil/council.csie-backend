@@ -73,16 +73,13 @@ async function generateQuizFiles(
 }
 
 function generateUsers(num = 30): User[] {
-  return Array.from(
-    { length: num },
-    (_, i): User => ({
-      _id: randomUUID(),
-      gid: `GID${i.toString()}`,
-      name: `user${i.toString()}`,
-      email: `user${i.toString()}@example.com`,
-      nickname: `User ${i.toString()}`,
-    }),
-  );
+  return Array.from({ length: num }, (_, i): User => ({
+    _id: randomUUID(),
+    gid: `GID${i.toString()}`,
+    name: `user${i.toString()}`,
+    email: `user${i.toString()}@example.com`,
+    nickname: `User ${i.toString()}`,
+  }));
 }
 
 function getRandomUser(users: User[]): User {

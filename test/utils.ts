@@ -68,7 +68,7 @@ const getTestDoc = async <T>(model: mongoose.Model<T>): Promise<T> => {
     .lean({ versionKey: false })
     .exec();
   if (!doc) throw new Error(`No test ${model.modelName.toLowerCase()} found`);
-  return doc as T;
+  return doc;
 };
 
 const getTestArticle = async (): Promise<Article> => {

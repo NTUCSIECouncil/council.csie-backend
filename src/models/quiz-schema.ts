@@ -29,7 +29,7 @@ interface Quiz extends z.infer<typeof ZQuizSchema> {}
 interface QuizModel extends Model<Quiz> {}
 
 const quizSchema = new Schema<Quiz, QuizModel>({
-  _id: { type: String, default: randomUUID },
+  _id: { type: String, default: () => randomUUID() },
   session: {
     type: String,
     required: true,

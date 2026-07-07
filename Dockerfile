@@ -1,4 +1,4 @@
-FROM node:24.7.0-alpine AS base
+FROM node:24.18.0-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -35,4 +35,4 @@ RUN mkdir -p /app/var && chown -R node:node /app/var
 ENV NODE_ENV=production
 
 USER node
-CMD [ "node", "dist/index.js" ]
+CMD [ "node", "dist/index.mjs" ]

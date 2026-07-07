@@ -33,8 +33,9 @@ const ZCourseSearchResponseSchema = z.object({
   courses: z.array(ZCourseFromApiSchema),
 });
 
-interface CourseSearchResponse
-  extends z.infer<typeof ZCourseSearchResponseSchema> {}
+interface CourseSearchResponse extends z.infer<
+  typeof ZCourseSearchResponseSchema
+> {}
 
 const DEFAULT_BATCH_SIZE = 30;
 const API_URL =
@@ -92,6 +93,7 @@ const fetchCoursePage = async (
   } catch (error) {
     throw new Error(
       `Failed to parse course search response with keyword "${keyword}", batch size ${batchSize.toString()}, page index ${pageIndex.toString()}, semester ${semester}: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
     );
   }
   if (pageIndex % 10 === 0) {
@@ -121,7 +123,7 @@ const getBatchCourseData = async (
   const allProcessedCourses: Course[] = [];
   let currentPageIndex = 0;
   let totalCount = 0;
-  let fetchedCoursesOnPage = 0;
+  let fetchedCoursesOnPage: number;
 
   console.log(
     `Starting to fetch all courses for keyword: "${keyword}", Semester: ${semester}`,
