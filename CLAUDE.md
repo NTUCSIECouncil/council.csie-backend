@@ -118,6 +118,10 @@ an endpoint, request, or response shape, update the matching `openapi/paths/*.ya
 only loaded when `NODE_ENV !== 'production'`). Firebase auth uses `applicationDefault()`, which reads
 the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
 
+> In production (`NODE_ENV=production`, as in the Dockerfile) dotenv is **not** loaded — there is no
+> `.env` fallback, so every required var must be present in the real environment, and
+> `GOOGLE_APPLICATION_CREDENTIALS` must point at a service-account file available in the container.
+
 ## Adding a new resource (recipe)
 
 1. `src/models/<name>-schema.ts`: Zod schema + TS type + Mongoose model (UUID `_id`); register it in
