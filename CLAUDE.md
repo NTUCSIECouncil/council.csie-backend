@@ -64,7 +64,7 @@ statics). There is no separate service layer.
   never to restate what the code already says. Keep them short — no lengthy or redundant comments.
 - **Follow stack best practices, and keep it simple; when the two conflict, best practices win.**
   Prefer idiomatic Express 5 / Mongoose / Zod / TypeScript over clever shortcuts. However, don't over-engineer: if a simple solution works, use it.
-- **Type strictly — no `any`, no non-null `!`.** Both are lint errors; if a rule genuinely must be
+- Type strictly — no `any`, no non-null `!`. Both are lint errors; if a rule genuinely must be
   suppressed, use `// eslint-disable-next-line <rule> -- <reason>` that states why (see
   `src/routers/tag-controller.ts`). Prefer types derived from Zod (`z.infer`) over re-declaring shapes.
 
@@ -134,3 +134,4 @@ the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
   lint + format + type-check + test on pushes/PRs to `main`, then builds and pushes a Docker image.
 - Linear history with squash merges. Commit messages and PR titles follow
   [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, …).
+- Don't push to the remote without asking (includes force-push, PR creation, and merges).
