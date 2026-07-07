@@ -1,14 +1,10 @@
 # CLAUDE.md
 
-Guidance for AI agents working in this repository. For human-oriented setup (installing
-Node/pnpm/MongoDB, Firebase credentials, generating sample data), see `README.md` — this file
-covers architecture and conventions rather than repeating it.
-
 ## Project
 
 Backend REST API for the NTU CSIE Student Council website — a course-review platform where
 authenticated users post reviews ("articles") and quiz files about courses. Stack: Express 5 +
-TypeScript (ESM) + MongoDB via Mongoose 8 + Firebase Admin for auth, Zod for validation, and an
+TypeScript (ESM) + MongoDB via Mongoose 9 + Firebase Admin for auth, Zod for validation, and an
 OpenAPI spec served through Swagger UI.
 
 ## Commands
@@ -61,6 +57,16 @@ Request flow:
 
 Layering is routers (HTTP + validation) → Mongoose models (persistence + domain logic as schema
 statics). There is no separate service layer.
+
+## Coding conventions
+
+- **Comments explain _why_, not _how_.** Add a comment only for intent or a non-obvious trade-off,
+  never to restate what the code already says. Keep them short — no lengthy or redundant comments.
+- **Follow stack best practices, and keep it simple; when the two conflict, best practices win.**
+  Prefer idiomatic Express 5 / Mongoose / Zod / TypeScript over clever shortcuts. However, don't over-engineer: if a simple solution works, use it.
+- **Type strictly — no `any`, no non-null `!`.** Both are lint errors; if a rule genuinely must be
+  suppressed, use `// eslint-disable-next-line <rule> -- <reason>` that states why (see
+  `src/routers/tag-controller.ts`). Prefer types derived from Zod (`z.infer`) over re-declaring shapes.
 
 ## Data & model conventions
 
@@ -121,17 +127,6 @@ the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
 > In production (`NODE_ENV=production`, as in the Dockerfile) dotenv is **not** loaded — there is no
 > `.env` fallback, so every required var must be present in the real environment, and
 > `GOOGLE_APPLICATION_CREDENTIALS` must point at a service-account file available in the container.
-
-## Adding a new resource (recipe)
-
-1. `src/models/<name>-schema.ts`: Zod schema + TS type + Mongoose model (UUID `_id`); register it in
-   `src/models/index.ts`.
-2. `src/routers/<name>-controller.ts`: an Express `Router` whose handlers follow the
-   validation/auth/response conventions above.
-3. Mount the router in `src/routers/API-controller.ts`.
-4. Add `openapi/paths/<name>.yaml` (+ schemas in `components/`) and reference it from
-   `openapi/openapi.yaml`.
-5. Add `test/<name>.test.ts`.
 
 ## Repo etiquette
 
