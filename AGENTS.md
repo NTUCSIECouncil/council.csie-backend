@@ -12,7 +12,7 @@ OpenAPI spec served through Swagger UI.
 ```bash
 pnpm run dev          # run the server via tsx (no build step)
 pnpm run dev:watch    # restart on changes to src/ and openapi/
-pnpm run build        # bundle to dist/ with tsdown; `pnpm start` runs dist/index.js
+pnpm run build        # bundle to dist/ with tsdown; `pnpm start` runs dist/index.mjs
 pnpm run type-check   # tsc --noEmit
 pnpm run lint         # eslint --fix; lint:check = report only
 pnpm run format       # prettier --write; format:check = check only
@@ -115,6 +115,9 @@ an endpoint, request, or response shape, update the matching `openapi/paths/*.ya
 - Test env is loaded from `test/.env` + `test/.env.default` (then root `.env*`); `UPLOADS_DIR` is
   redirected to `./test/uploads` and wiped before/after each run.
 - Shared response-shape assertions live in `test/response-schemas.ts`.
+- Don't run the suite from a `.claude/worktrees/...` path. `UPLOADS_DIR` ends up under a
+  dotfile segment, and Express `res.sendFile` rejects dotfile path segments — file-serving tests 404.
+  Run tests from a normal checkout path.
 
 ## Config / environment
 
