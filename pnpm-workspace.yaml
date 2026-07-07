@@ -1,14 +1,23 @@
 engineStrict: true
 
-ignoredBuiltDependencies:
-  - '@firebase/util'
-  - '@scarf/scarf'
-  - protobufjs
-
-onlyBuiltDependencies:
-  - esbuild
-  - mongodb-memory-server
-
 sideEffectsCache: false
 
 verifyDepsBeforeRun: prompt
+allowBuilds:
+  esbuild: true
+  mongodb-memory-server: true
+  '@firebase/util': false
+  '@scarf/scarf': false
+  protobufjs: false
+minimumReleaseAgeExclude:
+  - '@typescript-eslint/eslint-plugin@8.63.0'
+  - '@typescript-eslint/parser@8.63.0'
+  - '@typescript-eslint/project-service@8.63.0'
+  - '@typescript-eslint/scope-manager@8.63.0'
+  - '@typescript-eslint/tsconfig-utils@8.63.0'
+  - '@typescript-eslint/type-utils@8.63.0'
+  - '@typescript-eslint/types@8.63.0'
+  - '@typescript-eslint/typescript-estree@8.63.0'
+  - '@typescript-eslint/utils@8.63.0'
+  - '@typescript-eslint/visitor-keys@8.63.0'
+  - typescript-eslint@8.63.0
