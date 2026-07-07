@@ -10,10 +10,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 RUN pnpm fetch
 
-COPY package.json ./
 COPY .husky/install.mjs .husky/install.mjs
 RUN pnpm install --offline --frozen-lockfile
 
