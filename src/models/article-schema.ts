@@ -5,9 +5,9 @@ import {
   model,
   Schema,
   type Date,
-  type FilterQuery,
   type HydratedDocument,
   type Model,
+  type QueryFilter,
 } from 'mongoose';
 import { z } from 'zod';
 
@@ -60,7 +60,7 @@ interface ArticleModel extends Model<Article> {
 
 const articleSchema = new Schema<Article, ArticleModel>(
   {
-    _id: { type: String, default: randomUUID },
+    _id: { type: String, default: () => randomUUID() },
     title: { type: String, required: true, maxLength: 40 },
     tags: {
       type: [String],
@@ -126,18 +126,21 @@ const articleSchema = new Schema<Article, ArticleModel>(
 const staticSearchArticles: ArticleModel['searchArticles'] = async function (
   params,
 ) {
-  const query: FilterQuery<Article> = {};
+  const query: QueryFilter<Article> = {};
 
   if (params.tags) {
     query.tags = { $all: params.tags };
   }
 
-  let articles = await this.find(query).populate<{
+  // `populate` widens `course`/`creator` to their referenced documents, but its
+  // inferred type doesn't structurally unify with `HydratedDocument<PopulatedArticle>`,
+  // so we cast to the intended populated document type.
+  let articles = (await this.find(query).populate<{
     course: Course;
     creator: User;
     createdAt: Date;
     updatedAt: Date;
-  }>(['course', 'creator']);
+  }>(['course', 'creator'])) as unknown as HydratedDocument<PopulatedArticle>[];
 
   if (params.keyword) {
     const fuseOptions = {
