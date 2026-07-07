@@ -36,8 +36,10 @@ const ZArticleSchema = z.object({
 
 interface Article extends z.infer<typeof ZArticleSchema> {}
 
-interface PopulatedArticle
-  extends Omit<Article, 'course' | 'creator' | 'createdAt' | 'updatedAt'> {
+interface PopulatedArticle extends Omit<
+  Article,
+  'course' | 'creator' | 'createdAt' | 'updatedAt'
+> {
   course: Course;
   creator: User;
   createdAt: Date;
