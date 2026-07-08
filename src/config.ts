@@ -14,6 +14,10 @@ const EnvSchema = z.object({
   UPLOADS_DIR: z.string(),
   LOGS_DIR: z.string(),
   FRONTEND_URL: z.url(),
+  // Number of reverse-proxy hops in front of the app (express `trust proxy`).
+  // Trust the exact hop count so the rate limiter keys on the real client IP,
+  // never more — trusting extra hops lets clients spoof `X-Forwarded-For`.
+  TRUST_PROXY: z.coerce.number().int().nonnegative().default(1),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

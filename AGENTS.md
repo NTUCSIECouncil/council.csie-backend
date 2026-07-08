@@ -123,9 +123,10 @@ an endpoint, request, or response shape, update the matching `openapi/paths/*.ya
 
 `src/config.ts` validates env with Zod and is the source of truth. Required vars:
 `MONGODB_URI`, `MONGODB_DB_NAME`, `PORT`, `GOOGLE_APPLICATION_CREDENTIALS`, `UPLOADS_DIR`,
-`LOGS_DIR`, `FRONTEND_URL`. Defaults live in `.env.default`; override locally in `.env` (dotenv is
-only loaded when `NODE_ENV !== 'production'`). Firebase auth uses `applicationDefault()`, which reads
-the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
+`LOGS_DIR`, `FRONTEND_URL`. Optional: `TRUST_PROXY` (number of reverse-proxy hops the app sits
+behind, for express `trust proxy`; default `1`). Defaults live in `.env.default`; override locally
+in `.env` (dotenv is only loaded when `NODE_ENV !== 'production'`). Firebase auth uses
+`applicationDefault()`, which reads the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
 
 > In production (`NODE_ENV=production`, as in the Dockerfile) dotenv is **not** loaded — there is no
 > `.env` fallback, so every required var must be present in the real environment, and
