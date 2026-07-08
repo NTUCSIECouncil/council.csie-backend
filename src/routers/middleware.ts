@@ -5,8 +5,9 @@ import logger from '@/utils/logger.ts';
 import { ZPaginationQueryParam } from '@models/util-schema.ts';
 
 const requireCsie: RequestHandler = (req, res, next) => {
-  const email = req.guser?.email ?? '';
-  if (!email.endsWith('@csie.ntu.edu.tw')) {
+  const email = req.decodedToken?.email ?? '';
+  const emailVerified = req.decodedToken?.email_verified ?? false;
+  if (!emailVerified || !email.endsWith('@csie.ntu.edu.tw')) {
     logger.warn(
       `Access denied for non-csie user: ${email || 'unauthenticated'}`,
     );
