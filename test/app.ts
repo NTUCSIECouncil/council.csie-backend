@@ -34,7 +34,5 @@ const mockAuth: RequestHandler = async (req, res, next) => {
   next();
 };
 
-// Build the test app through the same factory production uses, so tests
-// exercise the real middleware chain. The request logger and rate limiter are
-// operational-only and left out here.
+// Build the test app through the same factory production uses. The request logger and rate limiter are operational-only and left out here.
 export default createApp({ auth: mockAuth });
