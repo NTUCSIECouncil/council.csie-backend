@@ -30,11 +30,12 @@ router.all('/me{/*splat}', (req, res, next) => {
 });
 
 router.post('/', async (req, res) => {
-  if (req.guser === undefined) {
+  if (req.decodedToken === undefined) {
     logger.warn('Unauthorized access to POST /users');
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }
+  const { uid: gid } = req.decodedToken;
 
   let userCreate;
   try {
@@ -45,26 +46,28 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  const existingUser = await UserModel.findOne({ gid: req.guser.uid }).exec();
+  const existingUser = await UserModel.findOne({ gid }).exec();
   if (existingUser) {
-    logger.warn(`User already exists with gid ${req.guser.uid}`);
+    logger.warn(`User already exists with gid ${gid}`);
     res.status(409).json({ message: 'User already exists' });
     return;
   }
 
-  if (req.guser.displayName === undefined || req.guser.email === undefined) {
-    logger.warn(`Missing user information for gid ${req.guser.uid}`);
-    logger.warn('User information:', req.guser);
+  // The signup profile comes from the just-minted ID token's claims (Google
+  // sign-in populates `name`/`email`), so no getUser round-trip is needed. The
+  // `name` claim lives on DecodedIdToken's index signature, so pull it out via
+  // Zod to keep it typed rather than reaching through `any`.
+  const { name, email } = z
+    .object({ name: z.string(), email: z.string() })
+    .partial()
+    .parse(req.decodedToken);
+  if (name === undefined || email === undefined) {
+    logger.warn(`Missing user information for gid ${gid}`);
     res.status(500).json({ message: 'Missing user information' });
     return;
   }
 
-  const userData = {
-    gid: req.guser.uid,
-    name: req.guser.displayName,
-    email: req.guser.email,
-    nickname: userCreate.nickname,
-  };
+  const userData = { gid, name, email, nickname: userCreate.nickname };
 
   const userDoc = new UserModel(userData);
   await userDoc.save();
