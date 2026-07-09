@@ -31,11 +31,7 @@ const expressApp = express();
 
 expressApp.set('query parser', 'extended');
 
-expressApp.use(express.json({ limit: '10mb' }));
-
-const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
-expressApp.use(cors(corsOptions));
-expressApp.use(cookieParser());
+expressApp.set('trust proxy', env.TRUST_PROXY);
 
 const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
@@ -46,8 +42,6 @@ const morganMiddleware = morgan(
   { stream },
 );
 
-expressApp.use(morganMiddleware);
-
 // Limit each IP to 100 requests per minute
 const limiter = rateLimit({
   windowMs: 60 * 1000,
@@ -56,7 +50,14 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
+const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
+
+// Log every request (including 429s), then apply CORS and rate limiting before parsing cookies/JSON.
+expressApp.use(morganMiddleware);
+expressApp.use(cors(corsOptions));
 expressApp.use(limiter);
+expressApp.use(cookieParser());
+expressApp.use(express.json({ limit: '10mb' }));
 
 expressApp.use(async (req, res, next) => {
   const authHeader = req.headers.authorization;
