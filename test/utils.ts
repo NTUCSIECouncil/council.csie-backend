@@ -49,6 +49,16 @@ const expectValidErrorResponse = (body: unknown) => {
   expect(z.strictObject(ZErrorSchema.shape).safeParse(body).success).toBe(true);
 };
 
+// Asserts an embedded user (?embed=creator/uploader) exposes only the public UserResponse fields, never the private gid/email/name.
+const expectPublicUserOnly = (user: unknown) => {
+  expect(user).toBeTypeOf('object');
+  expect(user).not.toBeNull();
+  expect(Object.keys(user as Record<string, unknown>).sort()).toEqual([
+    '_id',
+    'nickname',
+  ]);
+};
+
 const parseAndExpectValid = <T extends z.ZodRawShape>(
   schema: z.ZodObject<T>,
   body: unknown,
@@ -92,6 +102,7 @@ const authedRequest = (path: string) =>
 
 export {
   expectValidErrorResponse,
+  expectPublicUserOnly,
   parseAndExpectValid,
   seedModelFromSamples,
   getTestArticle,

@@ -155,7 +155,7 @@ router.get('/:articleId', async (req, res) => {
     query = query.populate('course');
   }
   if (embedParam.embed?.includes('creator')) {
-    query = query.populate('creator');
+    query = query.populate('creator', '_id nickname');
   }
   const article = await query.lean({ versionKey: false }).exec();
   if (article === null) {

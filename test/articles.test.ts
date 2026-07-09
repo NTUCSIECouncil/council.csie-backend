@@ -18,6 +18,7 @@ import {
   ZMetaSchema,
 } from './response-schemas.ts';
 import {
+  expectPublicUserOnly,
   expectValidErrorResponse,
   getTestArticle,
   getTestCourse,
@@ -370,6 +371,21 @@ describe('GET /api/articles', () => {
           }
         }
       }
+    });
+
+    it('should not leak private user fields in embedded creator', async () => {
+      const res = await request(app)
+        .get('/api/articles')
+        .query(qs.stringify({ embed: ['creator'], limit: 100 }))
+        .expect(200);
+
+      // Inspect the raw body: Zod parsing would strip the leaked keys.
+      const { articles } = res.body as { articles: { creator: unknown }[] };
+      const embeddedCreators = articles
+        .map(article => article.creator)
+        .filter(creator => typeof creator === 'object' && creator !== null);
+      expect(embeddedCreators.length).toBeGreaterThan(0);
+      for (const creator of embeddedCreators) expectPublicUserOnly(creator);
     });
 
     it('should validate embed parameters', async () => {
@@ -785,6 +801,19 @@ describe('GET /api/articles/:articleId', () => {
           expect(body.article).toHaveProperty('content');
         }
       }
+    });
+
+    it('should not leak private user fields in embedded creator', async () => {
+      const article = await getTestArticle();
+
+      const res = await request(app)
+        .get(`/api/articles/${article._id}`)
+        .query(qs.stringify({ embed: ['creator'] }))
+        .expect(200);
+
+      // Inspect the raw body: Zod parsing would strip the leaked keys.
+      const body = res.body as { article: { creator: unknown } };
+      expectPublicUserOnly(body.article.creator);
     });
 
     it('should handle content embedding with truncation', async () => {

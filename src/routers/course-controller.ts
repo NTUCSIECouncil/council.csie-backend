@@ -98,7 +98,7 @@ router.get(
       query = query.populate('course');
     }
     if (embedParam.embed?.includes('uploader')) {
-      query = query.populate('uploader');
+      query = query.populate('uploader', '_id nickname');
     }
 
     const quizzes = await query.lean({ versionKey: false }).exec();
