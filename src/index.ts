@@ -1,7 +1,4 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -9,10 +6,10 @@ import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
-import { UserModel } from '@models/user-schema.ts';
-import APIController from '@routers/API-controller.ts';
+import { firebaseAuth } from '@routers/auth-middleware.ts';
 import dbLogger from '@utils/db-logger.ts';
 import logger from '@utils/logger.ts';
+import { createApp } from './app.ts';
 import { env } from './config.ts';
 
 let auth;
@@ -26,12 +23,6 @@ try {
   logger.error('Exiting...');
   process.exit(1);
 }
-
-const expressApp = express();
-
-expressApp.set('query parser', 'extended');
-
-expressApp.set('trust proxy', env.TRUST_PROXY);
 
 const stream: StreamOptions = {
   write: (message: string) => logger.info(message.trim()), // Log HTTP requests using Winston
@@ -50,42 +41,11 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 
-const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
-
-// Log every request (including 429s), then apply CORS and rate limiting before parsing cookies/JSON.
-expressApp.use(morganMiddleware);
-expressApp.use(cors(corsOptions));
-expressApp.use(limiter);
-expressApp.use(cookieParser());
-expressApp.use(express.json({ limit: '10mb' }));
-
-expressApp.use(async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const cookieToken = (req.cookies as Record<string, string | undefined>).token;
-  const rawToken = authHeader?.startsWith('Bearer ')
-    ? authHeader.slice(7)
-    : cookieToken;
-
-  if (rawToken !== undefined) {
-    try {
-      const decodedToken = await auth.verifyIdToken(rawToken);
-      req.decodedToken = decodedToken;
-      req.rawToken = rawToken;
-      req.userId = (
-        await UserModel.findOne({ gid: decodedToken.uid })
-          .select('_id')
-          .lean()
-          .exec()
-      )?._id;
-    } catch (err) {
-      logger.error('Error verifying Firebase token: ', err);
-    }
-  }
-
-  next();
+const expressApp = createApp({
+  auth: firebaseAuth(auth),
+  requestLogger: morganMiddleware,
+  rateLimiter: limiter,
 });
-
-expressApp.use('/api', APIController);
 
 const api = await SwaggerParser.dereference('./openapi/openapi.yaml');
 await SwaggerParser.validate(api);
