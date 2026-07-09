@@ -34,5 +34,7 @@ const mockAuth: RequestHandler = async (req, res, next) => {
   next();
 };
 
-// Build the test app through the same factory production uses. The request logger and rate limiter are operational-only and left out here.
+// Build the test app through the same factory production uses. The request
+// logger is operational-only and left out; rate limiting still runs, with the
+// raised RATE_LIMIT_MAX from test/.env.default so the fast suite isn't throttled.
 export default createApp({ auth: mockAuth });

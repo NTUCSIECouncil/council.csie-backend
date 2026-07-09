@@ -1,7 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { rateLimit } from 'express-rate-limit';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import { getAuth, type Auth } from 'firebase-admin/auth';
 import mongoose from 'mongoose';
 import morgan, { type StreamOptions } from 'morgan';
 import swaggerUi from 'swagger-ui-express';
@@ -12,7 +11,7 @@ import logger from '@utils/logger.ts';
 import { createApp } from './app.ts';
 import { env } from './config.ts';
 
-let auth;
+let auth: Auth;
 try {
   const firebaseApp = initializeApp({ credential: applicationDefault() });
   logger.info('Connected to Firebase');
@@ -33,18 +32,9 @@ const morganMiddleware = morgan(
   { stream },
 );
 
-// Limit each IP to 100 requests per minute
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  limit: 100,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-});
-
 const expressApp = createApp({
   auth: firebaseAuth(auth),
   requestLogger: morganMiddleware,
-  rateLimiter: limiter,
 });
 
 const api = await SwaggerParser.dereference('./openapi/openapi.yaml');
