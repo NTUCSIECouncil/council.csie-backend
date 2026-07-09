@@ -52,7 +52,7 @@ const limiter = rateLimit({
 
 const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
 
-// Log every request (including 429s), then apply CORS, finally apply rate limiting to protect everything else.
+// Log every request (including 429s), then apply CORS and rate limiting before parsing cookies/JSON.
 expressApp.use(morganMiddleware);
 expressApp.use(cors(corsOptions));
 expressApp.use(limiter);
