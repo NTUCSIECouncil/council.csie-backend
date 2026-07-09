@@ -31,8 +31,6 @@ const expressApp = express();
 
 expressApp.set('query parser', 'extended');
 
-// Trust exactly the configured number of reverse-proxy hops so the rate limiter
-// and `req.ip` key on the real client IP instead of the proxy's shared address.
 expressApp.set('trust proxy', env.TRUST_PROXY);
 
 const stream: StreamOptions = {
@@ -54,8 +52,7 @@ const limiter = rateLimit({
 
 const corsOptions = { origin: env.FRONTEND_URL, credentials: true };
 
-// Log every request (including 429s), then rate-limit before parsing bodies so
-// over-limit clients can't force a large JSON body parse.
+// Log every request (including 429s), then rate-limiter protects everything else.
 expressApp.use(morganMiddleware);
 expressApp.use(limiter);
 expressApp.use(cors(corsOptions));
