@@ -124,7 +124,8 @@ an endpoint, request, or response shape, update the matching `openapi/paths/*.ya
 `src/config.ts` validates env with Zod and is the source of truth. Required vars:
 `MONGODB_URI`, `MONGODB_DB_NAME`, `PORT`, `GOOGLE_APPLICATION_CREDENTIALS`, `UPLOADS_DIR`,
 `LOGS_DIR`, `FRONTEND_URL`. Optional: `TRUST_PROXY` (number of reverse-proxy hops the app sits
-behind, for express `trust proxy`; default `1`). Defaults live in `.env.default`; override locally
+behind, for express `trust proxy`; default `1`) and `RATE_LIMIT_MAX` (max requests per IP per
+minute; default `100`, raised in `test/.env.default` so the suite isn't throttled). Defaults live in `.env.default`; override locally
 in `.env` (dotenv is only loaded when `NODE_ENV !== 'production'`). Firebase auth uses
 `applicationDefault()`, which reads the service-account path from `GOOGLE_APPLICATION_CREDENTIALS`.
 

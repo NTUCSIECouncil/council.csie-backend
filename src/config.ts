@@ -15,6 +15,7 @@ const EnvSchema = z.object({
   LOGS_DIR: z.string(),
   FRONTEND_URL: z.url(),
   TRUST_PROXY: z.coerce.number().int().nonnegative().default(1),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

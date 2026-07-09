@@ -1,17 +1,13 @@
-import express from 'express';
+import { type RequestHandler } from 'express';
 import { type DecodedIdToken } from 'firebase-admin/auth';
 
+import { createApp } from '@/app.ts';
 import { UserModel } from '@/models/user-schema.ts';
-import APIController from '@routers/API-controller.ts';
-
-const expressApp = express();
-
-expressApp.set('query parser', 'extended');
 
 // Mirror the production auth middleware: verifying the token yields a
 // DecodedIdToken (no getUser round-trip). The `gid` header stands in for a
 // verified token belonging to that user.
-expressApp.use(async (req, res, next) => {
+const mockAuth: RequestHandler = async (req, res, next) => {
   const gidHeader = req.headers.gid;
   if (typeof gidHeader == 'string') {
     const decodedToken: DecodedIdToken = {
@@ -36,9 +32,9 @@ expressApp.use(async (req, res, next) => {
   }
 
   next();
-});
+};
 
-expressApp.use(express.json({ limit: '10mb' }));
-expressApp.use('/api', APIController);
-
-export default expressApp;
+// Build the test app through the same factory production uses. The request
+// logger is operational-only and left out; rate limiting still runs, with the
+// raised RATE_LIMIT_MAX from test/.env.default so the fast suite isn't throttled.
+export default createApp({ auth: mockAuth });
