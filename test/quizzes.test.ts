@@ -11,6 +11,7 @@ import app from './app.ts';
 import { ZMetaSchema, ZQuizResponseSchema } from './response-schemas.ts';
 import {
   authedRequest,
+  expectPublicUserOnly,
   expectValidErrorResponse,
   getTestCourse,
   getTestQuiz,
@@ -209,6 +210,20 @@ describe('GET /api/quizzes', () => {
         expect(quiz.uploader).toBeTypeOf('string');
       }
     });
+
+    it('should not leak private user fields in embedded uploader', async () => {
+      const res = await authedRequest('/api/quizzes')
+        .query(qs.stringify({ embed: ['uploader'], limit: 100 }))
+        .expect(200);
+
+      // Inspect the raw body: Zod parsing would strip the leaked keys.
+      const { quizzes } = res.body as { quizzes: { uploader: unknown }[] };
+      const embeddedUploaders = quizzes
+        .map(quiz => quiz.uploader)
+        .filter(uploader => typeof uploader === 'object' && uploader !== null);
+      expect(embeddedUploaders.length).toBeGreaterThan(0);
+      for (const uploader of embeddedUploaders) expectPublicUserOnly(uploader);
+    });
   });
 });
 
@@ -272,6 +287,18 @@ describe('GET /api/quizzes/:quizId', () => {
         expect(body.quiz.uploader).toBeTypeOf('object');
       }
     });
+
+    it('should not leak private user fields in embedded uploader', async () => {
+      const testQuiz = await getTestQuiz();
+
+      const res = await authedRequest(`/api/quizzes/${testQuiz._id}`)
+        .query(qs.stringify({ embed: ['uploader'] }))
+        .expect(200);
+
+      // Inspect the raw body: Zod parsing would strip the leaked keys.
+      const body = res.body as { quiz: { uploader: unknown } };
+      expectPublicUserOnly(body.quiz.uploader);
+    });
   });
 
   describe('Parameter validation', () => {
@@ -332,5 +359,24 @@ describe('GET /api/quizzes/:quizId/file', () => {
       ).expect(404);
       expectValidErrorResponse(res.body);
     });
+  });
+});
+
+describe('GET /api/courses/:courseId/quizzes', () => {
+  it('should not leak private user fields in embedded uploader', async () => {
+    // A course guaranteed to have at least one quiz.
+    const quiz = await getTestQuiz();
+
+    const res = await authedRequest(`/api/courses/${quiz.course}/quizzes`)
+      .query(qs.stringify({ embed: ['uploader'], limit: 100 }))
+      .expect(200);
+
+    // Inspect the raw body: Zod parsing would strip the leaked keys.
+    const { quizzes } = res.body as { quizzes: { uploader: unknown }[] };
+    const embeddedUploaders = quizzes
+      .map(q => q.uploader)
+      .filter(uploader => typeof uploader === 'object' && uploader !== null);
+    expect(embeddedUploaders.length).toBeGreaterThan(0);
+    for (const uploader of embeddedUploaders) expectPublicUserOnly(uploader);
   });
 });

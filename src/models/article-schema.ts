@@ -140,7 +140,10 @@ const staticSearchArticles: ArticleModel['searchArticles'] = async function (
     creator: User;
     createdAt: Date;
     updatedAt: Date;
-  }>(['course', 'creator'])) as unknown as HydratedDocument<PopulatedArticle>[];
+  }>([
+    { path: 'course' },
+    { path: 'creator', select: '_id nickname' },
+  ])) as unknown as HydratedDocument<PopulatedArticle>[];
 
   if (params.keyword) {
     const fuseOptions = {
