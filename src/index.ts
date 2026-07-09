@@ -67,9 +67,6 @@ expressApp.use(async (req, res, next) => {
 
   if (rawToken !== undefined) {
     try {
-      // verifyIdToken is a local JWT check (signing certs are cached); the
-      // decoded token carries uid/email/email_verified, so no getUser round-trip
-      // to Firebase is needed on the request path — see POST /users for signup.
       const decodedToken = await auth.verifyIdToken(rawToken);
       req.decodedToken = decodedToken;
       req.rawToken = rawToken;
