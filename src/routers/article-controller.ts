@@ -14,6 +14,7 @@ import {
   type Article,
   type PopulatedArticle,
 } from '@models/article-schema.ts';
+import { CourseModel } from '@models/course-schema.ts';
 import {
   ZArticleEmbedQueryParam,
   ZArticleSearchQueryParam,
@@ -116,9 +117,7 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  const courseExists = await ArticleModel.exists({
-    course: articleCreate.course,
-  });
+  const courseExists = await CourseModel.exists({ _id: articleCreate.course });
   if (!courseExists) {
     logger.warn(
       `Course not found for article creation: ${articleCreate.course}`,

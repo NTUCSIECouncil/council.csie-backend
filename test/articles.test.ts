@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { ArticleModel } from '@models/article-schema.ts';
+import { CourseModel } from '@models/course-schema.ts';
 import { UserModel } from '@models/user-schema.ts';
 import { ZUuidSchema } from '@models/util-schema.ts';
 import app from './app.ts';
@@ -502,6 +503,31 @@ describe('POST /api/articles', () => {
         expect(() => createdAt.toISOString()).not.toThrow();
         expect(() => updatedAt.toISOString()).not.toThrow();
       }
+    });
+
+    it('should create an article for a course that has no articles yet', async () => {
+      const creator = await getTestUser();
+      // Fresh course with zero articles — mirrors a brand-new production DB.
+      const course = await CourseModel.create({
+        curriculum: 'CSIE9999',
+        lecturer: 'Untouched Lecturer',
+        names: ['Course With No Articles'],
+        credit: 3,
+        semester: '113-2',
+      });
+
+      const res = await request(app)
+        .post('/api/articles')
+        .send({
+          title: 'First review of this course',
+          tags: ['test'],
+          ratings: createTestRatings(),
+          course: course._id,
+        })
+        .set('gid', creator.gid)
+        .expect(201);
+
+      parseAndExpectValid(ZArticleCreateResponse, res.body);
     });
 
     it('should set authenticated user as creator', async () => {
